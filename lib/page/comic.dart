@@ -9,6 +9,7 @@ import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/utils/db.dart';
+import 'package:read_app/utils/volumn_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ComicPage extends StatefulWidget {
@@ -29,6 +30,7 @@ class _ComicPageState extends State<ComicPage> {
   double lineHeight = 1.6;
   final ValueNotifier<int> _currentIndex = ValueNotifier<int>(0);
   final _bookTitleController = TextEditingController();
+  final VolumeUtils volumeUtils = VolumeUtils();
 
   String fontFamily = 'pingfang';
   int fontColor = 0xff000000;
@@ -53,6 +55,14 @@ class _ComicPageState extends State<ComicPage> {
   int contentFontWeight = 4;
 
   Future<void> init(Book book) async {
+    volumeUtils.init((double beforeVolume, double nowVolume) {
+      if (beforeVolume < nowVolume) {
+        _pageController.nextPage(duration: const Duration(milliseconds: 100), curve: Curves.easeOut);
+      } else if (beforeVolume > nowVolume) {
+        _pageController.previousPage(duration: const Duration(milliseconds: 100), curve: Curves.easeIn);
+      }
+      volumeUtils.setVolume(0.1);
+    });
     book = await DatabaseHelper.db.getById(book.id);
     var dataDir = await getApplicationDocumentsDirectory();
     book.assetDir = dataDir.path;
@@ -314,6 +324,7 @@ class _ComicPageState extends State<ComicPage> {
             'contentFontWeight': contentFontWeight,
           }));
     });
+    volumeUtils.removeListener(needRestore: true);
     _currentIndex.dispose();
     _pageController.dispose();
     _bookTitleController.dispose();
