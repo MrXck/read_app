@@ -54,7 +54,7 @@ class _VideoPageState extends State<VideoPage> {
       autoPlay: false, // 自动播放
       looping: false, // 循环播放
       aspectRatio: 16 / 9,
-      playbackSpeeds: const [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 4]
+      playbackSpeeds: const [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5],
     );
 
     playerWidget = Chewie(
