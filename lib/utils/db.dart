@@ -70,8 +70,7 @@ class DatabaseHelper {
 
       // await db.execute('DROP TABLE book_source;');
 
-      await db.execute(
-          'CREATE TABLE IF NOT EXISTS book_source ('
+      await db.execute('CREATE TABLE IF NOT EXISTS book_source ('
           ' id INTEGER PRIMARY KEY AUTOINCREMENT,'
           ' base_url TEXT,'
           ' name TEXT,'
@@ -111,10 +110,10 @@ class DatabaseHelper {
     }
   }
 
-  Future<List<Book>> getAllAndNotParentId() async {
+  Future<List<Book>> getAllBook() async {
     var db = await database;
-    var query = await db?.query('book',
-        where: 'parent_id = ""', orderBy: 'update_time Desc, seq_no asc');
+    var query =
+        await db?.query('book', orderBy: 'update_time Desc, seq_no asc');
     List<Book> books =
         query!.isNotEmpty ? query.map((t) => Book.fromMap(t)).toList() : [];
     return books;
@@ -180,6 +179,15 @@ class DatabaseHelper {
         orderBy: 'update_time Desc');
     List<Book> books =
         query!.isNotEmpty ? query.map((t) => Book.fromMap(t)).toList() : [];
+    return books;
+  }
+
+  Future<List<Book>> getBooksByPath(List<String> paths) async {
+    var db = await database;
+    print('sql ${'select * from book where ${generateLike('path', paths)}'}');
+    var query = await db?.rawQuery('select * from book where ${generateLike('path', paths)}');
+    List<Book> books =
+    query!.isNotEmpty ? query.map((t) => Book.fromMap(t)).toList() : [];
     return books;
   }
 
@@ -296,7 +304,8 @@ class DatabaseHelper {
 
       for (var bookSource in bookSources) {
         BookSource newBookSource = BookSource.fromMap(bookSource);
-        bookSourceIdMap[newBookSource.id] = (await insertBookSource(newBookSource)).toString();
+        bookSourceIdMap[newBookSource.id] =
+            (await insertBookSource(newBookSource)).toString();
       }
 
       final books = await newDb.rawQuery("SELECT * FROM book;");
@@ -346,7 +355,6 @@ class DatabaseHelper {
           updateById(book);
         }
       }
-
     } finally {
       await newDb.close();
     }
@@ -355,16 +363,18 @@ class DatabaseHelper {
   Future<List<BookSource>> getAllBookSource() async {
     var db = await database;
     var query = await db?.query('book_source');
-    List<BookSource> bookSources =
-    query!.isNotEmpty ? query.map((t) => BookSource.fromMap(t)).toList() : [];
+    List<BookSource> bookSources = query!.isNotEmpty
+        ? query.map((t) => BookSource.fromMap(t)).toList()
+        : [];
     return bookSources;
   }
 
   Future<List<BookSource>> getAllEnableBookSource() async {
     var db = await database;
     var query = await db?.query('book_source', where: 'enable = 1');
-    List<BookSource> bookSources =
-    query!.isNotEmpty ? query.map((t) => BookSource.fromMap(t)).toList() : [];
+    List<BookSource> bookSources = query!.isNotEmpty
+        ? query.map((t) => BookSource.fromMap(t)).toList()
+        : [];
     return bookSources;
   }
 
@@ -406,8 +416,14 @@ class DatabaseHelper {
 
   Future<BookSource> getBookSourceById(String id) async {
     var db = await database;
-    var query = await db?.query('book_source', where: 'id = ?', whereArgs: [id]);
-    BookSource bookSource = query!.isNotEmpty ? BookSource.fromMap(query[0]) : BookSource();
+    var query =
+        await db?.query('book_source', where: 'id = ?', whereArgs: [id]);
+    BookSource bookSource =
+        query!.isNotEmpty ? BookSource.fromMap(query[0]) : BookSource();
     return bookSource;
+  }
+
+  String generateLike(String column, List<String> condition) {
+    return condition.map((item) => ' $column LIKE "%$item%"').join(' OR ');
   }
 }

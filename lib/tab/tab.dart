@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:read_app/tab/book_shelf.dart';
 import 'package:read_app/tab/book_source.dart';
+import 'package:read_app/tab/file.dart';
 import 'package:read_app/tab/my.dart';
 
 class TabPage extends StatefulWidget {
@@ -16,6 +17,7 @@ class _TabPageState extends State<TabPage> {
   final List<Widget> _pages = [
     const BookShelfPage(),
     const BookSourceTab(),
+    const FileTab(),
     const MyPage()
   ];
 
@@ -46,6 +48,7 @@ class _TabPageState extends State<TabPage> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.book_outlined), label: "书架"),
           BottomNavigationBarItem(icon: Icon(Icons.book), label: "书源"),
+          BottomNavigationBarItem(icon: Icon(Icons.file_copy_sharp), label: "文件"),
           BottomNavigationBarItem(
               icon: Icon(Icons.account_circle_outlined), label: "我的"),
         ],
