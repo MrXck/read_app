@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload TXT File</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        #drop {
+            width: 200px;
+            height: 200px;
+            border: 2px dashed #ccc;
+            text-align: center;
+            line-height: 200px;
+            margin: 10px 50px 50px;
+        }
+
+        #radio {
+            margin-top: 10px;
+            margin-left: 50px;
+        }
+
+        .container {
+            display: flex;
+        }
+
+        #uploadList {
+            flex: 1;
+            margin-left: 20px;
+            overflow-y: auto;
+            height: calc(100vh);
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            flex-direction: column;
+        }
+
+        .file-info {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .total-progress {
+            position: absolute;
+            width: 100%;
+            background-color: black;
+            height: 100%;
+        }
+
+        .progress {
+            position: relative;
+            width: 100%;
+            height: 3px;
+        }
+
+        .now-progress {
+            position: absolute;
+            background-color: aqua;
+            height: 100%;
+        }
+
+        .upload-progress {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div>
+        <div id="radio">
+            <input id="txt" type="radio" name="upload" value="txt" checked>
+            <label for="txt">TXT上传</label>
+            <input id="zip" type="radio" name="upload" value="zip">
+            <label for="zip">压缩包上传</label>
+        </div>
+        <div id="drop">
+            拖拽上传
+        </div>
+    </div>
+    <div id="uploadList">
+<!--                <div class="file-item">-->
+<!--                    <div class="file-info">-->
+<!--                        <div>${item.name}</div>-->
+<!--                        <div>${item.status}</div>-->
+<!--                    </div>-->
+<!--                    <div class="upload-progress">-->
+<!--                        <div>30MB / 60MB</div>-->
+<!--                        <div class="progress">-->
+<!--                            <div class="total-progress"></div>-->
+<!--                            <div class="now-progress"></div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+    </div>
+</div>
+
+<script>
+    const drop = document.getElementById('drop');
+    const uploadList = document.getElementById('uploadList');
+    const fileList = []
+
+    function generateRandomString(length) {
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        for (let i = 0; i < length; i++) {
+            const randomIndex = Math.floor(Math.random() * characters.length);
+            result += characters[randomIndex];
+        }
+        return result;
+    }
+
+    drop.addEventListener('dragstart', e => {
+        e.stopPropagation()
+    })
+
+    drop.addEventListener('dragover', function (e) {
+        e.preventDefault();
+    });
+
+    drop.addEventListener('drop', function (e) {
+        e.preventDefault();
+
+        const uploadType = document.querySelector('input[name=upload]:checked').value
+        const uploadUrl = uploadType === 'txt' ? '/upload' : '/uploadComic'
+        let html = uploadList.innerHTML
+
+        for (let i = 0; i < e.dataTransfer.files.length; i++) {
+            let file = e.dataTransfer.files[i];
+            const fileId = generateRandomString(16)
+            const data = {name: file.name, status: 'uploading', id: fileId, file, upload: false}
+            fileList.push(data)
+            html += `<div class="file-item" id="${data.id}">
+                    <div class="file-info">
+                        <div>${data.name}</div>
+                        <div>${data.status}</div>
+                    </div>
+                    <div class="upload-progress">
+                        <div>0MB / ${(data.file.size / 1024 / 1024).toFixed(2)}MB</div>
+                        <div class="progress">
+                            <div class="total-progress"></div>
+                            <div class="now-progress"></div>
+                        </div>
+                    </div>
+                </div>`
+        }
+
+        uploadList.innerHTML = html
+
+        uploadList.offsetHeight
+        for (let i = 0; i < fileList.length; i++) {
+            const data = fileList[i];
+            const id = data.id
+            const file = data.file
+
+            if (data.upload) {
+                continue
+            }
+
+            data.upload = true
+
+            try {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', uploadUrl, true);
+
+                // 监听上传进度
+                xhr.upload.addEventListener("progress", (event) => {
+                    if (event.lengthComputable) {
+                        const percentComplete = (event.loaded / event.total) * 100;
+                        console.log(`上传进度: ${percentComplete.toFixed(2)}%`);
+
+                        document.getElementById(id).innerHTML = `<div class="file-info"><div>${data.name}</div><div>${data.status}</div></div>
+                        <div class="upload-progress">
+                            <div>${(event.loaded / 1024 / 1024).toFixed(2)}MB / ${(event.total / 1024 / 1024).toFixed(2)}MB</div>
+                            <div class="progress">
+                                <div class="total-progress"></div>
+                                <div class="now-progress" style="width: ${((event.loaded / event.total) * 100).toFixed(2)}%"></div>
+                            </div>
+                        </div>`
+                    }
+                });
+
+                xhr.onload = function () {
+                    const data = fileList.find(item => item.id === id)
+                    console.log(data, id)
+                    if (this.status === 200) {
+                        data.status = 'success'
+                    } else {
+                        data.status = this.responseText
+                    }
+                    document.getElementById(id).innerHTML = `<div class="file-info"><div>${data.name}</div><div>${data.status}</div></div>
+                        <div class="upload-progress">
+                            <div>${(file.size / 1024 / 1024).toFixed(2)}MB / ${(file.size / 1024 / 1024).toFixed(2)}MB</div>
+                            <div class="progress">
+                                <div class="total-progress"></div>
+                                <div class="now-progress" style="width: 100%"></div>
+                            </div>
+                        </div>`
+                };
+
+
+                let formData = new FormData();
+                formData.append('file', file);
+                xhr.send(formData);
+            } catch (e) {
+                fileList.find(item => item.id === id).status = 'failed'
+                document.getElementById(id).innerHTML = `<div class="file-info"><div>${data.name}</div><div>${data.status}</div></div>
+                        <div class="upload-progress">
+                            <div>0MB / ${(file.size / 1024 / 1024).toFixed(2)}MB</div>
+                            <div class="progress">
+                                <div class="total-progress"></div>
+                                <div class="now-progress" style="width: 0"></div>
+                            </div>
+                        </div>`
+            }
+        }
+    })
+
+</script>
+
+</body>
+</html>
