@@ -14,6 +14,7 @@ import 'package:read_app/utils/book_utils.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/db.dart';
 import 'package:read_app/utils/regex_utils.dart';
+import 'package:read_app/utils/volumn_utils.dart';
 import 'package:read_app/widget/read/chapter_list.dart';
 import 'package:read_app/widget/read/font_setting.dart';
 import 'package:read_app/widget/read/settings.dart';
@@ -69,6 +70,7 @@ class _ReadPageState extends State<ReadPage> {
   final _currentPage = ValueNotifier(0);
   final _chapterTitleExpController = TextEditingController();
   final _bookTitleController = TextEditingController();
+  final VolumeUtils volumeUtils = VolumeUtils();
   int nowChapterPage = 0;
   bool isLoading = false;
   Map<String, int> chapterTitlePageNumMap = {};
@@ -100,6 +102,14 @@ class _ReadPageState extends State<ReadPage> {
   Timer? _dataTimer;
 
   Future<void> init(Book book) async {
+    volumeUtils.init((double beforeVolume, double nowVolume) {
+      if (beforeVolume < nowVolume) {
+        _pageController.nextPage(duration: const Duration(milliseconds: 100), curve: Curves.easeOut);
+      } else if (beforeVolume > nowVolume) {
+        _pageController.previousPage(duration: const Duration(milliseconds: 100), curve: Curves.easeIn);
+      }
+      volumeUtils.setVolume(0.1);
+    });
     book = await DatabaseHelper.db.getById(book.id);
     nowChapterPage = book.page;
     _chapterTitleExpController.text = book.chapterTitleExp;
@@ -1142,6 +1152,7 @@ class _ReadPageState extends State<ReadPage> {
             'contentFontWeight': contentFontWeight,
           }));
     });
+    volumeUtils.removeListener(needRestore: true);
     _currentPage.dispose();
     _pageController.dispose();
     _bookTitleController.dispose();
