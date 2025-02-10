@@ -8,7 +8,9 @@ import 'package:read_app/pojo/book.dart';
 import 'package:read_app/tab/file.dart';
 import 'package:read_app/utils/book_utils.dart';
 import 'package:read_app/utils/db.dart';
+import 'package:read_app/utils/file_utils.dart';
 import 'package:read_app/utils/loading_utils.dart';
+import 'package:read_app/utils/random.dart';
 
 class FileBody extends StatefulWidget {
   final Data data;
@@ -28,8 +30,14 @@ class _FileBodyState extends State<FileBody> {
     'read\\comic',
     'read\\data',
     'read\\pdf',
-    'read\\media'
+    'read\\media',
+    'read/book',
+    'read/comic',
+    'read/data',
+    'read/pdf',
+    'read/media'
   ];
+  List<String> pathList = [];
 
   String path = '';
   ValueNotifier<String> rootPath = ValueNotifier('');
@@ -39,6 +47,10 @@ class _FileBodyState extends State<FileBody> {
     widget.data.delete = () async {
       LoadingUtils.showLoading(tip: '删除中');
       try {
+        for (var path in pathList) {
+          await FileUtils.deletePath(join(rootPath.value, path));
+        }
+
         await BookUtils.deleteBooks(checkedIds);
         await getFiles(path);
       } catch (e) {
@@ -115,6 +127,7 @@ class _FileBodyState extends State<FileBody> {
     setState(() {
       files = filePoJos;
       checkedIds.clear();
+      pathList.clear();
       this.path = path;
     });
   }
@@ -130,6 +143,14 @@ class _FileBodyState extends State<FileBody> {
       child: ListView.builder(
           itemCount: files.length,
           itemBuilder: (BuildContext context, int index) {
+            var file = files[index];
+
+            if (file.id == null) {
+              file.bookName ??= '暂无id';
+              file.id ??= generateRandomString(8);
+              file.isFile = true;
+            }
+
             return ListTile(
                 onTap: () {
                   if (files[index].name == '返回上一级') {
@@ -140,25 +161,38 @@ class _FileBodyState extends State<FileBody> {
                     }
                   }
                 },
-                title: Text(files[index].bookName),
+                title: Text(files[index].bookName!),
                 subtitle: Text(files[index].path),
-                leading: rootTypePath.contains(files[index].path)
+                leading: rootTypePath.contains(files[index].path) || file.bookName == '返回上一级'
                     ? const SizedBox(
                         width: 10,
                         height: 10,
                       )
                     : Checkbox(
-                        value: checkedIds.contains(files[index].id),
+                        value: checkedIds.contains(files[index].id) || pathList.contains(file.path),
                         onChanged: (bool? checked) {
                           if (checked != null) {
                             if (checked) {
-                              setState(() {
-                                checkedIds.add(files[index].id);
-                              });
+                              if (file.bookName == '暂无id') {
+                                setState(() {
+                                  pathList.add(file.path);
+                                });
+                              } else {
+                                setState(() {
+                                  checkedIds.add(files[index].id!);
+                                });
+                              }
+
                             } else {
-                              setState(() {
-                                checkedIds.remove(files[index].id);
-                              });
+                              if (file.bookName == '暂无id') {
+                                setState(() {
+                                  pathList.remove(file.path);
+                                });
+                              } else {
+                                setState(() {
+                                  checkedIds.remove(files[index].id);
+                                });
+                              }
                             }
                           }
                         }));
@@ -168,8 +202,8 @@ class _FileBodyState extends State<FileBody> {
 }
 
 class FilePoJo {
-  late String id;
-  late String bookName;
+  String? id;
+  String? bookName;
   late String name;
   late bool isFile;
   late String path;

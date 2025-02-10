@@ -1,6 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:read_app/tab/file.dart';
+import 'package:read_app/utils/file_utils.dart';
 
 class FileHeader extends StatelessWidget {
   final Data data;
@@ -38,6 +43,17 @@ class FileHeader extends StatelessWidget {
                                   Get.back();
                                   data.delete();
                                 });
+                          },
+                        ),
+                        PopupMenuItem(
+                          child: const Text('导出'),
+                          onTap: () async {
+                            Directory directory = await getApplicationDocumentsDirectory();
+
+                            Directory dataDir = Directory(join(directory.path, 'read', 'data'));
+
+                            String path = join(dataDir.path, 'data.db');
+                            FileUtils.saveFile('', File(path).readAsBytesSync());
                           },
                         ),
                       ]);
