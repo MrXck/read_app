@@ -9,7 +9,7 @@ import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/utils/db.dart';
-import 'package:read_app/utils/volumn_utils.dart';
+import 'package:read_app/utils/volume_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ComicPage extends StatefulWidget {
