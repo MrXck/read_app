@@ -7,6 +7,7 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/tab/book_shelf.dart';
+import 'package:read_app/utils/book_utils.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/db.dart';
 import 'package:read_app/utils/file_utils.dart';
@@ -576,49 +577,8 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                                           var dataDir =
                                               await getApplicationDocumentsDirectory();
                                           try {
-                                            for (var i = 0;
-                                                i < books.length;
-                                                i++) {
-                                              var book = books[i];
-                                              if (checkedList
-                                                  .contains(book.id)) {
-                                                if (book.type ==
-                                                    Constant.bookType) {
-                                                  var bookPath = join(
-                                                      dataDir.path,
-                                                      Directory(book.path)
-                                                          .parent
-                                                          .path);
-                                                  if (bookPath !=
-                                                      dataDir.path) {
-                                                    await FileUtils.deletePath(
-                                                        bookPath);
-                                                    await DatabaseHelper.db
-                                                        .deleteChapterByBookId(
-                                                            book.id);
-                                                    await DatabaseHelper.db
-                                                        .deleteById(book.id);
-                                                  }
-                                                } else if (book.type ==
-                                                    Constant.directoryType) {
-
-                                                  await DatabaseHelper.db
-                                                      .deleteDirectory(book.id,
-                                                          dataDir.path);
-                                                } else if (book.type ==
-                                                    Constant.outSideType) {
-                                                  await DatabaseHelper.db
-                                                      .deleteById(book.id);
-                                                } else {
-                                                  var bookPath = join(
-                                                      dataDir.path, book.path);
-                                                  await FileUtils.deletePath(
-                                                      bookPath);
-                                                  await DatabaseHelper.db
-                                                      .deleteById(book.id);
-                                                }
-                                              }
-                                            }
+                                            await BookUtils.deleteBooks(
+                                                checkedList);
                                           } catch (e) {
                                             Get.snackbar('错误', e.toString());
                                           } finally {

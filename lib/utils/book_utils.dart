@@ -41,31 +41,32 @@ class BookUtils {
         }
 
         while (content.length > Constant.defaultChapterContentMaxLength) {
-          var text = content.substring(0, Constant.defaultChapterContentMaxLength);
+          var text =
+              content.substring(0, Constant.defaultChapterContentMaxLength);
           textList.add(text.trim());
 
-          content = content.substring(Constant.defaultChapterContentMaxLength, content.length);
+          content = content.substring(
+              Constant.defaultChapterContentMaxLength, content.length);
         }
 
         if (content.isNotEmpty) {
           textList.add(content.trim());
         }
-
       }
     } else {
-      while(text.length > Constant.defaultChapterContentMaxLength) {
-        var content = text.substring(0, Constant.defaultChapterContentMaxLength);
+      while (text.length > Constant.defaultChapterContentMaxLength) {
+        var content =
+            text.substring(0, Constant.defaultChapterContentMaxLength);
         textList.add(content.trim());
 
-        text = text.substring(Constant.defaultChapterContentMaxLength, text.length);
+        text = text.substring(
+            Constant.defaultChapterContentMaxLength, text.length);
       }
 
       if (text.isNotEmpty) {
         textList.add(text.trim());
       }
     }
-
-
 
     return textList;
   }
@@ -75,7 +76,6 @@ class BookUtils {
 
     for (var value in chapterContentList) {
       if (value.isNotEmpty) {
-
         var contentList = value.split('\n');
 
         for (var i = 0; i < contentList.length; i++) {
@@ -93,7 +93,10 @@ class BookUtils {
   }
 
   static Future<void> saveChapter(
-      String relativeDirPath, String absoluteDirPath, List<String> chapterContentList, String bookId) async {
+      String relativeDirPath,
+      String absoluteDirPath,
+      List<String> chapterContentList,
+      String bookId) async {
     List<String> chapterTitleList = getChapterTitle(chapterContentList);
 
     final directory = Directory(join(absoluteDirPath, 'chapter'));
@@ -127,14 +130,14 @@ class BookUtils {
     }
   }
 
-  static Future<void> changeChapterTitleExp(Book book, String chapterTitleExp, List<Chapter> chapterList) async {
+  static Future<void> changeChapterTitleExp(
+      Book book, String chapterTitleExp, List<Chapter> chapterList) async {
     var directory = await getApplicationDocumentsDirectory();
 
-    for(var i = 0; i < chapterList.length; i++) {
+    for (var i = 0; i < chapterList.length; i++) {
       var chapter = chapterList[i];
       await FileUtils.deletePath(join(directory.path, chapter.path));
     }
-
 
     await DatabaseHelper.db.deleteChapterByBookId(book.id);
 
@@ -143,15 +146,43 @@ class BookUtils {
     book.chapterTitleExp = chapterTitleExp;
     await DatabaseHelper.db.updateById(book);
 
-
     var bookPath = book.path;
 
     var absoluteBookPath = Directory(join(directory.path, bookPath));
 
-    var relativeDirPath = join('read', 'book', basename(absoluteBookPath.parent.path));
+    var relativeDirPath =
+        join('read', 'book', basename(absoluteBookPath.parent.path));
 
     var content = await BookUtils.loadBook(absoluteBookPath.path);
-    var chapterContentList = BookUtils.splitChapterContent(content, chapterTitleExp);
-    await BookUtils.saveChapter(relativeDirPath, absoluteBookPath.parent.path, chapterContentList, book.id);
+    var chapterContentList =
+        BookUtils.splitChapterContent(content, chapterTitleExp);
+    await BookUtils.saveChapter(relativeDirPath, absoluteBookPath.parent.path,
+        chapterContentList, book.id);
+  }
+
+  static Future<void> deleteBooks(List<String> checkedList) async {
+    var dataDir = await getApplicationDocumentsDirectory();
+
+    var books = await DatabaseHelper.db.getBooksByIds(checkedList);
+
+    for (var i = 0; i < books.length; i++) {
+      var book = books[i];
+      if (book.type == Constant.bookType) {
+        var bookPath = join(dataDir.path, Directory(book.path).parent.path);
+        if (bookPath != dataDir.path) {
+          await FileUtils.deletePath(bookPath);
+          await DatabaseHelper.db.deleteChapterByBookId(book.id);
+          await DatabaseHelper.db.deleteById(book.id);
+        }
+      } else if (book.type == Constant.directoryType) {
+        await DatabaseHelper.db.deleteDirectory(book.id, dataDir.path);
+      } else if (book.type == Constant.outSideType) {
+        await DatabaseHelper.db.deleteById(book.id);
+      } else {
+        var bookPath = join(dataDir.path, book.path);
+        await FileUtils.deletePath(bookPath);
+        await DatabaseHelper.db.deleteById(book.id);
+      }
+    }
   }
 }

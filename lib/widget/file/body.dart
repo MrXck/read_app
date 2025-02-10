@@ -1,11 +1,14 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/tab/file.dart';
+import 'package:read_app/utils/book_utils.dart';
 import 'package:read_app/utils/db.dart';
+import 'package:read_app/utils/loading_utils.dart';
 
 class FileBody extends StatefulWidget {
   final Data data;
@@ -33,7 +36,17 @@ class _FileBodyState extends State<FileBody> {
 
   @override
   void initState() {
-    widget.data.delete = () {};
+    widget.data.delete = () async {
+      LoadingUtils.showLoading(tip: '删除中');
+      try {
+        await BookUtils.deleteBooks(checkedIds);
+        await getFiles(path);
+      } catch (e) {
+        Get.snackbar('错误', e.toString());
+      } finally {
+        LoadingUtils.hideLoading();
+      }
+    };
     init();
     super.initState();
   }
@@ -51,6 +64,16 @@ class _FileBodyState extends State<FileBody> {
 
     List<FilePoJo> filePoJos = [];
 
+    if (path != join(rootPath.value, 'read')) {
+      var filePojo = FilePoJo();
+      filePojo.isFile = false;
+      filePojo.path = path;
+      filePojo.name = '返回上一级';
+      filePojo.id = '0';
+      filePojo.bookName = '返回上一级';
+      filePoJos.add(filePojo);
+    }
+
     await for (var entity in Directory(path).list(recursive: false)) {
       var filePojo = FilePoJo();
       if (entity is Directory) {
@@ -58,13 +81,20 @@ class _FileBodyState extends State<FileBody> {
       } else if (entity is File) {
         filePojo.isFile = true;
       }
-      filePojo.path = entity.path.replaceAll('${rootPath.value}\\', '').replaceAll('${rootPath.value}/', '');
-      paths.add(entity.path.replaceAll('${rootPath.value}\\', '').replaceAll('${rootPath.value}/', ''));
+      filePojo.path = entity.path
+          .replaceAll('${rootPath.value}\\', '')
+          .replaceAll('${rootPath.value}/', '');
+      paths.add(entity.path
+          .replaceAll('${rootPath.value}\\', '')
+          .replaceAll('${rootPath.value}/', ''));
       filePojo.name = basename(entity.path);
       filePoJos.add(filePojo);
     }
+    List<Book> value = [];
 
-    var value = await DatabaseHelper.db.getBooksByPath(paths);
+    if (paths.isNotEmpty) {
+      value = await DatabaseHelper.db.getBooksByPath(paths);
+    }
 
     for (var file in filePoJos) {
       if (rootTypePath.contains(file.path)) {
@@ -84,8 +114,9 @@ class _FileBodyState extends State<FileBody> {
 
     setState(() {
       files = filePoJos;
+      checkedIds.clear();
+      this.path = path;
     });
-
   }
 
   @override
@@ -101,25 +132,36 @@ class _FileBodyState extends State<FileBody> {
           itemBuilder: (BuildContext context, int index) {
             return ListTile(
                 onTap: () {
-                  if (files[index].isFile) {
+                  if (files[index].name == '返回上一级') {
+                    getFiles(File(files[index].path).parent.path);
                   } else {
-                    // 进入文件夹
-                    getFiles(join(rootPath.value, files[index].path));
+                    if (!files[index].isFile && files[index].id == '0') {
+                      getFiles(join(rootPath.value, files[index].path));
+                    }
                   }
                 },
                 title: Text(files[index].bookName),
                 subtitle: Text(files[index].path),
-                leading: Checkbox(
-                    value: checkedIds.contains(files[index].id),
-                    onChanged: (bool? checked) {
-                      if (checked != null) {
-                        if (checked) {
-                          checkedIds.add(files[index].id);
-                        } else {
-                          checkedIds.remove(files[index].id);
-                        }
-                      }
-                    }));
+                leading: rootTypePath.contains(files[index].path)
+                    ? const SizedBox(
+                        width: 10,
+                        height: 10,
+                      )
+                    : Checkbox(
+                        value: checkedIds.contains(files[index].id),
+                        onChanged: (bool? checked) {
+                          if (checked != null) {
+                            if (checked) {
+                              setState(() {
+                                checkedIds.add(files[index].id);
+                              });
+                            } else {
+                              setState(() {
+                                checkedIds.remove(files[index].id);
+                              });
+                            }
+                          }
+                        }));
           }),
     );
   }
@@ -131,4 +173,5 @@ class FilePoJo {
   late String name;
   late bool isFile;
   late String path;
+  late Book book;
 }

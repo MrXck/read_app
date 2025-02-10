@@ -171,6 +171,16 @@ class DatabaseHelper {
     return books;
   }
 
+  Future<List<Book>> getBooksByIds(List<String> ids) async {
+    var db = await database;
+    var query = await db?.query('book',
+        where: 'id in (${List.filled(ids.length, '?').join(', ')})',
+        whereArgs: ids);
+    List<Book> books =
+        query!.isNotEmpty ? query.map((t) => Book.fromMap(t)).toList() : [];
+    return books;
+  }
+
   Future<List<Book>> getDirectoryByPatentId(parentId) async {
     var db = await database;
     var query = await db?.query('book',
@@ -184,10 +194,10 @@ class DatabaseHelper {
 
   Future<List<Book>> getBooksByPath(List<String> paths) async {
     var db = await database;
-    print('sql ${'select * from book where ${generateLike('path', paths)}'}');
-    var query = await db?.rawQuery('select * from book where ${generateLike('path', paths)}');
+    var query = await db
+        ?.rawQuery('select * from book where ${generateLike('path', paths)}');
     List<Book> books =
-    query!.isNotEmpty ? query.map((t) => Book.fromMap(t)).toList() : [];
+        query!.isNotEmpty ? query.map((t) => Book.fromMap(t)).toList() : [];
     return books;
   }
 
