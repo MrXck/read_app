@@ -45,17 +45,6 @@ class FileHeader extends StatelessWidget {
                                 });
                           },
                         ),
-                        PopupMenuItem(
-                          child: const Text('导出'),
-                          onTap: () async {
-                            Directory directory = await getApplicationDocumentsDirectory();
-
-                            Directory dataDir = Directory(join(directory.path, 'read', 'data'));
-
-                            String path = join(dataDir.path, 'data.db');
-                            FileUtils.saveFile('', File(path).readAsBytesSync());
-                          },
-                        ),
                       ]);
                 },
                 icon: const Icon(Icons.add))

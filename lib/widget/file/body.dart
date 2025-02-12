@@ -161,7 +161,7 @@ class _FileBodyState extends State<FileBody> {
                     }
                   }
                 },
-                title: Text(files[index].bookName!),
+                title: file.bookName == '暂无id' ? Text(files[index].bookName!, style: const TextStyle(color: Colors.red),) : Text(files[index].bookName!),
                 subtitle: Text(files[index].path),
                 leading: rootTypePath.contains(files[index].path) || file.bookName == '返回上一级'
                     ? const SizedBox(
