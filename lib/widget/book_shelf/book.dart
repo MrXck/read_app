@@ -110,7 +110,12 @@ class _BookShelfBookState extends State<BookShelfBook>
                     bottom: 10,
                     width: 10,
                     height: 10,
-                    child: Checkbox(value: isSelect, onChanged: (value) {}))),
+                    child: Checkbox(value: isSelect, onChanged: (value) {
+                      setState(() {
+                        isSelect = !isSelect;
+                        widget.click(widget.book, isSelect);
+                      });
+                    }))),
           ],
         ),
         const SizedBox(
