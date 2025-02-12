@@ -1157,7 +1157,9 @@ class _ReadPageState extends State<ReadPage> {
             'contentFontWeight': contentFontWeight,
           }));
     });
-    volumeUtils.removeListener(needRestore: true);
+    if (settingController.isOpenVolumeFlip.value) {
+      volumeUtils.removeListener(needRestore: true);
+    }
     _currentPage.dispose();
     _pageController.dispose();
     _bookTitleController.dispose();

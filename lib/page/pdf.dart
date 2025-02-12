@@ -251,7 +251,9 @@ class _PdfPageState extends State<PdfPage> {
             'contentFontWeight': contentFontWeight,
           }));
     });
-    volumeUtils.removeListener(needRestore: true);
+    if (settingController.isOpenVolumeFlip.value) {
+      volumeUtils.removeListener(needRestore: true);
+    }
     _pdfViewerController.dispose();
     super.dispose();
   }

@@ -329,7 +329,9 @@ class _ComicPageState extends State<ComicPage> {
             'contentFontWeight': contentFontWeight,
           }));
     });
-    volumeUtils.removeListener(needRestore: true);
+    if (settingController.isOpenVolumeFlip.value) {
+      volumeUtils.removeListener(needRestore: true);
+    }
     _currentIndex.dispose();
     _pageController.dispose();
     _bookTitleController.dispose();
