@@ -75,6 +75,16 @@ class _MyPageState extends State<MyPage> {
                     ? const Text('关闭隐藏')
                     : const Text('开启隐藏'));
           }),
+          Obx(() {
+            return TextButton(
+                onPressed: () async {
+                  settingController.isOpenVolumeFlip.value =
+                  !settingController.isOpenVolumeFlip.value;
+                },
+                child: settingController.isOpenVolumeFlip.value
+                    ? const Text('关闭音量翻页')
+                    : const Text('开启音量翻页'));
+          }),
         ],
       ),
     );

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:read_app/controller/setting_controller.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/utils/db.dart';
 import 'package:read_app/utils/volume_utils.dart';
@@ -27,6 +28,7 @@ class _PdfPageState extends State<PdfPage> {
 
   bool isVer = false;
   final VolumeUtils volumeUtils = VolumeUtils();
+  final SettingController settingController = Get.find();
 
   String fontFamily = 'pingfang';
   int fontColor = 0xff000000;
@@ -61,14 +63,17 @@ class _PdfPageState extends State<PdfPage> {
   }
 
   Future<void> init(Book book) async {
-    volumeUtils.init((double beforeVolume, double nowVolume) {
-      if (beforeVolume < nowVolume) {
-        _pdfViewerController.nextPage();
-      } else if (beforeVolume > nowVolume) {
-        _pdfViewerController.previousPage();
-      }
-      volumeUtils.setVolume(0.1);
-    });
+    if (settingController.isOpenVolumeFlip.value) {
+      volumeUtils.init((double beforeVolume, double nowVolume) {
+        if (beforeVolume < nowVolume) {
+          _pdfViewerController.nextPage();
+        } else if (beforeVolume > nowVolume) {
+          _pdfViewerController.previousPage();
+        }
+        volumeUtils.setVolume(0.1);
+      });
+    }
+
     book = await DatabaseHelper.db.getById(book.id);
     var dataDir = await getApplicationDocumentsDirectory();
     book.assetDir = dataDir.path;

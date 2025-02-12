@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 class SettingController extends GetxController {
 
   var isOpenHidden = false.obs;
+  var isOpenVolumeFlip = false.obs;
 
   init() {}
 

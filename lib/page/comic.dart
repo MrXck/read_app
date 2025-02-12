@@ -7,6 +7,7 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+import 'package:read_app/controller/setting_controller.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/utils/db.dart';
 import 'package:read_app/utils/volume_utils.dart';
@@ -31,6 +32,7 @@ class _ComicPageState extends State<ComicPage> {
   final ValueNotifier<int> _currentIndex = ValueNotifier<int>(0);
   final _bookTitleController = TextEditingController();
   final VolumeUtils volumeUtils = VolumeUtils();
+  final SettingController settingController = Get.find();
 
   String fontFamily = 'pingfang';
   int fontColor = 0xff000000;
@@ -55,14 +57,17 @@ class _ComicPageState extends State<ComicPage> {
   int contentFontWeight = 4;
 
   Future<void> init(Book book) async {
-    volumeUtils.init((double beforeVolume, double nowVolume) {
-      if (beforeVolume < nowVolume) {
-        _pageController.nextPage(duration: const Duration(milliseconds: 100), curve: Curves.easeOut);
-      } else if (beforeVolume > nowVolume) {
-        _pageController.previousPage(duration: const Duration(milliseconds: 100), curve: Curves.easeIn);
-      }
-      volumeUtils.setVolume(0.1);
-    });
+    if (settingController.isOpenVolumeFlip.value) {
+      volumeUtils.init((double beforeVolume, double nowVolume) {
+        if (beforeVolume < nowVolume) {
+          _pageController.nextPage(duration: const Duration(milliseconds: 100), curve: Curves.easeOut);
+        } else if (beforeVolume > nowVolume) {
+          _pageController.previousPage(duration: const Duration(milliseconds: 100), curve: Curves.easeIn);
+        }
+        volumeUtils.setVolume(0.1);
+      });
+    }
+
     book = await DatabaseHelper.db.getById(book.id);
     var dataDir = await getApplicationDocumentsDirectory();
     book.assetDir = dataDir.path;

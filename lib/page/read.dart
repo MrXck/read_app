@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:read_app/controller/setting_controller.dart';
 import 'package:read_app/pojo/font_setting.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/pojo/chapter.dart';
@@ -71,6 +72,7 @@ class _ReadPageState extends State<ReadPage> {
   final _chapterTitleExpController = TextEditingController();
   final _bookTitleController = TextEditingController();
   final VolumeUtils volumeUtils = VolumeUtils();
+  final SettingController settingController = Get.find();
   int nowChapterPage = 0;
   bool isLoading = false;
   Map<String, int> chapterTitlePageNumMap = {};
@@ -102,14 +104,17 @@ class _ReadPageState extends State<ReadPage> {
   Timer? _dataTimer;
 
   Future<void> init(Book book) async {
-    volumeUtils.init((double beforeVolume, double nowVolume) {
-      if (beforeVolume < nowVolume) {
-        _pageController.nextPage(duration: const Duration(milliseconds: 100), curve: Curves.easeOut);
-      } else if (beforeVolume > nowVolume) {
-        _pageController.previousPage(duration: const Duration(milliseconds: 100), curve: Curves.easeIn);
-      }
-      volumeUtils.setVolume(0.1);
-    });
+    if (settingController.isOpenVolumeFlip.value) {
+      volumeUtils.init((double beforeVolume, double nowVolume) {
+        if (beforeVolume < nowVolume) {
+          _pageController.nextPage(duration: const Duration(milliseconds: 100), curve: Curves.easeOut);
+        } else if (beforeVolume > nowVolume) {
+          _pageController.previousPage(duration: const Duration(milliseconds: 100), curve: Curves.easeIn);
+        }
+        volumeUtils.setVolume(0.1);
+      });
+    }
+
     book = await DatabaseHelper.db.getById(book.id);
     nowChapterPage = book.page;
     _chapterTitleExpController.text = book.chapterTitleExp;
