@@ -1,3 +1,9 @@
+## 下载依赖
+
+~~~
+flutter pub get
+~~~
+
 ## 打包
 
 ### windows
