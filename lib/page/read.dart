@@ -341,8 +341,7 @@ class _ReadPageState extends State<ReadPage> {
           text = text.replaceFirst('       ', '');
           var textList1 = text.split('');
 
-          if (i + 1 < textList.length &&
-              textList[i + 1]['text'].trim().length != 0) {
+          if (!item['isLast']) {
             List<Widget> tt = [];
             tt.add(Row(
               children: [
@@ -396,12 +395,12 @@ class _ReadPageState extends State<ReadPage> {
               ],
             ));
           }
-        } else {
+        }
+        else {
           List<Widget> tt = [];
           var textList1 = text.trim().split('');
 
-          if (i + 1 < textList.length &&
-              textList[i + 1]['text'].trim().length != 0) {
+          if (!item['isLast']) {
             for (var j = 0; j < textList1.length; j++) {
               var item = textList1[j];
               tt.add(Text(
@@ -522,7 +521,7 @@ class _ReadPageState extends State<ReadPage> {
     int currentLine = 0;
     for (var n = 0; n < pageTextList.length; n++) {
       var item = pageTextList[n];
-      var text = item['text'];
+      String text = item['text'];
 
       var hasChapterTitle = item['hasChapterTitle'];
       if (hasChapterTitle && xxx.isNotEmpty) {
@@ -538,7 +537,7 @@ class _ReadPageState extends State<ReadPage> {
       }
       if (hasChapterTitle) {
         while (text.isNotEmpty) {
-          var addMap = {'text': text, 'hasChapterTitle': true};
+          var addMap = {'text': text, 'hasChapterTitle': true, 'isLast': true};
 
           xxx.add(addMap);
           int num1 = (text.length /
@@ -551,7 +550,14 @@ class _ReadPageState extends State<ReadPage> {
           text = '';
         }
       } else {
-        var addMap = {'text': text, 'hasChapterTitle': hasChapterTitle};
+        if (xxx.isEmpty && text.trim().isEmpty) {
+          continue;
+        }
+        var addMap = {'text': text, 'hasChapterTitle': hasChapterTitle, 'isLast': true};
+        if (n != pageTextList.length - 1 && pageTextList[n + 1]['text'].trim().isNotEmpty) {
+          addMap['isLast'] = false;
+        }
+
         xxx.add(addMap);
         currentLine += 1;
       }
