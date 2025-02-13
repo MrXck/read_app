@@ -268,34 +268,31 @@ class _ReadFontSettingState extends State<ReadFontSetting> {
                     ),
                   ),
                   TextButton(onPressed: () {
-                    Get.dialog(SizedBox(
-                      width: double.infinity,
-                      height: 300,
-                      child: Material(
-                        child: ColorPicker(
-                          pickerColor: Color(widget.settings.fontColor),
-                          onColorChanged: (color) {
-                            setState(() {
-                              widget.settings.fontColor = color.value;
-                            });
-                          },
-                          colorPickerWidth: 300,
-                          pickerAreaHeightPercent: 0.7,
-                          enableAlpha: true,
-                          labelTypes: const [
-                            ColorLabelType.hsl,
-                            ColorLabelType.hsv
-                          ],
-                          displayThumbColor: true,
-                          paletteType: PaletteType.hsl,
-                          pickerAreaBorderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(2),
-                            topRight: Radius.circular(2),
-                          ),
-                          hexInputBar: false,
+                    Get.defaultDialog(
+                      title: '字体颜色',
+                      content: ColorPicker(
+                        pickerColor: Color(widget.settings.fontColor),
+                        onColorChanged: (color) {
+                          setState(() {
+                            widget.settings.fontColor = color.value;
+                          });
+                        },
+                        colorPickerWidth: 300,
+                        pickerAreaHeightPercent: 0.7,
+                        enableAlpha: true,
+                        labelTypes: const [
+                          ColorLabelType.hsl,
+                          ColorLabelType.hsv
+                        ],
+                        displayThumbColor: true,
+                        paletteType: PaletteType.hsl,
+                        pickerAreaBorderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(2),
+                          topRight: Radius.circular(2),
                         ),
-                      ),
-                    ));
+                        hexInputBar: false,
+                      )
+                    );
                   }, child: Text(
                     '颜色',
                     style: TextStyle(
@@ -328,11 +325,9 @@ class _ReadFontSettingState extends State<ReadFontSetting> {
                     ),
                   ),
                   TextButton(onPressed: () {
-                    Get.dialog(SizedBox(
-                      width: double.infinity,
-                      height: 300,
-                      child: Material(
-                        child: ColorPicker(
+                    Get.defaultDialog(
+                        title: '左上角字体颜色',
+                        content: ColorPicker(
                           pickerColor: Color(widget.settings.titleFontColor),
                           onColorChanged: (color) {
                             setState(() {
@@ -353,9 +348,8 @@ class _ReadFontSettingState extends State<ReadFontSetting> {
                             topRight: Radius.circular(2),
                           ),
                           hexInputBar: false,
-                        ),
-                      ),
-                    ));
+                        )
+                    );
                   }, child: Text(
                     '颜色',
                     style: TextStyle(
