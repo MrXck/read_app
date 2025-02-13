@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:get/get.dart';
 import 'package:read_app/pojo/settings.dart';
 
 typedef UpdateFunc = void Function(Settings setting);
 typedef UpdateExpFunc = void Function(String text);
 
-class ReadSettings extends StatelessWidget {
+
+class ReadSettings extends StatefulWidget {
   final Settings settings;
   final UpdateFunc updateFunc;
   final UpdateExpFunc updateExpFunc;
@@ -13,12 +16,17 @@ class ReadSettings extends StatelessWidget {
 
   const ReadSettings(
       {super.key,
-      required this.chapterTitleExpController,
-      required this.settings,
-      required this.updateFunc,
-      required this.updateExpFunc,
-      required this.backgroundColorList});
+        required this.chapterTitleExpController,
+        required this.settings,
+        required this.updateFunc,
+        required this.updateExpFunc,
+        required this.backgroundColorList});
 
+  @override
+  State<ReadSettings> createState() => _ReadSettingsState();
+}
+
+class _ReadSettingsState extends State<ReadSettings> {
   @override
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
@@ -39,16 +47,16 @@ class ReadSettings extends StatelessWidget {
                     children: [
                       InkWell(
                         onTap: () {
-                          settings.isVer = !settings.isVer;
-                          updateFunc(settings);
+                          widget.settings.isVer = !widget.settings.isVer;
+                          widget.updateFunc(widget.settings);
                         },
-                        child: settings.isVer ? const Text('左右滚动') : const Text('上下滚动'),
+                        child: widget.settings.isVer ? const Text('左右滚动') : const Text('上下滚动'),
                       ),
-                      ...backgroundColorList.map((item) {
+                      ...widget.backgroundColorList.map((item) {
                         return InkWell(
                           onTap: () {
-                            settings.backgroundColor = item;
-                            updateFunc(settings);
+                            widget.settings.backgroundColor = item;
+                            widget.updateFunc(widget.settings);
                           },
                           child: Container(
                             height: 30,
@@ -57,7 +65,7 @@ class ReadSettings extends StatelessWidget {
                                 color: Color(item),
                                 borderRadius:
                                 const BorderRadius.all(Radius.circular(40)),
-                                border: settings.backgroundColor == item
+                                border: widget.settings.backgroundColor == item
                                     ? Border.all(
                                     color: Colors.black,
                                     style: BorderStyle.solid,
@@ -75,13 +83,13 @@ class ReadSettings extends StatelessWidget {
                     Text(
                       '减宽度',
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: widget.settings.fontFamily,
                       ),
                     ),
                     Text(
                       '减高度',
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: widget.settings.fontFamily,
                       ),
                     ),
                   ],
@@ -91,21 +99,78 @@ class ReadSettings extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      Text(
+                        '背景颜色：',
+                        style: TextStyle(
+                          fontFamily: widget.settings.fontFamily,
+                        ),
+                      ),
+                      TextButton(onPressed: () {
+                        Get.defaultDialog(
+                            title: '背景颜色',
+                            content: ColorPicker(
+                              pickerColor: Color(widget.settings.backgroundColor),
+                              onColorChanged: (color) {
+                                setState(() {
+                                  widget.settings.backgroundColor = color.value;
+                                });
+                              },
+                              colorPickerWidth: 300,
+                              pickerAreaHeightPercent: 0.7,
+                              enableAlpha: true,
+                              labelTypes: const [
+                                ColorLabelType.hsl,
+                                ColorLabelType.hsv
+                              ],
+                              displayThumbColor: true,
+                              paletteType: PaletteType.hsl,
+                              pickerAreaBorderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(2),
+                                topRight: Radius.circular(2),
+                              ),
+                              hexInputBar: false,
+                            )
+                        );
+                      }, child: Text(
+                        '颜色',
+                        style: TextStyle(
+                          fontFamily: widget.settings.fontFamily,
+                          color: Color(widget.settings.backgroundColor),
+                        ),
+                      ),),
+                      TextButton(
+                          onPressed: () async {
+                            widget.updateFunc(widget.settings);
+                          },
+                          child: Text(
+                            '确定',
+                            style: TextStyle(
+                              fontFamily: widget.settings.fontFamily,
+                            ),
+                          ))
+                    ],
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
                       InkWell(
                         onTap: () {
-                          settings.needDecreaseWidth--;
-                          updateFunc(settings);
+                          widget.settings.needDecreaseWidth--;
+                          widget.updateFunc(widget.settings);
                         },
                         child: Container(
                           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
+                              BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '-',
                             style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: widget.settings.fontFamily,
                             ),
                           ),
                         ),
@@ -113,46 +178,46 @@ class ReadSettings extends StatelessWidget {
                       Container(
                         margin: const EdgeInsets.only(left: 6, right: 6),
                         child: Text(
-                          '${settings.needDecreaseWidth}',
+                          '${widget.settings.needDecreaseWidth}',
                           style: TextStyle(
-                            fontFamily: settings.fontFamily,
+                            fontFamily: widget.settings.fontFamily,
                           ),
                         ),
                       ),
                       InkWell(
                         onTap: () {
-                          settings.needDecreaseWidth++;
-                          updateFunc(settings);
+                          widget.settings.needDecreaseWidth++;
+                          widget.updateFunc(widget.settings);
                         },
                         child: Container(
                           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
+                              BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '+',
                             style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: widget.settings.fontFamily,
                             ),
                           ),
                         ),
                       ),
                       InkWell(
                         onTap: () {
-                          settings.needDecreaseHeight--;
-                          updateFunc(settings);
+                          widget.settings.needDecreaseHeight--;
+                          widget.updateFunc(widget.settings);
                         },
                         child: Container(
                           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
+                              BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '-',
                             style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: widget.settings.fontFamily,
                             ),
                           ),
                         ),
@@ -160,27 +225,27 @@ class ReadSettings extends StatelessWidget {
                       Container(
                         margin: const EdgeInsets.only(left: 6, right: 6),
                         child: Text(
-                          '${settings.needDecreaseHeight}',
+                          '${widget.settings.needDecreaseHeight}',
                           style: TextStyle(
-                            fontFamily: settings.fontFamily,
+                            fontFamily: widget.settings.fontFamily,
                           ),
                         ),
                       ),
                       InkWell(
                         onTap: () {
-                          settings.needDecreaseHeight++;
-                          updateFunc(settings);
+                          widget.settings.needDecreaseHeight++;
+                          widget.updateFunc(widget.settings);
                         },
                         child: Container(
                           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
+                              BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '+',
                             style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: widget.settings.fontFamily,
                             ),
                           ),
                         ),
@@ -196,9 +261,9 @@ class ReadSettings extends StatelessWidget {
                 //       const Text('内容英文大写字母除系数'),
                 //       InkWell(
                 //         onTap: () {
-                //           settings.chapterContentEnglishUpperStrDivisionCoefficient -=
+                //           widget.settings.chapterContentEnglishUpperStrDivisionCoefficient -=
                 //               0.01;
-                //           updateFunc(settings);
+                //           widget.updateFunc(widget.settings);
                 //         },
                 //         child: Container(
                 //           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
@@ -209,7 +274,7 @@ class ReadSettings extends StatelessWidget {
                 //           child: Text(
                 //             '-',
                 //             style: TextStyle(
-                //               fontFamily: settings.fontFamily,
+                //               fontFamily: widget.settings.fontFamily,
                 //             ),
                 //           ),
                 //         ),
@@ -217,19 +282,19 @@ class ReadSettings extends StatelessWidget {
                 //       Container(
                 //         margin: const EdgeInsets.only(left: 6, right: 6),
                 //         child: Text(
-                //           settings
+                //           widget.settings
                 //               .chapterContentEnglishUpperStrDivisionCoefficient
                 //               .toStringAsFixed(2),
                 //           style: TextStyle(
-                //             fontFamily: settings.fontFamily,
+                //             fontFamily: widget.settings.fontFamily,
                 //           ),
                 //         ),
                 //       ),
                 //       InkWell(
                 //         onTap: () {
-                //           settings.chapterContentEnglishUpperStrDivisionCoefficient +=
+                //           widget.settings.chapterContentEnglishUpperStrDivisionCoefficient +=
                 //               0.01;
-                //           updateFunc(settings);
+                //           widget.updateFunc(widget.settings);
                 //         },
                 //         child: Container(
                 //           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
@@ -240,7 +305,7 @@ class ReadSettings extends StatelessWidget {
                 //           child: Text(
                 //             '+',
                 //             style: TextStyle(
-                //               fontFamily: settings.fontFamily,
+                //               fontFamily: widget.settings.fontFamily,
                 //             ),
                 //           ),
                 //         ),
@@ -256,9 +321,9 @@ class ReadSettings extends StatelessWidget {
                 //       const Text('内容英文小写字母除系数'),
                 //       InkWell(
                 //         onTap: () {
-                //           settings.chapterContentEnglishLowerStrDivisionCoefficient -=
+                //           widget.settings.chapterContentEnglishLowerStrDivisionCoefficient -=
                 //               0.01;
-                //           updateFunc(settings);
+                //           widget.updateFunc(widget.settings);
                 //         },
                 //         child: Container(
                 //           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
@@ -269,7 +334,7 @@ class ReadSettings extends StatelessWidget {
                 //           child: Text(
                 //             '-',
                 //             style: TextStyle(
-                //               fontFamily: settings.fontFamily,
+                //               fontFamily: widget.settings.fontFamily,
                 //             ),
                 //           ),
                 //         ),
@@ -277,19 +342,19 @@ class ReadSettings extends StatelessWidget {
                 //       Container(
                 //         margin: const EdgeInsets.only(left: 6, right: 6),
                 //         child: Text(
-                //           settings
+                //           widget.settings
                 //               .chapterContentEnglishLowerStrDivisionCoefficient
                 //               .toStringAsFixed(2),
                 //           style: TextStyle(
-                //             fontFamily: settings.fontFamily,
+                //             fontFamily: widget.settings.fontFamily,
                 //           ),
                 //         ),
                 //       ),
                 //       InkWell(
                 //         onTap: () {
-                //           settings.chapterContentEnglishLowerStrDivisionCoefficient +=
+                //           widget.settings.chapterContentEnglishLowerStrDivisionCoefficient +=
                 //               0.01;
-                //           updateFunc(settings);
+                //           widget.updateFunc(widget.settings);
                 //         },
                 //         child: Container(
                 //           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
@@ -300,7 +365,7 @@ class ReadSettings extends StatelessWidget {
                 //           child: Text(
                 //             '+',
                 //             style: TextStyle(
-                //               fontFamily: settings.fontFamily,
+                //               fontFamily: widget.settings.fontFamily,
                 //             ),
                 //           ),
                 //         ),
@@ -316,20 +381,20 @@ class ReadSettings extends StatelessWidget {
                       const Text('内容空格除系数'),
                       InkWell(
                         onTap: () {
-                          settings.chapterContentEmptyStrDivisionCoefficient -=
-                              0.01;
-                          updateFunc(settings);
+                          widget.settings.chapterContentEmptyStrDivisionCoefficient -=
+                          0.01;
+                          widget.updateFunc(widget.settings);
                         },
                         child: Container(
                           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
+                              BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '-',
                             style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: widget.settings.fontFamily,
                             ),
                           ),
                         ),
@@ -337,29 +402,29 @@ class ReadSettings extends StatelessWidget {
                       Container(
                         margin: const EdgeInsets.only(left: 6, right: 6),
                         child: Text(
-                          settings.chapterContentEmptyStrDivisionCoefficient
+                          widget.settings.chapterContentEmptyStrDivisionCoefficient
                               .toStringAsFixed(2),
                           style: TextStyle(
-                            fontFamily: settings.fontFamily,
+                            fontFamily: widget.settings.fontFamily,
                           ),
                         ),
                       ),
                       InkWell(
                         onTap: () {
-                          settings.chapterContentEmptyStrDivisionCoefficient +=
-                              0.01;
-                          updateFunc(settings);
+                          widget.settings.chapterContentEmptyStrDivisionCoefficient +=
+                          0.01;
+                          widget.updateFunc(widget.settings);
                         },
                         child: Container(
                           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
+                              BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '+',
                             style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: widget.settings.fontFamily,
                             ),
                           ),
                         ),
@@ -375,9 +440,9 @@ class ReadSettings extends StatelessWidget {
                 //       const Text('内容数字除系数'),
                 //       InkWell(
                 //         onTap: () {
-                //           settings.chapterContentNumStrDivisionCoefficient -=
+                //           widget.settings.chapterContentNumStrDivisionCoefficient -=
                 //           0.01;
-                //           updateFunc(settings);
+                //           widget.updateFunc(widget.settings);
                 //         },
                 //         child: Container(
                 //           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
@@ -388,7 +453,7 @@ class ReadSettings extends StatelessWidget {
                 //           child: Text(
                 //             '-',
                 //             style: TextStyle(
-                //               fontFamily: settings.fontFamily,
+                //               fontFamily: widget.settings.fontFamily,
                 //             ),
                 //           ),
                 //         ),
@@ -396,18 +461,18 @@ class ReadSettings extends StatelessWidget {
                 //       Container(
                 //         margin: const EdgeInsets.only(left: 6, right: 6),
                 //         child: Text(
-                //           settings.chapterContentNumStrDivisionCoefficient
+                //           widget.settings.chapterContentNumStrDivisionCoefficient
                 //               .toStringAsFixed(2),
                 //           style: TextStyle(
-                //             fontFamily: settings.fontFamily,
+                //             fontFamily: widget.settings.fontFamily,
                 //           ),
                 //         ),
                 //       ),
                 //       InkWell(
                 //         onTap: () {
-                //           settings.chapterContentNumStrDivisionCoefficient +=
+                //           widget.settings.chapterContentNumStrDivisionCoefficient +=
                 //           0.01;
-                //           updateFunc(settings);
+                //           widget.updateFunc(widget.settings);
                 //         },
                 //         child: Container(
                 //           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
@@ -418,7 +483,7 @@ class ReadSettings extends StatelessWidget {
                 //           child: Text(
                 //             '+',
                 //             style: TextStyle(
-                //               fontFamily: settings.fontFamily,
+                //               fontFamily: widget.settings.fontFamily,
                 //             ),
                 //           ),
                 //         ),
@@ -432,13 +497,13 @@ class ReadSettings extends StatelessWidget {
                     Text(
                       '减去行高',
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: widget.settings.fontFamily,
                       ),
                     ),
                     Text(
                       '字体相乘大小',
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: widget.settings.fontFamily,
                       ),
                     ),
                   ],
@@ -450,19 +515,19 @@ class ReadSettings extends StatelessWidget {
                     children: [
                       InkWell(
                         onTap: () {
-                          settings.needIncreaseLineHeight -= 0.01;
-                          updateFunc(settings);
+                          widget.settings.needIncreaseLineHeight -= 0.01;
+                          widget.updateFunc(widget.settings);
                         },
                         child: Container(
                           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
+                              BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '-',
                             style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: widget.settings.fontFamily,
                             ),
                           ),
                         ),
@@ -470,46 +535,46 @@ class ReadSettings extends StatelessWidget {
                       Container(
                         margin: const EdgeInsets.only(left: 6, right: 6),
                         child: Text(
-                          settings.needIncreaseLineHeight.toStringAsFixed(2),
+                          widget.settings.needIncreaseLineHeight.toStringAsFixed(2),
                           style: TextStyle(
-                            fontFamily: settings.fontFamily,
+                            fontFamily: widget.settings.fontFamily,
                           ),
                         ),
                       ),
                       InkWell(
                         onTap: () {
-                          settings.needIncreaseLineHeight += 0.01;
-                          updateFunc(settings);
+                          widget.settings.needIncreaseLineHeight += 0.01;
+                          widget.updateFunc(widget.settings);
                         },
                         child: Container(
                           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
+                              BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '+',
                             style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: widget.settings.fontFamily,
                             ),
                           ),
                         ),
                       ),
                       InkWell(
                         onTap: () {
-                          settings.needMultiFontSize -= 0.01;
-                          updateFunc(settings);
+                          widget.settings.needMultiFontSize -= 0.01;
+                          widget.updateFunc(widget.settings);
                         },
                         child: Container(
                           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
+                              BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '-',
                             style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: widget.settings.fontFamily,
                             ),
                           ),
                         ),
@@ -517,27 +582,27 @@ class ReadSettings extends StatelessWidget {
                       Container(
                         margin: const EdgeInsets.only(left: 6, right: 6),
                         child: Text(
-                          settings.needMultiFontSize.toStringAsFixed(2),
+                          widget.settings.needMultiFontSize.toStringAsFixed(2),
                           style: TextStyle(
-                            fontFamily: settings.fontFamily,
+                            fontFamily: widget.settings.fontFamily,
                           ),
                         ),
                       ),
                       InkWell(
                         onTap: () {
-                          settings.needMultiFontSize += 0.01;
-                          updateFunc(settings);
+                          widget.settings.needMultiFontSize += 0.01;
+                          widget.updateFunc(widget.settings);
                         },
                         child: Container(
                           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
+                              BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '+',
                             style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: widget.settings.fontFamily,
                             ),
                           ),
                         ),
@@ -551,19 +616,19 @@ class ReadSettings extends StatelessWidget {
                     Text(
                       '章节标题相乘大小',
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: widget.settings.fontFamily,
                       ),
                     ),
                     // Text(
                     //   '内容非中除系数',
                     //   style: TextStyle(
-                    //     fontFamily: settings.fontFamily,
+                    //     fontFamily: widget.settings.fontFamily,
                     //   ),
                     // ),
                     InkWell(
                       onTap: () {
-                        settings.chapterTitleMultiFontSize -= 0.01;
-                        updateFunc(settings);
+                        widget.settings.chapterTitleMultiFontSize -= 0.01;
+                        widget.updateFunc(widget.settings);
                       },
                       child: Container(
                         padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
@@ -574,7 +639,7 @@ class ReadSettings extends StatelessWidget {
                         child: Text(
                           '-',
                           style: TextStyle(
-                            fontFamily: settings.fontFamily,
+                            fontFamily: widget.settings.fontFamily,
                           ),
                         ),
                       ),
@@ -582,16 +647,16 @@ class ReadSettings extends StatelessWidget {
                     Container(
                       margin: const EdgeInsets.only(left: 6, right: 6),
                       child: Text(
-                        settings.chapterTitleMultiFontSize.toStringAsFixed(2),
+                        widget.settings.chapterTitleMultiFontSize.toStringAsFixed(2),
                         style: TextStyle(
-                          fontFamily: settings.fontFamily,
+                          fontFamily: widget.settings.fontFamily,
                         ),
                       ),
                     ),
                     InkWell(
                       onTap: () {
-                        settings.chapterTitleMultiFontSize += 0.01;
-                        updateFunc(settings);
+                        widget.settings.chapterTitleMultiFontSize += 0.01;
+                        widget.updateFunc(widget.settings);
                       },
                       child: Container(
                         padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
@@ -602,7 +667,7 @@ class ReadSettings extends StatelessWidget {
                         child: Text(
                           '+',
                           style: TextStyle(
-                            fontFamily: settings.fontFamily,
+                            fontFamily: widget.settings.fontFamily,
                           ),
                         ),
                       ),
@@ -616,8 +681,8 @@ class ReadSettings extends StatelessWidget {
                 //     children: [
                 //       InkWell(
                 //         onTap: () {
-                //           settings.chapterTitleMultiFontSize -= 0.01;
-                //           updateFunc(settings);
+                //           widget.settings.chapterTitleMultiFontSize -= 0.01;
+                //           widget.updateFunc(widget.settings);
                 //         },
                 //         child: Container(
                 //           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
@@ -628,7 +693,7 @@ class ReadSettings extends StatelessWidget {
                 //           child: Text(
                 //             '-',
                 //             style: TextStyle(
-                //               fontFamily: settings.fontFamily,
+                //               fontFamily: widget.settings.fontFamily,
                 //             ),
                 //           ),
                 //         ),
@@ -636,16 +701,16 @@ class ReadSettings extends StatelessWidget {
                 //       Container(
                 //         margin: const EdgeInsets.only(left: 6, right: 6),
                 //         child: Text(
-                //           settings.chapterTitleMultiFontSize.toStringAsFixed(2),
+                //           widget.settings.chapterTitleMultiFontSize.toStringAsFixed(2),
                 //           style: TextStyle(
-                //             fontFamily: settings.fontFamily,
+                //             fontFamily: widget.settings.fontFamily,
                 //           ),
                 //         ),
                 //       ),
                 //       InkWell(
                 //         onTap: () {
-                //           settings.chapterTitleMultiFontSize += 0.01;
-                //           updateFunc(settings);
+                //           widget.settings.chapterTitleMultiFontSize += 0.01;
+                //           widget.updateFunc(widget.settings);
                 //         },
                 //         child: Container(
                 //           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
@@ -656,16 +721,16 @@ class ReadSettings extends StatelessWidget {
                 //           child: Text(
                 //             '+',
                 //             style: TextStyle(
-                //               fontFamily: settings.fontFamily,
+                //               fontFamily: widget.settings.fontFamily,
                 //             ),
                 //           ),
                 //         ),
                 //       ),
                 //       InkWell(
                 //         onTap: () {
-                //           settings.chapterContentNotChinaStrDivisionCoefficient -=
+                //           widget.settings.chapterContentNotChinaStrDivisionCoefficient -=
                 //               0.01;
-                //           updateFunc(settings);
+                //           widget.updateFunc(widget.settings);
                 //         },
                 //         child: Container(
                 //           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
@@ -676,7 +741,7 @@ class ReadSettings extends StatelessWidget {
                 //           child: Text(
                 //             '-',
                 //             style: TextStyle(
-                //               fontFamily: settings.fontFamily,
+                //               fontFamily: widget.settings.fontFamily,
                 //             ),
                 //           ),
                 //         ),
@@ -684,18 +749,18 @@ class ReadSettings extends StatelessWidget {
                 //       Container(
                 //         margin: const EdgeInsets.only(left: 6, right: 6),
                 //         child: Text(
-                //           settings.chapterContentNotChinaStrDivisionCoefficient
+                //           widget.settings.chapterContentNotChinaStrDivisionCoefficient
                 //               .toStringAsFixed(2),
                 //           style: TextStyle(
-                //             fontFamily: settings.fontFamily,
+                //             fontFamily: widget.settings.fontFamily,
                 //           ),
                 //         ),
                 //       ),
                 //       InkWell(
                 //         onTap: () {
-                //           settings.chapterContentNotChinaStrDivisionCoefficient +=
+                //           widget.settings.chapterContentNotChinaStrDivisionCoefficient +=
                 //               0.01;
-                //           updateFunc(settings);
+                //           widget.updateFunc(widget.settings);
                 //         },
                 //         child: Container(
                 //           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
@@ -706,7 +771,7 @@ class ReadSettings extends StatelessWidget {
                 //           child: Text(
                 //             '+',
                 //             style: TextStyle(
-                //               fontFamily: settings.fontFamily,
+                //               fontFamily: widget.settings.fontFamily,
                 //             ),
                 //           ),
                 //         ),
@@ -720,13 +785,13 @@ class ReadSettings extends StatelessWidget {
                     Text(
                       '标题非中除系数',
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: widget.settings.fontFamily,
                       ),
                     ),
                     Text(
                       '标题字数除系数',
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: widget.settings.fontFamily,
                       ),
                     ),
                   ],
@@ -738,20 +803,20 @@ class ReadSettings extends StatelessWidget {
                     children: [
                       InkWell(
                         onTap: () {
-                          settings.chapterTitleNotChinaStrDivisionCoefficient -=
-                              0.01;
-                          updateFunc(settings);
+                          widget.settings.chapterTitleNotChinaStrDivisionCoefficient -=
+                          0.01;
+                          widget.updateFunc(widget.settings);
                         },
                         child: Container(
                           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
+                              BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '-',
                             style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: widget.settings.fontFamily,
                             ),
                           ),
                         ),
@@ -759,48 +824,48 @@ class ReadSettings extends StatelessWidget {
                       Container(
                         margin: const EdgeInsets.only(left: 6, right: 6),
                         child: Text(
-                          settings.chapterTitleNotChinaStrDivisionCoefficient
+                          widget.settings.chapterTitleNotChinaStrDivisionCoefficient
                               .toStringAsFixed(2),
                           style: TextStyle(
-                            fontFamily: settings.fontFamily,
+                            fontFamily: widget.settings.fontFamily,
                           ),
                         ),
                       ),
                       InkWell(
                         onTap: () {
-                          settings.chapterTitleNotChinaStrDivisionCoefficient +=
-                              0.01;
-                          updateFunc(settings);
+                          widget.settings.chapterTitleNotChinaStrDivisionCoefficient +=
+                          0.01;
+                          widget.updateFunc(widget.settings);
                         },
                         child: Container(
                           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
+                              BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '+',
                             style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: widget.settings.fontFamily,
                             ),
                           ),
                         ),
                       ),
                       InkWell(
                         onTap: () {
-                          settings.chapterTitleStrDivisionCoefficient -= 0.01;
-                          updateFunc(settings);
+                          widget.settings.chapterTitleStrDivisionCoefficient -= 0.01;
+                          widget.updateFunc(widget.settings);
                         },
                         child: Container(
                           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
+                              BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '-',
                             style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: widget.settings.fontFamily,
                             ),
                           ),
                         ),
@@ -808,28 +873,28 @@ class ReadSettings extends StatelessWidget {
                       Container(
                         margin: const EdgeInsets.only(left: 6, right: 6),
                         child: Text(
-                          settings.chapterTitleStrDivisionCoefficient
+                          widget.settings.chapterTitleStrDivisionCoefficient
                               .toStringAsFixed(2),
                           style: TextStyle(
-                            fontFamily: settings.fontFamily,
+                            fontFamily: widget.settings.fontFamily,
                           ),
                         ),
                       ),
                       InkWell(
                         onTap: () {
-                          settings.chapterTitleStrDivisionCoefficient += 0.01;
-                          updateFunc(settings);
+                          widget.settings.chapterTitleStrDivisionCoefficient += 0.01;
+                          widget.updateFunc(widget.settings);
                         },
                         child: Container(
                           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
+                              BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '+',
                             style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: widget.settings.fontFamily,
                             ),
                           ),
                         ),
@@ -847,13 +912,13 @@ class ReadSettings extends StatelessWidget {
                       Text(
                         '章节正则：',
                         style: TextStyle(
-                          fontFamily: settings.fontFamily,
+                          fontFamily: widget.settings.fontFamily,
                         ),
                       ),
                       SizedBox(
                         width: width - 180,
                         child: TextField(
-                          controller: chapterTitleExpController,
+                          controller: widget.chapterTitleExpController,
                           decoration: const InputDecoration(
                             hintText: "输入正则匹配章节名",
                             hintStyle: TextStyle(color: Colors.black26),
@@ -868,12 +933,12 @@ class ReadSettings extends StatelessWidget {
                       ),
                       TextButton(
                           onPressed: () async {
-                            updateExpFunc(chapterTitleExpController.text);
+                            widget.updateExpFunc(widget.chapterTitleExpController.text);
                           },
                           child: Text(
                             '确定',
                             style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: widget.settings.fontFamily,
                             ),
                           ))
                     ],
