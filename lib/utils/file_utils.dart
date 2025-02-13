@@ -108,7 +108,7 @@ class FileUtils {
     book.title = split.sublist(0, split.length - 1).join('.');
     book.updateTime = DateTime.now().millisecondsSinceEpoch;
     book.createTime = DateTime.now().millisecondsSinceEpoch;
-    book.seqNo = 1;
+    book.seqNo = 0;
     book.parentId = '';
     book.path = path.join(relativeDirPath, name);
     book.type = Constant.mediaType;
@@ -148,7 +148,7 @@ class FileUtils {
     book.title = split.sublist(0, split.length - 1).join('.');
     book.updateTime = DateTime.now().millisecondsSinceEpoch;
     book.createTime = DateTime.now().millisecondsSinceEpoch;
-    book.seqNo = 1;
+    book.seqNo = 0;
     book.parentId = '';
     book.path = path.join(relativeDirPath, name);
     book.type = Constant.bookType;
@@ -194,7 +194,7 @@ class FileUtils {
     book.title = split.sublist(0, split.length - 1).join('.');
     book.updateTime = DateTime.now().millisecondsSinceEpoch;
     book.createTime = DateTime.now().millisecondsSinceEpoch;
-    book.seqNo = 1;
+    book.seqNo = 0;
     book.parentId = '';
     book.path = path.join(relativeDirPath, name);
     book.type = Constant.pdfType;
@@ -246,7 +246,7 @@ class FileUtils {
     book.title = split.sublist(0, split.length - 1).join('.');
     book.updateTime = DateTime.now().millisecondsSinceEpoch;
     book.createTime = DateTime.now().millisecondsSinceEpoch;
-    book.seqNo = 1;
+    book.seqNo = 0;
     book.cover = "";
     book.parentId = parentId;
     book.type = Constant.bookType;
@@ -294,7 +294,7 @@ class FileUtils {
     book.title = split.sublist(0, split.length - 1).join('.');
     book.updateTime = DateTime.now().millisecondsSinceEpoch;
     book.createTime = DateTime.now().millisecondsSinceEpoch;
-    book.seqNo = 1;
+    book.seqNo = 0;
     book.cover = "";
     book.parentId = parentId;
     book.type = Constant.mediaType;
@@ -385,7 +385,7 @@ class FileUtils {
     book.createTime = DateTime.now().millisecondsSinceEpoch;
     book.type = Constant.comicType;
     book.cover = cover;
-    book.seqNo = 1;
+    book.seqNo = 0;
     book.parentId = parentId;
     book.path = path.join(relativeDirPath, path.basename(newDir.path));
     book.currentChapter = 0;
@@ -676,7 +676,7 @@ class FileUtils {
     book.title = split.sublist(0, split.length - 1).join('.');
     book.updateTime = DateTime.now().millisecondsSinceEpoch;
     book.createTime = DateTime.now().millisecondsSinceEpoch;
-    book.seqNo = 1;
+    book.seqNo = 0;
     book.cover = "";
     book.parentId = parentId;
     book.type = Constant.pdfType;

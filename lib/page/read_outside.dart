@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:read_app/controller/setting_controller.dart';
 import 'package:read_app/pojo/font_setting.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/pojo/chapter.dart';
@@ -13,6 +14,7 @@ import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/db.dart';
 import 'package:read_app/utils/regex_utils.dart';
 import 'package:read_app/utils/spider_utils.dart';
+import 'package:read_app/utils/volume_utils.dart';
 import 'package:read_app/widget/read/chapter_list.dart';
 import 'package:read_app/widget/read/font_setting.dart';
 import 'package:read_app/widget/read/settings.dart';
@@ -53,6 +55,8 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
   List<OutSideChapter> chapterList = [];
   List<Widget> widgetList = [];
   final PageController _pageController = PageController();
+  final SettingController settingController = Get.find();
+  final VolumeUtils volumeUtils = VolumeUtils();
   final _now = ValueNotifier('');
   final _nowChapter = ValueNotifier('开始');
   final _currentPage = ValueNotifier(0);
@@ -104,22 +108,20 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
     }
 
     if (outSideBook1 == null) {
-      outSideBook = OutSideBook()
-      ..bookSourceId = bookSourceId;
-    } else {
+      outSideBook = OutSideBook()..bookSourceId = bookSourceId;
+    } else {}
 
-    }
-
-    var res = await SpiderUtils.spiderChapterByBook(url, _bookTitleController.text, bookSourceId);
+    var res = await SpiderUtils.spiderChapterByBook(
+        url, _bookTitleController.text, bookSourceId);
     chapterList = res;
 
     var time = DateTime.now();
     _now.value =
-    '${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')} ${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:${time.second.toString().padLeft(2, '0')}';
+        '${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')} ${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:${time.second.toString().padLeft(2, '0')}';
     Timer.periodic(const Duration(seconds: 1), (Timer timer) {
       var time = DateTime.now();
       _now.value =
-      '${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')} ${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:${time.second.toString().padLeft(2, '0')}';
+          '${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')} ${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:${time.second.toString().padLeft(2, '0')}';
     });
 
     var value = await SharedPreferences.getInstance();
@@ -186,7 +188,8 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
     if (alreadySpiderChapterMap[chapter.url] != null) {
       data = alreadySpiderChapterMap[chapter.url]!;
     } else {
-      data = await SpiderUtils.spiderChapterContent(chapter.url, outSideBook.bookSourceId);
+      data = await SpiderUtils.spiderChapterContent(
+          chapter.url, outSideBook.bookSourceId);
       alreadySpiderChapterMap[chapter.url] = data;
     }
     return data;
@@ -195,6 +198,21 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
   @override
   void initState() {
     super.initState();
+
+    if (settingController.isOpenVolumeFlip.value) {
+      volumeUtils.init((double beforeVolume, double nowVolume) {
+        if (beforeVolume < nowVolume) {
+          _pageController.nextPage(
+              duration: const Duration(milliseconds: 100),
+              curve: Curves.easeOut);
+        } else if (beforeVolume > nowVolume) {
+          _pageController.previousPage(
+              duration: const Duration(milliseconds: 100),
+              curve: Curves.easeIn);
+        }
+        volumeUtils.setVolume(0.1);
+      });
+    }
 
     if (Get.arguments['outSideBook'] == null) {
       outSideBook = OutSideBook();
@@ -210,7 +228,6 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
       } else {
         init(book, Get.arguments['outSideBook'] as OutSideBook);
       }
-
     } else {
       book = Book();
       book.id = '-1';
@@ -220,14 +237,11 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
       } else {
         init(null, Get.arguments['outSideBook'] as OutSideBook);
       }
-
     }
-
   }
 
   void switchChapter1(int seqNo) async {
     isLoading = true;
-    currentSeqNo.value = seqNo;
     chapterTitlePageNumMap.clear();
     chapterPageNumTitleMap.clear();
     chapterPageNumList.clear();
@@ -235,13 +249,11 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
     try {
       currentChapter = chapterList[seqNo];
     } catch (e) {
-      print(e);
-    }
-
-    if (currentChapter == null) {
       isLoading = false;
       return;
     }
+
+    currentSeqNo.value = seqNo;
 
     var currentChapterIndex = chapterList.indexOf(currentChapter);
 
@@ -249,8 +261,8 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
       currentChapterIndex = 0;
     }
 
-    var start = currentChapterIndex - 1;
-    var end = currentChapterIndex + 1;
+    var start = currentChapterIndex - 2;
+    var end = currentChapterIndex + 2;
 
     if (start < 0) {
       start = 0;
@@ -263,13 +275,14 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
 
     var content = '';
 
-    List<Widget> pageList = List.generate(startHasContentPage, (index) => const SizedBox.shrink());
-
+    List<Widget> pageList =
+        List.generate(startHasContentPage, (index) => const SizedBox.shrink());
 
     for (var i = start; i <= end; i++) {
       var chapter = chapterList[i];
 
-      var chapterContent = '${chapter.title}\n\n${await loadChapterContent(chapter)}';
+      var chapterContent =
+          '${chapter.title}\n\n${await loadChapterContent(chapter)}';
 
       var beforeAddLength = pageList.length;
 
@@ -306,15 +319,15 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
   void switchChapter(int seqNo, bool isAfter) async {
     isLoading = true;
 
-    currentSeqNo.value = seqNo;
-
-    var currentChapter =
-    chapterList.firstWhereOrNull((item) => item.seqNo == seqNo);
-
-    if (currentChapter == null) {
+    OutSideChapter currentChapter;
+    try {
+      currentChapter = chapterList[seqNo];
+    } catch (e) {
       isLoading = false;
       return;
     }
+
+    currentSeqNo.value = seqNo;
 
     var currentChapterIndex = chapterList.indexOf(currentChapter);
 
@@ -334,15 +347,15 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
 
     var chapter = chapterList[end];
 
-    var chapterContent = '${chapter.title}\n\n${await loadChapterContent(chapter)}';
+    var chapterContent =
+        '${chapter.title}\n\n${await loadChapterContent(chapter)}';
 
     var beforeAddLength = widgetList.length;
 
-    pageList.addAll(
-        calcPage(chapterContent, height, width, fontSize, lineHeight));
+    pageList
+        .addAll(calcPage(chapterContent, height, width, fontSize, lineHeight));
 
     setState(() {
-
       if (isAfter) {
         chapterTitlePageNumMap[chapter.title] = beforeAddLength;
         chapterPageNumList.add(beforeAddLength);
@@ -351,7 +364,8 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
         content = '$data\n$chapterContent';
       } else {
         content = '$chapterContent\n$data';
-        chapterTitlePageNumMap[chapter.title] = startHasContentPage - pageList.length;
+        chapterTitlePageNumMap[chapter.title] =
+            startHasContentPage - pageList.length;
         chapterPageNumList.insert(0, startHasContentPage - pageList.length);
         chapterPageNumTitleMap[startHasContentPage - pageList.length] = chapter;
         for (int i = pageList.length - 1; i >= 0; i--) {
@@ -406,7 +420,7 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
             ));
           } else {
             List<Widget> tt = [];
-            for(var j = 0; j < textList1.length; j++) {
+            for (var j = 0; j < textList1.length; j++) {
               var item = textList1[j];
               tt.add(Text(
                 item,
@@ -424,7 +438,6 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
               children: tt,
             ));
           }
-
         } else {
           List<Widget> tt = [];
           var textList1 = text.trim().split('');
@@ -442,7 +455,7 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
               ),
             ));
           } else {
-            for(var j = 0; j < textList1.length; j++) {
+            for (var j = 0; j < textList1.length; j++) {
               var item = textList1[j];
               tt.add(Text(
                 item,
@@ -460,8 +473,6 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
               children: tt,
             ));
           }
-
-
         }
       }
     }
@@ -480,11 +491,11 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
   List<Widget> calcPage(String data, double height, double width,
       double fontSize, double lineHeight) {
     double everyLineHeight =
-    (fontSize * (lineHeight + needIncreaseLineHeight)).ceilToDouble();
+        (fontSize * (lineHeight + needIncreaseLineHeight)).ceilToDouble();
     int lineNum = ((height - needDecreaseHeight) / everyLineHeight).floor();
 
     int everyLineFontNum =
-    ((width - needDecreaseWidth) / (fontSize * needMultiFontSize)).floor();
+        ((width - needDecreaseWidth) / (fontSize * needMultiFontSize)).floor();
 
     data = data.replaceAll(RegExp(r'(?<!\n)\n(?!\n)'), '\n\n');
     List<String> textList = data.split('\n');
@@ -533,7 +544,7 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
 
         if (englishUpperStrNum > 1) {
           end += (englishUpperStrNum /
-              chapterContentEnglishUpperStrDivisionCoefficient)
+                  chapterContentEnglishUpperStrDivisionCoefficient)
               .floor();
 
           end = end > text.length ? text.length : end;
@@ -545,7 +556,7 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
 
         if (englishLowerStrNum > 1) {
           end += (englishLowerStrNum /
-              chapterContentEnglishLowerStrDivisionCoefficient)
+                  chapterContentEnglishLowerStrDivisionCoefficient)
               .floor();
 
           end = end > text.length ? text.length : end;
@@ -604,10 +615,10 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
 
           xxx.add(addMap);
           int num1 = (text.length /
-              everyLineFontNum *
-              chapterTitleStrDivisionCoefficient *
-              chapterTitleMultiFontSize)
-              .ceil() +
+                      everyLineFontNum *
+                      chapterTitleStrDivisionCoefficient *
+                      chapterTitleMultiFontSize)
+                  .ceil() +
               1;
           currentLine += num1;
           text = '';
@@ -661,152 +672,152 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
         appBar: null,
         body: SafeArea(
             child: Container(
-              height: height,
-              width: width,
-              decoration: BoxDecoration(color: Color(backgroundColor)),
-              child: Stack(
-                children: [
-                  Positioned(
-                      left: 0,
-                      top: 30,
-                      right: 0,
-                      bottom: 0,
-                      child: GestureDetector(
-                        onTap: () {
-                          showOption.value = !(showOption.value);
-                          showSettings.value = false;
-                          showChapter.value = false;
-                          showFont.value = false;
-                        },
-                        child: SizedBox(
-                          height: height,
+          height: height,
+          width: width,
+          decoration: BoxDecoration(color: Color(backgroundColor)),
+          child: Stack(
+            children: [
+              Positioned(
+                  left: 0,
+                  top: 30,
+                  right: 0,
+                  bottom: 0,
+                  child: GestureDetector(
+                    onTap: () {
+                      showOption.value = !(showOption.value);
+                      showSettings.value = false;
+                      showChapter.value = false;
+                      showFont.value = false;
+                    },
+                    child: SizedBox(
+                      height: height,
+                      width: width,
+                      child: Center(
+                        child: Container(
                           width: width,
-                          child: Center(
-                            child: Container(
-                              width: width,
-                              height: height,
-                              padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                              child: PageView.builder(
-                                controller: _pageController,
-                                scrollDirection:
+                          height: height,
+                          padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                          child: PageView.builder(
+                            controller: _pageController,
+                            scrollDirection:
                                 isVer ? Axis.vertical : Axis.horizontal,
-                                pageSnapping: isVer ? false : true,
-                                itemCount: widgetList.length,
-                                physics: const ClampingScrollPhysics(),
-                                itemBuilder: (BuildContext context, int index) {
-                                  return widgetList[index];
-                                },
-                                onPageChanged: (page) {
-                                  if (chapterPageNumTitleMap.isEmpty) {
-                                    return;
-                                  }
+                            pageSnapping: isVer ? false : true,
+                            itemCount: widgetList.length,
+                            physics: const ClampingScrollPhysics(),
+                            itemBuilder: (BuildContext context, int index) {
+                              return widgetList[index];
+                            },
+                            onPageChanged: (page) {
+                              if (chapterPageNumTitleMap.isEmpty) {
+                                return;
+                              }
 
-                                  if (isLoading) {
-                                    return;
-                                  }
+                              if (isLoading) {
+                                return;
+                              }
 
-                                  if (book.id != '-1') {
-                                    book.page = nowChapterPage;
-                                    book.percent =
-                                        (currentSeqNo.value / chapterList.length) *
-                                            100;
-                                    book.chapterTitleExp = chapterTitleExp;
-                                    book.currentChapter = currentSeqNo.value;
-                                    DatabaseHelper.db.updateById(book);
-                                  }
+                              if (book.id != '-1') {
+                                book.page = nowChapterPage;
+                                book.percent = ((currentSeqNo.value + 1) /
+                                        chapterList.length) *
+                                    100;
+                                book.chapterTitleExp = chapterTitleExp;
+                                book.currentChapter = currentSeqNo.value;
+                                DatabaseHelper.db.updateById(book);
+                              }
 
-                                  if (page < chapterPageNumList[0]) {
-                                    _nowChapter.value = '开始';
-                                  } else {
-                                    var chapterPage =
+                              if (page < chapterPageNumList[0]) {
+                                _nowChapter.value = '开始';
+                              } else {
+                                var chapterPage =
                                     chapterPageNumList[getChapterTitle(page)];
-                                    nowChapterPage = page - chapterPage;
+                                nowChapterPage = page - chapterPage;
 
-                                    var chapter =
+                                var chapter =
                                     chapterPageNumTitleMap[chapterPage]!;
-                                    currentSeqNo.value = chapter.seqNo;
-                                    var title = chapter.title;
-                                    if (_nowChapter.value != title) {
-                                      _nowChapter.value = title;
-                                    }
-                                  }
-                                },
-                              ),
-                            ),
+                                currentSeqNo.value = chapter.seqNo;
+                                var title = chapter.title;
+                                if (_nowChapter.value != title) {
+                                  _nowChapter.value = title;
+                                }
+                              }
+                            },
                           ),
                         ),
-                      )),
-                  Positioned(
-                      top: 0,
-                      left: 10,
-                      right: 0,
-                      height: 30,
-                      child: Row(
-                        children: [
-                          ValueListenableBuilder(
-                              valueListenable: _nowChapter,
-                              builder: (context, value, child) {
-                                return SizedBox(
-                                  width: width - 10,
-                                  child: Text(
-                                    value,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                        fontFamily: fontFamily,
-                                        color: const Color(0xCFCACACA)),
-                                  ),
-                                );
-                              })
-                        ],
-                      )),
-                  Positioned(
-                      left: 0,
-                      bottom: 0,
-                      child: Container(
-                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-                        width: width,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            ValueListenableBuilder(
-                                valueListenable: _now,
-                                builder: (context, value, child) {
-                                  return Text(
-                                    value,
-                                    style: TextStyle(
-                                      fontFamily: fontFamily,
-                                    ),
-                                  );
-                                }),
-                            ValueListenableBuilder(
-                                valueListenable: _currentPage,
-                                builder: (context, value, child) {
-                                  return Text(
-                                    '${(currentSeqNo.value / chapterList.length * 100).toStringAsFixed(2)}%',
-                                    style: TextStyle(
-                                      fontFamily: fontFamily,
-                                    ),
-                                  );
-                                })
-                          ],
-                        ),
-                      )),
-                  ValueListenableBuilder(
-                      valueListenable: showOption,
-                      builder: (context, value, child) {
-                        return value
-                            ? Positioned(
+                      ),
+                    ),
+                  )),
+              Positioned(
+                  top: 0,
+                  left: 10,
+                  right: 0,
+                  height: 30,
+                  child: Row(
+                    children: [
+                      ValueListenableBuilder(
+                          valueListenable: _nowChapter,
+                          builder: (context, value, child) {
+                            return SizedBox(
+                              width: width - 10,
+                              child: Text(
+                                value,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    fontFamily: fontFamily,
+                                    color: const Color(0xCFCACACA)),
+                              ),
+                            );
+                          })
+                    ],
+                  )),
+              Positioned(
+                  left: 0,
+                  bottom: 0,
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                    width: width,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        ValueListenableBuilder(
+                            valueListenable: _now,
+                            builder: (context, value, child) {
+                              return Text(
+                                value,
+                                style: TextStyle(
+                                  fontFamily: fontFamily,
+                                ),
+                              );
+                            }),
+                        ValueListenableBuilder(
+                            valueListenable: _currentPage,
+                            builder: (context, value, child) {
+                              return Text(
+                                '${(((currentSeqNo.value + 1) / chapterList.length) * 100).toStringAsFixed(2)}%',
+                                style: TextStyle(
+                                  fontFamily: fontFamily,
+                                ),
+                              );
+                            })
+                      ],
+                    ),
+                  )),
+              ValueListenableBuilder(
+                  valueListenable: showOption,
+                  builder: (context, value, child) {
+                    return value
+                        ? Positioned(
                             left: 0,
                             top: 0,
                             right: 0,
                             child: Container(
                               height: 40,
                               decoration:
-                              const BoxDecoration(color: Colors.white),
+                                  const BoxDecoration(color: Colors.white),
                               child: Row(
                                 mainAxisAlignment:
-                                MainAxisAlignment.spaceBetween,
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   InkWell(
                                     onTap: () async {
@@ -816,23 +827,34 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                                       padding: const EdgeInsets.all(10),
                                       child: const Icon(Icons.arrow_back_ios),
                                     ),
-                                  ),InkWell(
+                                  ),
+                                  InkWell(
                                     onTap: () async {
                                       try {
                                         if (book.id == '-1') {
                                           book.title = outSideBook.title;
                                           book.page = nowChapterPage;
-                                          book.percent = (currentSeqNo.value / chapterList.length) * 100;
-                                          book.chapterTitleExp = chapterTitleExp;
-                                          book.currentChapter = currentSeqNo.value;
+                                          book.percent =
+                                              ((currentSeqNo.value + 1) /
+                                                      chapterList.length) *
+                                                  100;
+                                          book.chapterTitleExp =
+                                              chapterTitleExp;
+                                          book.currentChapter =
+                                              currentSeqNo.value;
                                           book.type = Constant.outSideType;
                                           book.seqNo = 1;
                                           book.cover = "";
                                           book.parentId = "";
-                                          book.path = '${outSideBook.bookSourceId}|${outSideBook.url}';
-                                          book.updateTime = DateTime.now().millisecondsSinceEpoch;
-                                          book.createTime = DateTime.now().millisecondsSinceEpoch;
-                                          book.id = (await DatabaseHelper.db.insert(book)).toString();
+                                          book.path =
+                                              '${outSideBook.bookSourceId}|${outSideBook.url}';
+                                          book.updateTime = DateTime.now()
+                                              .millisecondsSinceEpoch;
+                                          book.createTime = DateTime.now()
+                                              .millisecondsSinceEpoch;
+                                          book.id = (await DatabaseHelper.db
+                                                  .insert(book))
+                                              .toString();
                                           setState(() {
                                             book.id = book.id;
                                           });
@@ -843,31 +865,33 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                                     },
                                     child: Container(
                                       padding: const EdgeInsets.all(10),
-                                      child: book.id == '-1' ? const Text('收藏') : const Text('已收藏'),
+                                      child: book.id == '-1'
+                                          ? const Text('收藏')
+                                          : const Text('已收藏'),
                                     ),
                                   ),
                                 ],
                               ),
                             ))
-                            : const SizedBox.shrink();
-                      }),
-                  ValueListenableBuilder(
-                      valueListenable: showOption,
-                      builder: (context, value, child) {
-                        return value
-                            ? Positioned(
+                        : const SizedBox.shrink();
+                  }),
+              ValueListenableBuilder(
+                  valueListenable: showOption,
+                  builder: (context, value, child) {
+                    return value
+                        ? Positioned(
                             left: 0,
                             bottom: 0,
                             right: 0,
                             child: Container(
                               height: 110,
                               decoration:
-                              const BoxDecoration(color: Colors.white),
+                                  const BoxDecoration(color: Colors.white),
                               child: Column(
                                 children: [
                                   Row(
                                     mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
+                                        MainAxisAlignment.spaceAround,
                                     children: [
                                       InkWell(
                                         onTap: () {
@@ -908,12 +932,12 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                                     padding: const EdgeInsets.all(10),
                                     child: Row(
                                       mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
+                                          MainAxisAlignment.spaceAround,
                                       children: [
                                         InkWell(
                                           onTap: () {
                                             showChapter.value =
-                                            !(showChapter.value);
+                                                !(showChapter.value);
                                           },
                                           child: Wrap(
                                             direction: Axis.vertical,
@@ -921,7 +945,7 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                                               showChapter.value
                                                   ? const Icon(Icons.book)
                                                   : const Icon(
-                                                  Icons.book_outlined),
+                                                      Icons.book_outlined),
                                               Text(
                                                 '目录',
                                                 style: TextStyle(
@@ -953,9 +977,9 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                                           onTap: () {
                                             SystemChrome
                                                 .setSystemUIOverlayStyle(
-                                                SystemUiOverlayStyle
-                                                    .dark // 设置为暗色模式
-                                            );
+                                                    SystemUiOverlayStyle
+                                                        .dark // 设置为暗色模式
+                                                    );
                                           },
                                           child: Wrap(
                                             direction: Axis.vertical,
@@ -990,7 +1014,7 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                                         InkWell(
                                           onTap: () {
                                             showSettings.value =
-                                            !(showSettings.value);
+                                                !(showSettings.value);
                                           },
                                           child: Wrap(
                                             direction: Axis.vertical,
@@ -1013,44 +1037,44 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                                 ],
                               ),
                             ))
-                            : const SizedBox.shrink();
-                      }),
-                  ValueListenableBuilder(
-                      valueListenable: showSettings,
-                      builder: (context, value, child) {
-                        var settings = Settings()
-                          ..backgroundColor = backgroundColor
-                          ..needDecreaseWidth = needDecreaseWidth
-                          ..needDecreaseHeight = needDecreaseHeight
-                          ..needIncreaseLineHeight = needIncreaseLineHeight
-                          ..needMultiFontSize = needMultiFontSize
-                          ..chapterTitleMultiFontSize = chapterTitleMultiFontSize
-                          ..chapterTitleNotChinaStrDivisionCoefficient =
-                              chapterTitleNotChinaStrDivisionCoefficient
-                          ..chapterContentNotChinaStrDivisionCoefficient =
-                              chapterContentNotChinaStrDivisionCoefficient
-                          ..chapterContentEnglishUpperStrDivisionCoefficient =
-                              chapterContentEnglishUpperStrDivisionCoefficient
-                          ..chapterContentEnglishLowerStrDivisionCoefficient =
-                              chapterContentEnglishLowerStrDivisionCoefficient
-                          ..chapterContentEmptyStrDivisionCoefficient =
-                              chapterContentEmptyStrDivisionCoefficient
-                          ..chapterContentNumStrDivisionCoefficient =
-                              chapterContentNumStrDivisionCoefficient
-                          ..chapterTitleStrDivisionCoefficient =
-                              chapterTitleStrDivisionCoefficient
-                          ..isVer = isVer;
+                        : const SizedBox.shrink();
+                  }),
+              ValueListenableBuilder(
+                  valueListenable: showSettings,
+                  builder: (context, value, child) {
+                    var settings = Settings()
+                      ..backgroundColor = backgroundColor
+                      ..needDecreaseWidth = needDecreaseWidth
+                      ..needDecreaseHeight = needDecreaseHeight
+                      ..needIncreaseLineHeight = needIncreaseLineHeight
+                      ..needMultiFontSize = needMultiFontSize
+                      ..chapterTitleMultiFontSize = chapterTitleMultiFontSize
+                      ..chapterTitleNotChinaStrDivisionCoefficient =
+                          chapterTitleNotChinaStrDivisionCoefficient
+                      ..chapterContentNotChinaStrDivisionCoefficient =
+                          chapterContentNotChinaStrDivisionCoefficient
+                      ..chapterContentEnglishUpperStrDivisionCoefficient =
+                          chapterContentEnglishUpperStrDivisionCoefficient
+                      ..chapterContentEnglishLowerStrDivisionCoefficient =
+                          chapterContentEnglishLowerStrDivisionCoefficient
+                      ..chapterContentEmptyStrDivisionCoefficient =
+                          chapterContentEmptyStrDivisionCoefficient
+                      ..chapterContentNumStrDivisionCoefficient =
+                          chapterContentNumStrDivisionCoefficient
+                      ..chapterTitleStrDivisionCoefficient =
+                          chapterTitleStrDivisionCoefficient
+                      ..isVer = isVer;
 
-                        var fontSetting = FontSetting()
-                          ..fontFamily = fontFamily
-                          ..fontSize = fontSize
-                          ..lineHeight = lineHeight
-                          ..fontColor = fontColor;
+                    var fontSetting = FontSetting()
+                      ..fontFamily = fontFamily
+                      ..fontSize = fontSize
+                      ..lineHeight = lineHeight
+                      ..fontColor = fontColor;
 
-                        return value
-                            ? ReadSettings(
+                    return value
+                        ? ReadSettings(
                             chapterTitleExpController:
-                            _chapterTitleExpController,
+                                _chapterTitleExpController,
                             fontSetting: fontSetting,
                             settings: settings,
                             updateFunc: (Settings settings) {
@@ -1088,31 +1112,30 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                                 switchChapter1(currentSeqNo.value);
                               });
                             },
-                            updateExpFunc: (String text) async {
-                              
-                            },
+                            updateExpFunc: (String text) async {},
                             backgroundColorList: backgroundColorList)
-                            : const SizedBox.shrink();
-                      }),
-                  ValueListenableBuilder(
-                      valueListenable: showChapter,
-                      builder: (context, value, child) {
+                        : const SizedBox.shrink();
+                  }),
+              ValueListenableBuilder(
+                  valueListenable: showChapter,
+                  builder: (context, value, child) {
+                    List<Chapter> chapters = [];
 
-                        List<Chapter> chapters = [];
+                    var newBook = Book();
 
-                        var newBook = Book();
+                    try {
+                      newBook.title = outSideBook.title;
+                    } catch (e) {
+                      newBook.title = book.title;
+                    }
 
-                        try {
-                          newBook.title = outSideBook.title;
-                        } catch (e) {
-                          newBook.title = book.title;
-                        }
-
-                        for (var outSideChapter in chapterList) {
-                          chapters.add(Chapter()..title = outSideChapter.title..seqNo = outSideChapter.seqNo);
-                        }
-                        return value
-                            ? Positioned(
+                    for (var outSideChapter in chapterList) {
+                      chapters.add(Chapter()
+                        ..title = outSideChapter.title
+                        ..seqNo = outSideChapter.seqNo);
+                    }
+                    return value
+                        ? Positioned(
                             left: 0,
                             right: 0,
                             bottom: 70,
@@ -1127,18 +1150,18 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                                 switchChapter1(seqNo);
                               },
                             ))
-                            : const SizedBox.shrink();
-                      }),
-                  ValueListenableBuilder(
-                      valueListenable: showFont,
-                      builder: (context, value, child) {
-                        var fontSetting = FontSetting()
-                          ..fontSize = fontSize
-                          ..fontColor = fontColor
-                          ..lineHeight = lineHeight
-                          ..fontFamily = fontFamily;
-                        return value
-                            ? Positioned(
+                        : const SizedBox.shrink();
+                  }),
+              ValueListenableBuilder(
+                  valueListenable: showFont,
+                  builder: (context, value, child) {
+                    var fontSetting = FontSetting()
+                      ..fontSize = fontSize
+                      ..fontColor = fontColor
+                      ..lineHeight = lineHeight
+                      ..fontFamily = fontFamily;
+                    return value
+                        ? Positioned(
                             left: 0,
                             right: 0,
                             bottom: 70,
@@ -1155,17 +1178,17 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                                 });
                               },
                             ))
-                            : const SizedBox.shrink();
-                      }),
-                ],
-              ),
-            )));
+                        : const SizedBox.shrink();
+                  }),
+            ],
+          ),
+        )));
   }
 
   @override
   void dispose() {
     book.page = nowChapterPage;
-    book.percent = (currentSeqNo.value / chapterList.length) * 100;
+    book.percent = ((currentSeqNo.value + 1) / chapterList.length) * 100;
     book.chapterTitleExp = chapterTitleExp;
     book.currentChapter = currentSeqNo.value;
     if (book.id != '-1') {
@@ -1185,23 +1208,26 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
             'needMultiFontSize': needMultiFontSize,
             'chapterTitleMultiFontSize': chapterTitleMultiFontSize,
             'chapterTitleNotChinaStrDivisionCoefficient':
-            chapterTitleNotChinaStrDivisionCoefficient,
+                chapterTitleNotChinaStrDivisionCoefficient,
             'chapterContentNotChinaStrDivisionCoefficient':
-            chapterContentNotChinaStrDivisionCoefficient,
+                chapterContentNotChinaStrDivisionCoefficient,
             'chapterContentEnglishUpperStrDivisionCoefficient':
-            chapterContentEnglishUpperStrDivisionCoefficient,
+                chapterContentEnglishUpperStrDivisionCoefficient,
             'chapterContentEnglishLowerStrDivisionCoefficient':
-            chapterContentEnglishLowerStrDivisionCoefficient,
+                chapterContentEnglishLowerStrDivisionCoefficient,
             'chapterContentEmptyStrDivisionCoefficient':
-            chapterContentEmptyStrDivisionCoefficient,
+                chapterContentEmptyStrDivisionCoefficient,
             'chapterContentNumStrDivisionCoefficient':
-            chapterContentNumStrDivisionCoefficient,
+                chapterContentNumStrDivisionCoefficient,
             'chapterTitleStrDivisionCoefficient':
-            chapterTitleStrDivisionCoefficient,
+                chapterTitleStrDivisionCoefficient,
             'fontFamily': fontFamily,
             'fontColor': fontColor
           }));
     });
+    if (settingController.isOpenVolumeFlip.value) {
+      volumeUtils.removeListener(needRestore: true);
+    }
     _currentPage.dispose();
     _pageController.dispose();
     _bookTitleController.dispose();

@@ -107,9 +107,13 @@ class _ReadPageState extends State<ReadPage> {
     if (settingController.isOpenVolumeFlip.value) {
       volumeUtils.init((double beforeVolume, double nowVolume) {
         if (beforeVolume < nowVolume) {
-          _pageController.nextPage(duration: const Duration(milliseconds: 100), curve: Curves.easeOut);
+          _pageController.nextPage(
+              duration: const Duration(milliseconds: 100),
+              curve: Curves.easeOut);
         } else if (beforeVolume > nowVolume) {
-          _pageController.previousPage(duration: const Duration(milliseconds: 100), curve: Curves.easeIn);
+          _pageController.previousPage(
+              duration: const Duration(milliseconds: 100),
+              curve: Curves.easeIn);
         }
         volumeUtils.setVolume(0.1);
       });
@@ -208,7 +212,6 @@ class _ReadPageState extends State<ReadPage> {
 
   void switchChapter1(int seqNo) async {
     isLoading = true;
-    currentSeqNo.value = seqNo;
     chapterTitlePageNumMap.clear();
     chapterPageNumTitleMap.clear();
     chapterPageNumList.clear();
@@ -217,13 +220,16 @@ class _ReadPageState extends State<ReadPage> {
 
     chapterList = value;
 
-    var currentChapter =
-        chapterList.firstWhereOrNull((item) => item.seqNo == seqNo);
+    Chapter currentChapter;
 
-    if (currentChapter == null) {
+    try {
+      currentChapter = chapterList[seqNo];
+    } catch (e) {
       isLoading = false;
       return;
     }
+
+    currentSeqNo.value = seqNo;
 
     var currentChapterIndex = chapterList.indexOf(currentChapter);
 
@@ -291,20 +297,18 @@ class _ReadPageState extends State<ReadPage> {
     }
     isLoading = true;
 
-    currentSeqNo.value = seqNo;
-    var value = await DatabaseHelper.db.getChapterByBookId(book.id);
-
     var dataDir = await getApplicationDocumentsDirectory();
 
-    chapterList = value;
+    Chapter currentChapter;
 
-    var currentChapter =
-        chapterList.firstWhereOrNull((item) => item.seqNo == seqNo);
-
-    if (currentChapter == null) {
+    try {
+      currentChapter = chapterList[seqNo];
+    } catch (e) {
       isLoading = false;
       return;
     }
+
+    currentSeqNo.value = seqNo;
 
     var currentChapterIndex = chapterList.indexOf(currentChapter);
 
@@ -683,11 +687,12 @@ class _ReadPageState extends State<ReadPage> {
 
                               _throttleTimer?.cancel();
 
-                              _throttleTimer = Timer(const Duration(milliseconds: 100), () async {
+                              _throttleTimer = Timer(
+                                  const Duration(milliseconds: 100), () async {
                                 book.page = nowChapterPage;
-                                book.percent =
-                                    (currentSeqNo.value / chapterList.length) *
-                                        100;
+                                book.percent = ((currentSeqNo.value + 1) /
+                                        chapterList.length) *
+                                    100;
                                 book.chapterTitleExp = chapterTitleExp;
                                 book.currentChapter = currentSeqNo.value;
 
@@ -695,11 +700,11 @@ class _ReadPageState extends State<ReadPage> {
                                   _nowChapter.value = '开始';
                                 } else {
                                   var chapterPage =
-                                  chapterPageNumList[getChapterTitle(page)];
+                                      chapterPageNumList[getChapterTitle(page)];
                                   nowChapterPage = page - chapterPage;
 
                                   var chapter =
-                                  chapterPageNumTitleMap[chapterPage]!;
+                                      chapterPageNumTitleMap[chapterPage]!;
                                   currentSeqNo.value = chapter.seqNo;
                                   var title = chapter.title;
                                   if (_nowChapter.value != title) {
@@ -760,7 +765,7 @@ class _ReadPageState extends State<ReadPage> {
                             valueListenable: _currentPage,
                             builder: (context, value, child) {
                               return Text(
-                                '${(currentSeqNo.value / chapterList.length * 100).toStringAsFixed(2)}%',
+                                '${(((currentSeqNo.value + 1) / chapterList.length) * 100).toStringAsFixed(2)}%',
                                 style: TextStyle(
                                   fontFamily: fontFamily,
                                 ),
@@ -1120,7 +1125,7 @@ class _ReadPageState extends State<ReadPage> {
     _timeTimer?.cancel();
     _dataTimer?.cancel();
     book.page = nowChapterPage;
-    book.percent = (currentSeqNo.value / chapterList.length) * 100;
+    book.percent = ((currentSeqNo.value + 1) / chapterList.length) * 100;
     book.chapterTitleExp = chapterTitleExp;
     book.currentChapter = currentSeqNo.value;
     DatabaseHelper.db.updateById(book);
