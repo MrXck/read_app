@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:read_app/widget/book_shelf/body.dart';
 import 'package:read_app/widget/book_shelf/header.dart';
 
@@ -19,12 +20,20 @@ class _BookShelfPageState extends State<BookShelfPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-          child: Stack(
-        children: [BookShelfHeader(data: data), BookShelfBody(data: data)],
-      )),
-    );
+    return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (bool didPop, result) async {
+          var canPop = await data.routeBack();
+          if (canPop) {
+            SystemNavigator.pop();
+          }
+        },
+        child: Scaffold(
+          body: SafeArea(
+              child: Stack(
+            children: [BookShelfHeader(data: data), BookShelfBody(data: data)],
+          )),
+        ));
   }
 }
 
@@ -32,4 +41,5 @@ class Data {
   String parentId = '';
   late Function refresh;
   late Function addDirectory;
+  late Function routeBack;
 }

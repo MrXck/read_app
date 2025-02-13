@@ -55,6 +55,18 @@ class _BookShelfBodyState extends State<BookShelfBody> {
     widget.data.addDirectory = () async {
       newDialog();
     };
+    widget.data.routeBack = () async {
+      if (breadList.value.length == 1) {
+        Get.back();
+        return true;
+      }
+
+      breadList.value.removeLast();
+
+      updateParentId(breadList.value.last.id);
+      return false;
+
+    };
     DatabaseHelper.db.getBookByParentId(parentId).then((value) async {
       final dir = await getApplicationDocumentsDirectory();
       for (var i = 0; i < value.length; i++) {
@@ -310,6 +322,37 @@ class _BookShelfBodyState extends State<BookShelfBody> {
     );
   }
 
+  Future<void> updateParentId(String id) async {
+    setState(() {
+      parentId = id;
+      widget.data.parentId = parentId;
+    });
+
+    var li =
+    await DatabaseHelper.db.getBookByParentId(parentId);
+    final dir = await getApplicationDocumentsDirectory();
+    for (var i = 0; i < li.length; i++) {
+      var book = li[i];
+      book.assetDir = dir.path;
+    }
+    setState(() {
+      books.clear();
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        books.addAll(li);
+      });
+    });
+    var checkedBreadList = <Book>[];
+    for (var i = 0; i < breadList.value.length; i++) {
+      checkedBreadList.add(breadList.value[i]);
+      if (breadList.value[i].id == parentId) {
+        break;
+      }
+    }
+    breadList.value = checkedBreadList;
+  }
+
   @override
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height;
@@ -338,34 +381,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                 }
                 widgetList.add(InkWell(
                   onTap: () async {
-                    setState(() {
-                      parentId = value[i].id;
-                      widget.data.parentId = parentId;
-                    });
-
-                    var li =
-                        await DatabaseHelper.db.getBookByParentId(parentId);
-                    final dir = await getApplicationDocumentsDirectory();
-                    for (var i = 0; i < li.length; i++) {
-                      var book = li[i];
-                      book.assetDir = dir.path;
-                    }
-                    setState(() {
-                      books.clear();
-                    });
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      setState(() {
-                        books.addAll(li);
-                      });
-                    });
-                    var checkedBreadList = <Book>[];
-                    for (var i = 0; i < breadList.value.length; i++) {
-                      checkedBreadList.add(breadList.value[i]);
-                      if (breadList.value[i].id == parentId) {
-                        break;
-                      }
-                    }
-                    breadList.value = checkedBreadList;
+                    updateParentId(value[i].id);
                   },
                   child: Text(value[i].title),
                 ));
