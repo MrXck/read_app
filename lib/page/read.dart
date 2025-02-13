@@ -7,7 +7,6 @@ import 'package:get/get.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:read_app/controller/setting_controller.dart';
-import 'package:read_app/pojo/font_setting.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/pojo/chapter.dart';
 import 'package:read_app/pojo/settings.dart';
@@ -30,10 +29,7 @@ class ReadPage extends StatefulWidget {
 
 class _ReadPageState extends State<ReadPage> {
   String data = '';
-  double fontSize = 16;
-  double lineHeight = 1.6;
   String chapterTitleExp = Constant.defaultChapterTitleExp;
-  bool isVer = false;
   ValueNotifier<bool> showOption = ValueNotifier(false);
   ValueNotifier<bool> showSettings = ValueNotifier(false);
   ValueNotifier<bool> showChapter = ValueNotifier(false);
@@ -45,9 +41,7 @@ class _ReadPageState extends State<ReadPage> {
     0xFFD3DFC7,
     0xFF555354
   ];
-  int backgroundColor = 0xFFE6DBC5;
-  String fontFamily = 'pingfang';
-  int fontColor = 0xff000000;
+  Settings settings = Settings();
   ValueNotifier<int> currentSeqNo = ValueNotifier(0);
   late Book book;
   late double height;
@@ -85,20 +79,6 @@ class _ReadPageState extends State<ReadPage> {
   double pageLeftPadding = 10;
   double pageRightPadding = 10;
 
-  int needDecreaseWidth = 0;
-  int needDecreaseHeight = 0;
-  double needIncreaseLineHeight = 0.3;
-  double needMultiFontSize = 1.1;
-  double chapterTitleMultiFontSize = 1.4;
-  double chapterTitleNotChinaStrDivisionCoefficient = 1.4;
-  double chapterContentNotChinaStrDivisionCoefficient = 1.4;
-  double chapterContentEnglishUpperStrDivisionCoefficient = 1.4;
-  double chapterContentEnglishLowerStrDivisionCoefficient = 1.4;
-  double chapterContentEmptyStrDivisionCoefficient = 1.3;
-  double chapterContentNumStrDivisionCoefficient = 1.4;
-  double chapterTitleStrDivisionCoefficient = 1.5;
-  int titleFontWeight = 7;
-  int contentFontWeight = 4;
   Timer? _throttleTimer;
   Timer? _timeTimer;
   Timer? _dataTimer;
@@ -145,33 +125,7 @@ class _ReadPageState extends State<ReadPage> {
 
     var value = await SharedPreferences.getInstance();
     var config = const JsonDecoder().convert(value.getString('config') ?? '{}');
-    backgroundColor = config['backgroundColor'] ?? 0xFFE6DBC5;
-    isVer = config['isVer'] ?? false;
-    fontSize = config['fontSize'] ?? 16;
-    lineHeight = config['lineHeight'] ?? 1.6;
-    needDecreaseWidth = config['needDecreaseWidth'] ?? 0;
-    needDecreaseHeight = config['needDecreaseHeight'] ?? 0;
-    needIncreaseLineHeight = config['needIncreaseLineHeight'] ?? 0.3;
-    needMultiFontSize = config['needMultiFontSize'] ?? 1.14;
-    chapterTitleMultiFontSize = config['chapterTitleMultiFontSize'] ?? 1.4;
-    chapterTitleNotChinaStrDivisionCoefficient =
-        config['chapterTitleNotChinaStrDivisionCoefficient'] ?? 1.4;
-    chapterContentNotChinaStrDivisionCoefficient =
-        config['chapterContentNotChinaStrDivisionCoefficient'] ?? 1.4;
-    chapterContentEnglishUpperStrDivisionCoefficient =
-        config['chapterContentEnglishUpperStrDivisionCoefficient'] ?? 1.4;
-    chapterContentEnglishLowerStrDivisionCoefficient =
-        config['chapterContentEnglishLowerStrDivisionCoefficient'] ?? 1.4;
-    chapterContentEmptyStrDivisionCoefficient =
-        config['chapterContentEmptyStrDivisionCoefficient'] ?? 1.3;
-    chapterContentNumStrDivisionCoefficient =
-        config['chapterContentNumStrDivisionCoefficient'] ?? 1.4;
-    chapterTitleStrDivisionCoefficient =
-        config['chapterTitleStrDivisionCoefficient'] ?? 1.5;
-    fontFamily = config['fontFamily'] ?? 'pingfang';
-    fontColor = config['fontColor'] ?? 0xff000000;
-    titleFontWeight = config['titleFontWeight'] ?? 7;
-    contentFontWeight = config['contentFontWeight'] ?? 4;
+    settings = Settings.fromMap(config);
 
     _pageController.addListener(() {
       var beforePage = _currentPage.value;
@@ -265,8 +219,8 @@ class _ReadPageState extends State<ReadPage> {
       chapterPageNumList.add(beforeAddLength);
       chapterPageNumTitleMap[beforeAddLength] = chapter;
 
-      pageList.addAll(
-          calcPage(chapterContent, height, width, fontSize, lineHeight));
+      pageList.addAll(calcPage(chapterContent, height, width, settings.fontSize,
+          settings.lineHeight));
 
       if (seqNo == chapter.seqNo) {
         _nowChapter.value = chapter.title;
@@ -333,8 +287,8 @@ class _ReadPageState extends State<ReadPage> {
 
     var beforeAddLength = widgetList.length;
 
-    pageList
-        .addAll(calcPage(chapterContent, height, width, fontSize, lineHeight));
+    pageList.addAll(calcPage(
+        chapterContent, height, width, settings.fontSize, settings.lineHeight));
 
     setState(() {
       if (isAfter) {
@@ -376,11 +330,11 @@ class _ReadPageState extends State<ReadPage> {
           text.trim(),
           textAlign: TextAlign.center,
           style: TextStyle(
-              height: lineHeight * chapterTitleMultiFontSize,
-              fontSize: fontSize * chapterTitleMultiFontSize,
-              fontFamily: fontFamily,
-              color: Color(fontColor),
-              fontWeight: fontWeightList[titleFontWeight]),
+              height: settings.lineHeight * settings.chapterTitleMultiFontSize,
+              fontSize: settings.fontSize * settings.chapterTitleMultiFontSize,
+              fontFamily: settings.fontFamily,
+              color: Color(settings.fontColor),
+              fontWeight: fontWeightList[settings.titleFontWeight]),
         ));
       } else {
         if (text.startsWith('       ')) {
@@ -393,8 +347,8 @@ class _ReadPageState extends State<ReadPage> {
             tt.add(Row(
               children: [
                 SizedBox(
-                  width: fontSize * 2,
-                  height: fontSize,
+                  width: settings.fontSize * 2,
+                  height: settings.fontSize,
                 )
               ],
             ));
@@ -404,11 +358,11 @@ class _ReadPageState extends State<ReadPage> {
               rowChildren.add(Text(
                 item,
                 style: TextStyle(
-                    height: lineHeight,
-                    fontSize: fontSize,
-                    fontFamily: fontFamily,
-                    color: Color(fontColor),
-                    fontWeight: fontWeightList[contentFontWeight]),
+                    height: settings.lineHeight,
+                    fontSize: settings.fontSize,
+                    fontFamily: settings.fontFamily,
+                    color: Color(settings.fontColor),
+                    fontWeight: fontWeightList[settings.contentFontWeight]),
               ));
             }
             tt.add(Expanded(
@@ -425,19 +379,19 @@ class _ReadPageState extends State<ReadPage> {
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 SizedBox(
-                  width: fontSize * 2,
-                  height: fontSize,
+                  width: settings.fontSize * 2,
+                  height: settings.fontSize,
                 ),
                 Text(
                   text,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                      height: lineHeight,
-                      fontSize: fontSize,
-                      fontFamily: fontFamily,
-                      color: Color(fontColor),
-                      fontWeight: fontWeightList[contentFontWeight]),
+                      height: settings.lineHeight,
+                      fontSize: settings.fontSize,
+                      fontFamily: settings.fontFamily,
+                      color: Color(settings.fontColor),
+                      fontWeight: fontWeightList[settings.contentFontWeight]),
                 )
               ],
             ));
@@ -453,11 +407,11 @@ class _ReadPageState extends State<ReadPage> {
               tt.add(Text(
                 item,
                 style: TextStyle(
-                    height: lineHeight,
-                    fontSize: fontSize,
-                    fontFamily: fontFamily,
-                    color: Color(fontColor),
-                    fontWeight: fontWeightList[contentFontWeight]),
+                    height: settings.lineHeight,
+                    fontSize: settings.fontSize,
+                    fontFamily: settings.fontFamily,
+                    color: Color(settings.fontColor),
+                    fontWeight: fontWeightList[settings.contentFontWeight]),
               ));
             }
 
@@ -471,11 +425,11 @@ class _ReadPageState extends State<ReadPage> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                  height: lineHeight,
-                  fontSize: fontSize,
-                  fontFamily: fontFamily,
-                  color: Color(fontColor),
-                  fontWeight: fontWeightList[contentFontWeight]),
+                  height: settings.lineHeight,
+                  fontSize: settings.fontSize,
+                  fontFamily: settings.fontFamily,
+                  color: Color(settings.fontColor),
+                  fontWeight: fontWeightList[settings.contentFontWeight]),
             ));
           }
         }
@@ -496,11 +450,14 @@ class _ReadPageState extends State<ReadPage> {
   List<Widget> calcPage(String data, double height, double width,
       double fontSize, double lineHeight) {
     double everyLineHeight =
-        (fontSize * (lineHeight + needIncreaseLineHeight)).ceilToDouble();
-    int lineNum = ((height - needDecreaseHeight) / everyLineHeight).floor();
+        (fontSize * (lineHeight + settings.needIncreaseLineHeight))
+            .ceilToDouble();
+    int lineNum =
+        ((height - settings.needDecreaseHeight) / everyLineHeight).floor();
 
-    int everyLineFontNum =
-        ((width - needDecreaseWidth) / (fontSize * needMultiFontSize)).floor();
+    int everyLineFontNum = ((width - settings.needDecreaseWidth) /
+            (fontSize * settings.needMultiFontSize))
+        .floor();
 
     // data = data.replaceAll(RegExp(r'\r'), '');
     // data = data.replaceAll(RegExp(r'(?<!\r?\n)\r?\n(?!\r?\n)'), '\n\n');
@@ -547,7 +504,8 @@ class _ReadPageState extends State<ReadPage> {
 
         if (emptyStrNum > 1) {
           end +=
-              (emptyStrNum / chapterContentEmptyStrDivisionCoefficient).floor();
+              (emptyStrNum / settings.chapterContentEmptyStrDivisionCoefficient)
+                  .floor();
 
           end = end > text.length ? text.length : end;
 
@@ -585,8 +543,8 @@ class _ReadPageState extends State<ReadPage> {
           xxx.add(addMap);
           int num1 = (text.length /
                       everyLineFontNum *
-                      chapterTitleStrDivisionCoefficient *
-                      chapterTitleMultiFontSize)
+                      settings.chapterTitleStrDivisionCoefficient *
+                      settings.chapterTitleMultiFontSize)
                   .ceil() +
               1;
           currentLine += num1;
@@ -643,7 +601,7 @@ class _ReadPageState extends State<ReadPage> {
             child: Container(
           height: height,
           width: width,
-          decoration: BoxDecoration(color: Color(backgroundColor)),
+          decoration: BoxDecoration(color: Color(settings.backgroundColor)),
           child: Stack(
             children: [
               Positioned(
@@ -668,9 +626,10 @@ class _ReadPageState extends State<ReadPage> {
                           padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
                           child: PageView.builder(
                             controller: _pageController,
-                            scrollDirection:
-                                isVer ? Axis.vertical : Axis.horizontal,
-                            pageSnapping: isVer ? false : true,
+                            scrollDirection: settings.isVer
+                                ? Axis.vertical
+                                : Axis.horizontal,
+                            pageSnapping: settings.isVer ? false : true,
                             itemCount: widgetList.length,
                             physics: const ClampingScrollPhysics(),
                             itemBuilder: (BuildContext context, int index) {
@@ -735,8 +694,8 @@ class _ReadPageState extends State<ReadPage> {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                    fontFamily: fontFamily,
-                                    color: const Color(0xCFCACACA)),
+                                    fontFamily: settings.fontFamily,
+                                    color: Color(settings.titleFontColor)),
                               ),
                             );
                           })
@@ -757,7 +716,7 @@ class _ReadPageState extends State<ReadPage> {
                               return Text(
                                 value,
                                 style: TextStyle(
-                                  fontFamily: fontFamily,
+                                  fontFamily: settings.fontFamily,
                                 ),
                               );
                             }),
@@ -767,7 +726,7 @@ class _ReadPageState extends State<ReadPage> {
                               return Text(
                                 '${(((currentSeqNo.value + 1) / chapterList.length) * 100).toStringAsFixed(2)}%',
                                 style: TextStyle(
-                                  fontFamily: fontFamily,
+                                  fontFamily: settings.fontFamily,
                                 ),
                               );
                             })
@@ -833,7 +792,7 @@ class _ReadPageState extends State<ReadPage> {
                                           child: Text(
                                             '上一章',
                                             style: TextStyle(
-                                                fontFamily: fontFamily,
+                                                fontFamily: settings.fontFamily,
                                                 fontSize: 12),
                                           ),
                                         ),
@@ -849,7 +808,7 @@ class _ReadPageState extends State<ReadPage> {
                                           child: Text(
                                             '下一章',
                                             style: TextStyle(
-                                                fontFamily: fontFamily,
+                                                fontFamily: settings.fontFamily,
                                                 fontSize: 12),
                                           ),
                                         ),
@@ -878,7 +837,8 @@ class _ReadPageState extends State<ReadPage> {
                                               Text(
                                                 '目录',
                                                 style: TextStyle(
-                                                    fontFamily: fontFamily,
+                                                    fontFamily:
+                                                        settings.fontFamily,
                                                     fontSize: 10),
                                               ),
                                             ],
@@ -896,7 +856,8 @@ class _ReadPageState extends State<ReadPage> {
                                               Text(
                                                 '字体',
                                                 style: TextStyle(
-                                                    fontFamily: fontFamily,
+                                                    fontFamily:
+                                                        settings.fontFamily,
                                                     fontSize: 10),
                                               ),
                                             ],
@@ -918,7 +879,8 @@ class _ReadPageState extends State<ReadPage> {
                                               Text(
                                                 '亮度',
                                                 style: TextStyle(
-                                                    fontFamily: fontFamily,
+                                                    fontFamily:
+                                                        settings.fontFamily,
                                                     fontSize: 10),
                                               ),
                                             ],
@@ -934,7 +896,8 @@ class _ReadPageState extends State<ReadPage> {
                                               Text(
                                                 '夜间',
                                                 style: TextStyle(
-                                                    fontFamily: fontFamily,
+                                                    fontFamily:
+                                                        settings.fontFamily,
                                                     fontSize: 10),
                                               ),
                                             ],
@@ -954,7 +917,8 @@ class _ReadPageState extends State<ReadPage> {
                                               Text(
                                                 '设置',
                                                 style: TextStyle(
-                                                    fontFamily: fontFamily,
+                                                    fontFamily:
+                                                        settings.fontFamily,
                                                     fontSize: 10),
                                               ),
                                             ],
@@ -971,73 +935,14 @@ class _ReadPageState extends State<ReadPage> {
               ValueListenableBuilder(
                   valueListenable: showSettings,
                   builder: (context, value, child) {
-                    var settings = Settings()
-                      ..backgroundColor = backgroundColor
-                      ..needDecreaseWidth = needDecreaseWidth
-                      ..needDecreaseHeight = needDecreaseHeight
-                      ..needIncreaseLineHeight = needIncreaseLineHeight
-                      ..needMultiFontSize = needMultiFontSize
-                      ..chapterTitleMultiFontSize = chapterTitleMultiFontSize
-                      ..chapterTitleNotChinaStrDivisionCoefficient =
-                          chapterTitleNotChinaStrDivisionCoefficient
-                      ..chapterContentNotChinaStrDivisionCoefficient =
-                          chapterContentNotChinaStrDivisionCoefficient
-                      ..chapterContentEnglishUpperStrDivisionCoefficient =
-                          chapterContentEnglishUpperStrDivisionCoefficient
-                      ..chapterContentEnglishLowerStrDivisionCoefficient =
-                          chapterContentEnglishLowerStrDivisionCoefficient
-                      ..chapterContentEmptyStrDivisionCoefficient =
-                          chapterContentEmptyStrDivisionCoefficient
-                      ..chapterContentNumStrDivisionCoefficient =
-                          chapterContentNumStrDivisionCoefficient
-                      ..chapterTitleStrDivisionCoefficient =
-                          chapterTitleStrDivisionCoefficient
-                      ..isVer = isVer;
-
-                    var fontSetting = FontSetting()
-                      ..fontFamily = fontFamily
-                      ..fontSize = fontSize
-                      ..lineHeight = lineHeight
-                      ..fontColor = fontColor;
-
                     return value
                         ? ReadSettings(
                             chapterTitleExpController:
                                 _chapterTitleExpController,
-                            fontSetting: fontSetting,
                             settings: settings,
-                            updateFunc: (Settings settings) {
+                            updateFunc: (Settings setting) {
                               setState(() {
-                                backgroundColor = settings.backgroundColor;
-                                needDecreaseWidth = settings.needDecreaseWidth;
-                                needDecreaseHeight =
-                                    settings.needDecreaseHeight;
-                                needIncreaseLineHeight =
-                                    settings.needIncreaseLineHeight;
-                                needMultiFontSize = settings.needMultiFontSize;
-                                chapterTitleMultiFontSize =
-                                    settings.chapterTitleMultiFontSize;
-                                chapterTitleNotChinaStrDivisionCoefficient =
-                                    settings
-                                        .chapterTitleNotChinaStrDivisionCoefficient;
-                                chapterContentNotChinaStrDivisionCoefficient =
-                                    settings
-                                        .chapterContentNotChinaStrDivisionCoefficient;
-                                chapterContentEnglishUpperStrDivisionCoefficient =
-                                    settings
-                                        .chapterContentEnglishUpperStrDivisionCoefficient;
-                                chapterContentEnglishLowerStrDivisionCoefficient =
-                                    settings
-                                        .chapterContentEnglishLowerStrDivisionCoefficient;
-                                chapterContentEmptyStrDivisionCoefficient =
-                                    settings
-                                        .chapterContentEmptyStrDivisionCoefficient;
-                                chapterContentNumStrDivisionCoefficient =
-                                    settings
-                                        .chapterContentNumStrDivisionCoefficient;
-                                chapterTitleStrDivisionCoefficient =
-                                    settings.chapterTitleStrDivisionCoefficient;
-                                isVer = settings.isVer;
+                                settings = setting;
                                 switchChapter1(currentSeqNo.value);
                               });
                             },
@@ -1085,13 +990,6 @@ class _ReadPageState extends State<ReadPage> {
               ValueListenableBuilder(
                   valueListenable: showFont,
                   builder: (context, value, child) {
-                    var fontSetting = FontSetting()
-                      ..fontSize = fontSize
-                      ..fontColor = fontColor
-                      ..lineHeight = lineHeight
-                      ..titleFontWeight = titleFontWeight
-                      ..contentFontWeight = contentFontWeight
-                      ..fontFamily = fontFamily;
                     return value
                         ? Positioned(
                             left: 0,
@@ -1099,16 +997,10 @@ class _ReadPageState extends State<ReadPage> {
                             bottom: 70,
                             height: 300,
                             child: ReadFontSetting(
-                              fontSetting: fontSetting,
-                              updateFunc: (FontSetting fontSetting) {
+                              settings: settings,
+                              updateFunc: (Settings setting) {
                                 setState(() {
-                                  fontSize = fontSetting.fontSize;
-                                  fontColor = fontSetting.fontColor;
-                                  lineHeight = fontSetting.lineHeight;
-                                  fontFamily = fontSetting.fontFamily;
-                                  titleFontWeight = fontSetting.titleFontWeight;
-                                  contentFontWeight =
-                                      fontSetting.contentFontWeight;
+                                  settings = setting;
                                   switchChapter1(currentSeqNo.value);
                                 });
                               },
@@ -1130,37 +1022,7 @@ class _ReadPageState extends State<ReadPage> {
     book.currentChapter = currentSeqNo.value;
     DatabaseHelper.db.updateById(book);
     SharedPreferences.getInstance().then((value) {
-      value.setString(
-          'config',
-          const JsonEncoder().convert({
-            'backgroundColor': backgroundColor,
-            'isVer': isVer,
-            'fontSize': fontSize,
-            'lineHeight': lineHeight,
-            'needDecreaseWidth': needDecreaseWidth,
-            'needDecreaseHeight': needDecreaseHeight,
-            'needIncreaseLineHeight': needIncreaseLineHeight,
-            'needMultiFontSize': needMultiFontSize,
-            'chapterTitleMultiFontSize': chapterTitleMultiFontSize,
-            'chapterTitleNotChinaStrDivisionCoefficient':
-                chapterTitleNotChinaStrDivisionCoefficient,
-            'chapterContentNotChinaStrDivisionCoefficient':
-                chapterContentNotChinaStrDivisionCoefficient,
-            'chapterContentEnglishUpperStrDivisionCoefficient':
-                chapterContentEnglishUpperStrDivisionCoefficient,
-            'chapterContentEnglishLowerStrDivisionCoefficient':
-                chapterContentEnglishLowerStrDivisionCoefficient,
-            'chapterContentEmptyStrDivisionCoefficient':
-                chapterContentEmptyStrDivisionCoefficient,
-            'chapterContentNumStrDivisionCoefficient':
-                chapterContentNumStrDivisionCoefficient,
-            'chapterTitleStrDivisionCoefficient':
-                chapterTitleStrDivisionCoefficient,
-            'fontFamily': fontFamily,
-            'fontColor': fontColor,
-            'titleFontWeight': titleFontWeight,
-            'contentFontWeight': contentFontWeight,
-          }));
+      value.setString('config', const JsonEncoder().convert(settings.toMap()));
     });
     if (settingController.isOpenVolumeFlip.value) {
       volumeUtils.removeListener(needRestore: true);

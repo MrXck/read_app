@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:read_app/pojo/font_setting.dart';
 import 'package:read_app/pojo/settings.dart';
 
 typedef UpdateFunc = void Function(Settings setting);
@@ -7,7 +6,6 @@ typedef UpdateExpFunc = void Function(String text);
 
 class ReadSettings extends StatelessWidget {
   final Settings settings;
-  final FontSetting fontSetting;
   final UpdateFunc updateFunc;
   final UpdateExpFunc updateExpFunc;
   final List<int> backgroundColorList;
@@ -16,7 +14,6 @@ class ReadSettings extends StatelessWidget {
   const ReadSettings(
       {super.key,
       required this.chapterTitleExpController,
-      required this.fontSetting,
       required this.settings,
       required this.updateFunc,
       required this.updateExpFunc,
@@ -78,13 +75,13 @@ class ReadSettings extends StatelessWidget {
                     Text(
                       '减宽度',
                       style: TextStyle(
-                        fontFamily: fontSetting.fontFamily,
+                        fontFamily: settings.fontFamily,
                       ),
                     ),
                     Text(
                       '减高度',
                       style: TextStyle(
-                        fontFamily: fontSetting.fontFamily,
+                        fontFamily: settings.fontFamily,
                       ),
                     ),
                   ],
@@ -108,7 +105,7 @@ class ReadSettings extends StatelessWidget {
                           child: Text(
                             '-',
                             style: TextStyle(
-                              fontFamily: fontSetting.fontFamily,
+                              fontFamily: settings.fontFamily,
                             ),
                           ),
                         ),
@@ -118,7 +115,7 @@ class ReadSettings extends StatelessWidget {
                         child: Text(
                           '${settings.needDecreaseWidth}',
                           style: TextStyle(
-                            fontFamily: fontSetting.fontFamily,
+                            fontFamily: settings.fontFamily,
                           ),
                         ),
                       ),
@@ -136,7 +133,7 @@ class ReadSettings extends StatelessWidget {
                           child: Text(
                             '+',
                             style: TextStyle(
-                              fontFamily: fontSetting.fontFamily,
+                              fontFamily: settings.fontFamily,
                             ),
                           ),
                         ),
@@ -155,7 +152,7 @@ class ReadSettings extends StatelessWidget {
                           child: Text(
                             '-',
                             style: TextStyle(
-                              fontFamily: fontSetting.fontFamily,
+                              fontFamily: settings.fontFamily,
                             ),
                           ),
                         ),
@@ -165,7 +162,7 @@ class ReadSettings extends StatelessWidget {
                         child: Text(
                           '${settings.needDecreaseHeight}',
                           style: TextStyle(
-                            fontFamily: fontSetting.fontFamily,
+                            fontFamily: settings.fontFamily,
                           ),
                         ),
                       ),
@@ -183,7 +180,7 @@ class ReadSettings extends StatelessWidget {
                           child: Text(
                             '+',
                             style: TextStyle(
-                              fontFamily: fontSetting.fontFamily,
+                              fontFamily: settings.fontFamily,
                             ),
                           ),
                         ),
@@ -212,7 +209,7 @@ class ReadSettings extends StatelessWidget {
                 //           child: Text(
                 //             '-',
                 //             style: TextStyle(
-                //               fontFamily: fontSetting.fontFamily,
+                //               fontFamily: settings.fontFamily,
                 //             ),
                 //           ),
                 //         ),
@@ -224,7 +221,7 @@ class ReadSettings extends StatelessWidget {
                 //               .chapterContentEnglishUpperStrDivisionCoefficient
                 //               .toStringAsFixed(2),
                 //           style: TextStyle(
-                //             fontFamily: fontSetting.fontFamily,
+                //             fontFamily: settings.fontFamily,
                 //           ),
                 //         ),
                 //       ),
@@ -243,7 +240,7 @@ class ReadSettings extends StatelessWidget {
                 //           child: Text(
                 //             '+',
                 //             style: TextStyle(
-                //               fontFamily: fontSetting.fontFamily,
+                //               fontFamily: settings.fontFamily,
                 //             ),
                 //           ),
                 //         ),
@@ -272,7 +269,7 @@ class ReadSettings extends StatelessWidget {
                 //           child: Text(
                 //             '-',
                 //             style: TextStyle(
-                //               fontFamily: fontSetting.fontFamily,
+                //               fontFamily: settings.fontFamily,
                 //             ),
                 //           ),
                 //         ),
@@ -284,7 +281,7 @@ class ReadSettings extends StatelessWidget {
                 //               .chapterContentEnglishLowerStrDivisionCoefficient
                 //               .toStringAsFixed(2),
                 //           style: TextStyle(
-                //             fontFamily: fontSetting.fontFamily,
+                //             fontFamily: settings.fontFamily,
                 //           ),
                 //         ),
                 //       ),
@@ -303,7 +300,7 @@ class ReadSettings extends StatelessWidget {
                 //           child: Text(
                 //             '+',
                 //             style: TextStyle(
-                //               fontFamily: fontSetting.fontFamily,
+                //               fontFamily: settings.fontFamily,
                 //             ),
                 //           ),
                 //         ),
@@ -332,7 +329,7 @@ class ReadSettings extends StatelessWidget {
                           child: Text(
                             '-',
                             style: TextStyle(
-                              fontFamily: fontSetting.fontFamily,
+                              fontFamily: settings.fontFamily,
                             ),
                           ),
                         ),
@@ -343,7 +340,7 @@ class ReadSettings extends StatelessWidget {
                           settings.chapterContentEmptyStrDivisionCoefficient
                               .toStringAsFixed(2),
                           style: TextStyle(
-                            fontFamily: fontSetting.fontFamily,
+                            fontFamily: settings.fontFamily,
                           ),
                         ),
                       ),
@@ -362,7 +359,7 @@ class ReadSettings extends StatelessWidget {
                           child: Text(
                             '+',
                             style: TextStyle(
-                              fontFamily: fontSetting.fontFamily,
+                              fontFamily: settings.fontFamily,
                             ),
                           ),
                         ),
@@ -391,7 +388,7 @@ class ReadSettings extends StatelessWidget {
                 //           child: Text(
                 //             '-',
                 //             style: TextStyle(
-                //               fontFamily: fontSetting.fontFamily,
+                //               fontFamily: settings.fontFamily,
                 //             ),
                 //           ),
                 //         ),
@@ -402,7 +399,7 @@ class ReadSettings extends StatelessWidget {
                 //           settings.chapterContentNumStrDivisionCoefficient
                 //               .toStringAsFixed(2),
                 //           style: TextStyle(
-                //             fontFamily: fontSetting.fontFamily,
+                //             fontFamily: settings.fontFamily,
                 //           ),
                 //         ),
                 //       ),
@@ -421,7 +418,7 @@ class ReadSettings extends StatelessWidget {
                 //           child: Text(
                 //             '+',
                 //             style: TextStyle(
-                //               fontFamily: fontSetting.fontFamily,
+                //               fontFamily: settings.fontFamily,
                 //             ),
                 //           ),
                 //         ),
@@ -435,13 +432,13 @@ class ReadSettings extends StatelessWidget {
                     Text(
                       '减去行高',
                       style: TextStyle(
-                        fontFamily: fontSetting.fontFamily,
+                        fontFamily: settings.fontFamily,
                       ),
                     ),
                     Text(
                       '字体相乘大小',
                       style: TextStyle(
-                        fontFamily: fontSetting.fontFamily,
+                        fontFamily: settings.fontFamily,
                       ),
                     ),
                   ],
@@ -465,7 +462,7 @@ class ReadSettings extends StatelessWidget {
                           child: Text(
                             '-',
                             style: TextStyle(
-                              fontFamily: fontSetting.fontFamily,
+                              fontFamily: settings.fontFamily,
                             ),
                           ),
                         ),
@@ -475,7 +472,7 @@ class ReadSettings extends StatelessWidget {
                         child: Text(
                           settings.needIncreaseLineHeight.toStringAsFixed(2),
                           style: TextStyle(
-                            fontFamily: fontSetting.fontFamily,
+                            fontFamily: settings.fontFamily,
                           ),
                         ),
                       ),
@@ -493,7 +490,7 @@ class ReadSettings extends StatelessWidget {
                           child: Text(
                             '+',
                             style: TextStyle(
-                              fontFamily: fontSetting.fontFamily,
+                              fontFamily: settings.fontFamily,
                             ),
                           ),
                         ),
@@ -512,7 +509,7 @@ class ReadSettings extends StatelessWidget {
                           child: Text(
                             '-',
                             style: TextStyle(
-                              fontFamily: fontSetting.fontFamily,
+                              fontFamily: settings.fontFamily,
                             ),
                           ),
                         ),
@@ -522,7 +519,7 @@ class ReadSettings extends StatelessWidget {
                         child: Text(
                           settings.needMultiFontSize.toStringAsFixed(2),
                           style: TextStyle(
-                            fontFamily: fontSetting.fontFamily,
+                            fontFamily: settings.fontFamily,
                           ),
                         ),
                       ),
@@ -540,7 +537,7 @@ class ReadSettings extends StatelessWidget {
                           child: Text(
                             '+',
                             style: TextStyle(
-                              fontFamily: fontSetting.fontFamily,
+                              fontFamily: settings.fontFamily,
                             ),
                           ),
                         ),
@@ -554,13 +551,13 @@ class ReadSettings extends StatelessWidget {
                     Text(
                       '章节标题相乘大小',
                       style: TextStyle(
-                        fontFamily: fontSetting.fontFamily,
+                        fontFamily: settings.fontFamily,
                       ),
                     ),
                     // Text(
                     //   '内容非中除系数',
                     //   style: TextStyle(
-                    //     fontFamily: fontSetting.fontFamily,
+                    //     fontFamily: settings.fontFamily,
                     //   ),
                     // ),
                     InkWell(
@@ -577,7 +574,7 @@ class ReadSettings extends StatelessWidget {
                         child: Text(
                           '-',
                           style: TextStyle(
-                            fontFamily: fontSetting.fontFamily,
+                            fontFamily: settings.fontFamily,
                           ),
                         ),
                       ),
@@ -587,7 +584,7 @@ class ReadSettings extends StatelessWidget {
                       child: Text(
                         settings.chapterTitleMultiFontSize.toStringAsFixed(2),
                         style: TextStyle(
-                          fontFamily: fontSetting.fontFamily,
+                          fontFamily: settings.fontFamily,
                         ),
                       ),
                     ),
@@ -605,7 +602,7 @@ class ReadSettings extends StatelessWidget {
                         child: Text(
                           '+',
                           style: TextStyle(
-                            fontFamily: fontSetting.fontFamily,
+                            fontFamily: settings.fontFamily,
                           ),
                         ),
                       ),
@@ -631,7 +628,7 @@ class ReadSettings extends StatelessWidget {
                 //           child: Text(
                 //             '-',
                 //             style: TextStyle(
-                //               fontFamily: fontSetting.fontFamily,
+                //               fontFamily: settings.fontFamily,
                 //             ),
                 //           ),
                 //         ),
@@ -641,7 +638,7 @@ class ReadSettings extends StatelessWidget {
                 //         child: Text(
                 //           settings.chapterTitleMultiFontSize.toStringAsFixed(2),
                 //           style: TextStyle(
-                //             fontFamily: fontSetting.fontFamily,
+                //             fontFamily: settings.fontFamily,
                 //           ),
                 //         ),
                 //       ),
@@ -659,7 +656,7 @@ class ReadSettings extends StatelessWidget {
                 //           child: Text(
                 //             '+',
                 //             style: TextStyle(
-                //               fontFamily: fontSetting.fontFamily,
+                //               fontFamily: settings.fontFamily,
                 //             ),
                 //           ),
                 //         ),
@@ -679,7 +676,7 @@ class ReadSettings extends StatelessWidget {
                 //           child: Text(
                 //             '-',
                 //             style: TextStyle(
-                //               fontFamily: fontSetting.fontFamily,
+                //               fontFamily: settings.fontFamily,
                 //             ),
                 //           ),
                 //         ),
@@ -690,7 +687,7 @@ class ReadSettings extends StatelessWidget {
                 //           settings.chapterContentNotChinaStrDivisionCoefficient
                 //               .toStringAsFixed(2),
                 //           style: TextStyle(
-                //             fontFamily: fontSetting.fontFamily,
+                //             fontFamily: settings.fontFamily,
                 //           ),
                 //         ),
                 //       ),
@@ -709,7 +706,7 @@ class ReadSettings extends StatelessWidget {
                 //           child: Text(
                 //             '+',
                 //             style: TextStyle(
-                //               fontFamily: fontSetting.fontFamily,
+                //               fontFamily: settings.fontFamily,
                 //             ),
                 //           ),
                 //         ),
@@ -723,13 +720,13 @@ class ReadSettings extends StatelessWidget {
                     Text(
                       '标题非中除系数',
                       style: TextStyle(
-                        fontFamily: fontSetting.fontFamily,
+                        fontFamily: settings.fontFamily,
                       ),
                     ),
                     Text(
                       '标题字数除系数',
                       style: TextStyle(
-                        fontFamily: fontSetting.fontFamily,
+                        fontFamily: settings.fontFamily,
                       ),
                     ),
                   ],
@@ -754,7 +751,7 @@ class ReadSettings extends StatelessWidget {
                           child: Text(
                             '-',
                             style: TextStyle(
-                              fontFamily: fontSetting.fontFamily,
+                              fontFamily: settings.fontFamily,
                             ),
                           ),
                         ),
@@ -765,7 +762,7 @@ class ReadSettings extends StatelessWidget {
                           settings.chapterTitleNotChinaStrDivisionCoefficient
                               .toStringAsFixed(2),
                           style: TextStyle(
-                            fontFamily: fontSetting.fontFamily,
+                            fontFamily: settings.fontFamily,
                           ),
                         ),
                       ),
@@ -784,7 +781,7 @@ class ReadSettings extends StatelessWidget {
                           child: Text(
                             '+',
                             style: TextStyle(
-                              fontFamily: fontSetting.fontFamily,
+                              fontFamily: settings.fontFamily,
                             ),
                           ),
                         ),
@@ -803,7 +800,7 @@ class ReadSettings extends StatelessWidget {
                           child: Text(
                             '-',
                             style: TextStyle(
-                              fontFamily: fontSetting.fontFamily,
+                              fontFamily: settings.fontFamily,
                             ),
                           ),
                         ),
@@ -814,7 +811,7 @@ class ReadSettings extends StatelessWidget {
                           settings.chapterTitleStrDivisionCoefficient
                               .toStringAsFixed(2),
                           style: TextStyle(
-                            fontFamily: fontSetting.fontFamily,
+                            fontFamily: settings.fontFamily,
                           ),
                         ),
                       ),
@@ -832,7 +829,7 @@ class ReadSettings extends StatelessWidget {
                           child: Text(
                             '+',
                             style: TextStyle(
-                              fontFamily: fontSetting.fontFamily,
+                              fontFamily: settings.fontFamily,
                             ),
                           ),
                         ),
@@ -850,7 +847,7 @@ class ReadSettings extends StatelessWidget {
                       Text(
                         '章节正则：',
                         style: TextStyle(
-                          fontFamily: fontSetting.fontFamily,
+                          fontFamily: settings.fontFamily,
                         ),
                       ),
                       SizedBox(
@@ -876,7 +873,7 @@ class ReadSettings extends StatelessWidget {
                           child: Text(
                             '确定',
                             style: TextStyle(
-                              fontFamily: fontSetting.fontFamily,
+                              fontFamily: settings.fontFamily,
                             ),
                           ))
                     ],

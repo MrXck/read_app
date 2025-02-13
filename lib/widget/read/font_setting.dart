@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:read_app/pojo/font_setting.dart';
+import 'package:read_app/pojo/settings.dart';
 
-typedef UpdateFunc = void Function(FontSetting fontSetting);
+typedef UpdateFunc = void Function(Settings setting);
 
 class ReadFontSetting extends StatelessWidget {
   final UpdateFunc updateFunc;
-  final FontSetting fontSetting;
+  final Settings settings;
 
   String hexToStringWithPrefix(int hexValue) {
     return hexValue.toRadixString(16);
@@ -16,7 +16,7 @@ class ReadFontSetting extends StatelessWidget {
   }
 
   const ReadFontSetting(
-      {super.key, required this.fontSetting, required this.updateFunc});
+      {super.key, required this.settings, required this.updateFunc});
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +31,7 @@ class ReadFontSetting extends StatelessWidget {
     ];
     final textController = TextEditingController();
     var size = MediaQuery.of(context).size;
-    textController.text = hexToStringWithPrefix(fontSetting.fontColor);
+    textController.text = hexToStringWithPrefix(settings.fontColor);
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -50,12 +50,12 @@ class ReadFontSetting extends StatelessWidget {
                 children: [
                   Text(
                     '字体大小',
-                    style: TextStyle(fontFamily: fontSetting.fontFamily),
+                    style: TextStyle(fontFamily: settings.fontFamily),
                   ),
                   InkWell(
                     onTap: () {
-                      fontSetting.fontSize--;
-                      updateFunc(fontSetting);
+                      settings.fontSize--;
+                      updateFunc(settings);
                     },
                     child: Container(
                       padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
@@ -70,12 +70,12 @@ class ReadFontSetting extends StatelessWidget {
                   ),
                   Container(
                     margin: const EdgeInsets.only(left: 10, right: 10),
-                    child: Text('${fontSetting.fontSize}'),
+                    child: Text('${settings.fontSize}'),
                   ),
                   InkWell(
                     onTap: () {
-                      fontSetting.fontSize++;
-                      updateFunc(fontSetting);
+                      settings.fontSize++;
+                      updateFunc(settings);
                     },
                     child: Container(
                       padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
@@ -98,12 +98,12 @@ class ReadFontSetting extends StatelessWidget {
                 children: [
                   Text(
                     '字体行高',
-                    style: TextStyle(fontFamily: fontSetting.fontFamily),
+                    style: TextStyle(fontFamily: settings.fontFamily),
                   ),
                   InkWell(
                     onTap: () {
-                      fontSetting.lineHeight -= 0.1;
-                      updateFunc(fontSetting);
+                      settings.lineHeight -= 0.1;
+                      updateFunc(settings);
                     },
                     child: Container(
                       padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
@@ -118,12 +118,12 @@ class ReadFontSetting extends StatelessWidget {
                   ),
                   Container(
                     margin: const EdgeInsets.only(left: 10, right: 10),
-                    child: Text((fontSetting.lineHeight).toStringAsFixed(1)),
+                    child: Text((settings.lineHeight).toStringAsFixed(1)),
                   ),
                   InkWell(
                     onTap: () {
-                      fontSetting.lineHeight += 0.1;
-                      updateFunc(fontSetting);
+                      settings.lineHeight += 0.1;
+                      updateFunc(settings);
                     },
                     child: Container(
                       padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
@@ -146,15 +146,15 @@ class ReadFontSetting extends StatelessWidget {
                 children: [
                   Text(
                     '内容字重',
-                    style: TextStyle(fontFamily: fontSetting.fontFamily),
+                    style: TextStyle(fontFamily: settings.fontFamily),
                   ),
                   InkWell(
                     onTap: () {
-                      if (fontSetting.contentFontWeight <= 0) {
+                      if (settings.contentFontWeight <= 0) {
                         return;
                       }
-                      fontSetting.contentFontWeight -= 1;
-                      updateFunc(fontSetting);
+                      settings.contentFontWeight -= 1;
+                      updateFunc(settings);
                     },
                     child: Container(
                       padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
@@ -169,15 +169,15 @@ class ReadFontSetting extends StatelessWidget {
                   ),
                   Container(
                     margin: const EdgeInsets.only(left: 10, right: 10),
-                    child: Text(fontSetting.contentFontWeight.toString()),
+                    child: Text(settings.contentFontWeight.toString()),
                   ),
                   InkWell(
                     onTap: () {
-                      if (fontSetting.contentFontWeight >= 8) {
+                      if (settings.contentFontWeight >= 8) {
                         return;
                       }
-                      fontSetting.contentFontWeight += 1;
-                      updateFunc(fontSetting);
+                      settings.contentFontWeight += 1;
+                      updateFunc(settings);
                     },
                     child: Container(
                       padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
@@ -200,15 +200,15 @@ class ReadFontSetting extends StatelessWidget {
                 children: [
                   Text(
                     '标题字重',
-                    style: TextStyle(fontFamily: fontSetting.fontFamily),
+                    style: TextStyle(fontFamily: settings.fontFamily),
                   ),
                   InkWell(
                     onTap: () {
-                      if (fontSetting.titleFontWeight <= 0) {
+                      if (settings.titleFontWeight <= 0) {
                         return;
                       }
-                      fontSetting.titleFontWeight -= 1;
-                      updateFunc(fontSetting);
+                      settings.titleFontWeight -= 1;
+                      updateFunc(settings);
                     },
                     child: Container(
                       padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
@@ -223,15 +223,15 @@ class ReadFontSetting extends StatelessWidget {
                   ),
                   Container(
                     margin: const EdgeInsets.only(left: 10, right: 10),
-                    child: Text(fontSetting.titleFontWeight.toString()),
+                    child: Text(settings.titleFontWeight.toString()),
                   ),
                   InkWell(
                     onTap: () {
-                      if (fontSetting.titleFontWeight >= 8) {
+                      if (settings.titleFontWeight >= 8) {
                         return;
                       }
-                      fontSetting.titleFontWeight += 1;
-                      updateFunc(fontSetting);
+                      settings.titleFontWeight += 1;
+                      updateFunc(settings);
                     },
                     child: Container(
                       padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
@@ -255,7 +255,7 @@ class ReadFontSetting extends StatelessWidget {
                   Text(
                     '字体颜色：',
                     style: TextStyle(
-                      fontFamily: fontSetting.fontFamily,
+                      fontFamily: settings.fontFamily,
                     ),
                   ),
                   SizedBox(
@@ -276,13 +276,13 @@ class ReadFontSetting extends StatelessWidget {
                   ),
                   TextButton(
                       onPressed: () async {
-                        fontSetting.fontColor = hexStringToInt(textController.text);
-                        updateFunc(fontSetting);
+                        settings.fontColor = hexStringToInt(textController.text);
+                        updateFunc(settings);
                       },
                       child: Text(
                         '确定',
                         style: TextStyle(
-                          fontFamily: fontSetting.fontFamily,
+                          fontFamily: settings.fontFamily,
                         ),
                       ))
                 ],
@@ -298,13 +298,13 @@ class ReadFontSetting extends StatelessWidget {
                             item,
                             style: TextStyle(
                                 fontFamily: item,
-                                color: fontSetting.fontFamily == item
+                                color: settings.fontFamily == item
                                     ? Colors.blue
                                     : Colors.black),
                           ),
                           onTap: () {
-                            fontSetting.fontFamily = item;
-                            updateFunc(fontSetting);
+                            settings.fontFamily = item;
+                            updateFunc(settings);
                           });
                     }).toList()))
           ]),

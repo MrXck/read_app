@@ -7,6 +7,7 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:read_app/controller/setting_controller.dart';
 import 'package:read_app/pojo/book.dart';
+import 'package:read_app/pojo/settings.dart';
 import 'package:read_app/utils/db.dart';
 import 'package:read_app/utils/volume_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -26,34 +27,14 @@ class _PdfPageState extends State<PdfPage> {
 
   bool showOption = false;
 
-  bool isVer = false;
   final VolumeUtils volumeUtils = VolumeUtils();
   final SettingController settingController = Get.find();
+  Settings settings = Settings();
 
-  String fontFamily = 'pingfang';
-  int fontColor = 0xff000000;
   double pageTopPadding = 0;
   double pageBottomPadding = 30;
   double pageLeftPadding = 10;
   double pageRightPadding = 10;
-
-  int needDecreaseWidth = 0;
-  int needDecreaseHeight = 0;
-  double needIncreaseLineHeight = 0.3;
-  double needMultiFontSize = 1.1;
-  double chapterTitleMultiFontSize = 1.4;
-  double chapterTitleNotChinaStrDivisionCoefficient = 1.4;
-  double chapterContentNotChinaStrDivisionCoefficient = 1.4;
-  double chapterContentEnglishUpperStrDivisionCoefficient = 1.4;
-  double chapterContentEnglishLowerStrDivisionCoefficient = 1.4;
-  double chapterContentEmptyStrDivisionCoefficient = 1.3;
-  double chapterContentNumStrDivisionCoefficient = 1.4;
-  double chapterTitleStrDivisionCoefficient = 1.5;
-  int titleFontWeight = 7;
-  int contentFontWeight = 4;
-  int backgroundColor = 0xFFF8F7F3;
-  double fontSize = 16;
-  double lineHeight = 1.6;
 
   @override
   void initState() {
@@ -80,33 +61,7 @@ class _PdfPageState extends State<PdfPage> {
 
     var value = await SharedPreferences.getInstance();
     var config = const JsonDecoder().convert(value.getString('config') ?? '{}');
-    backgroundColor = config['backgroundColor'] ?? 0xFFE6DBC5;
-    isVer = config['isVer'] ?? false;
-    fontSize = config['fontSize'] ?? 16;
-    lineHeight = config['lineHeight'] ?? 1.6;
-    needDecreaseWidth = config['needDecreaseWidth'] ?? 0;
-    needDecreaseHeight = config['needDecreaseHeight'] ?? 0;
-    needIncreaseLineHeight = config['needIncreaseLineHeight'] ?? 0.3;
-    needMultiFontSize = config['needMultiFontSize'] ?? 1.14;
-    chapterTitleMultiFontSize = config['chapterTitleMultiFontSize'] ?? 1.4;
-    chapterTitleNotChinaStrDivisionCoefficient =
-        config['chapterTitleNotChinaStrDivisionCoefficient'] ?? 1.4;
-    chapterContentNotChinaStrDivisionCoefficient =
-        config['chapterContentNotChinaStrDivisionCoefficient'] ?? 1.4;
-    chapterContentEnglishUpperStrDivisionCoefficient =
-        config['chapterContentEnglishUpperStrDivisionCoefficient'] ?? 1.4;
-    chapterContentEnglishLowerStrDivisionCoefficient =
-        config['chapterContentEnglishLowerStrDivisionCoefficient'] ?? 1.4;
-    chapterContentEmptyStrDivisionCoefficient =
-        config['chapterContentEmptyStrDivisionCoefficient'] ?? 1.3;
-    chapterContentNumStrDivisionCoefficient =
-        config['chapterContentNumStrDivisionCoefficient'] ?? 1.4;
-    chapterTitleStrDivisionCoefficient =
-        config['chapterTitleStrDivisionCoefficient'] ?? 1.5;
-    fontFamily = config['fontFamily'] ?? 'pingfang';
-    fontColor = config['fontColor'] ?? 0xff000000;
-    titleFontWeight = config['titleFontWeight'] ?? 7;
-    contentFontWeight = config['contentFontWeight'] ?? 4;
+    settings = Settings.fromMap(config);
   }
 
   @override
@@ -125,7 +80,7 @@ class _PdfPageState extends State<PdfPage> {
               File(join(book.assetDir, book.path)),
               controller: _pdfViewerController,
               pageLayoutMode: PdfPageLayoutMode.single,
-              scrollDirection: isVer
+              scrollDirection: settings.isVer
                   ? PdfScrollDirection.vertical
                   : PdfScrollDirection.horizontal,
               onDocumentLoaded: (PdfDocumentLoadedDetails details) {
@@ -143,7 +98,6 @@ class _PdfPageState extends State<PdfPage> {
                   showOption = !showOption;
                 });
               },
-
             ),
           ),
           Visibility(
@@ -188,7 +142,7 @@ class _PdfPageState extends State<PdfPage> {
                       InkWell(
                         onTap: () {
                           setState(() {
-                            isVer = !isVer;
+                            settings.isVer = !settings.isVer;
                           });
                         },
                         child: Container(
@@ -197,8 +151,9 @@ class _PdfPageState extends State<PdfPage> {
                               borderRadius:
                                   BorderRadius.all(Radius.circular(40))),
                           padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                          child:
-                              isVer ? const Text('上下翻页') : const Text('左右翻页'),
+                          child: settings.isVer
+                              ? const Text('上下翻页')
+                              : const Text('左右翻页'),
                         ),
                       ),
                     ],
@@ -219,37 +174,7 @@ class _PdfPageState extends State<PdfPage> {
         _pdfViewerController.pageNumber / _pdfViewerController.pageCount * 100;
     DatabaseHelper.db.updateById(book);
     SharedPreferences.getInstance().then((value) {
-      value.setString(
-          'config',
-          const JsonEncoder().convert({
-            'backgroundColor': backgroundColor,
-            'isVer': isVer,
-            'fontSize': fontSize,
-            'lineHeight': lineHeight,
-            'needDecreaseWidth': needDecreaseWidth,
-            'needDecreaseHeight': needDecreaseHeight,
-            'needIncreaseLineHeight': needIncreaseLineHeight,
-            'needMultiFontSize': needMultiFontSize,
-            'chapterTitleMultiFontSize': chapterTitleMultiFontSize,
-            'chapterTitleNotChinaStrDivisionCoefficient':
-                chapterTitleNotChinaStrDivisionCoefficient,
-            'chapterContentNotChinaStrDivisionCoefficient':
-                chapterContentNotChinaStrDivisionCoefficient,
-            'chapterContentEnglishUpperStrDivisionCoefficient':
-                chapterContentEnglishUpperStrDivisionCoefficient,
-            'chapterContentEnglishLowerStrDivisionCoefficient':
-                chapterContentEnglishLowerStrDivisionCoefficient,
-            'chapterContentEmptyStrDivisionCoefficient':
-                chapterContentEmptyStrDivisionCoefficient,
-            'chapterContentNumStrDivisionCoefficient':
-                chapterContentNumStrDivisionCoefficient,
-            'chapterTitleStrDivisionCoefficient':
-                chapterTitleStrDivisionCoefficient,
-            'fontFamily': fontFamily,
-            'fontColor': fontColor,
-            'titleFontWeight': titleFontWeight,
-            'contentFontWeight': contentFontWeight,
-          }));
+      value.setString('config', const JsonEncoder().convert(settings.toMap()));
     });
     if (settingController.isOpenVolumeFlip.value) {
       volumeUtils.removeListener(needRestore: true);
