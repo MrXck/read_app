@@ -832,6 +832,9 @@ class _ReadPageState extends State<ReadPage> {
                                           onTap: () {
                                             showChapter.value =
                                                 !(showChapter.value);
+
+                                            showSettings.value = false;
+                                            showFont.value = false;
                                           },
                                           child: Wrap(
                                             direction: Axis.vertical,
@@ -853,6 +856,9 @@ class _ReadPageState extends State<ReadPage> {
                                         InkWell(
                                           onTap: () {
                                             showFont.value = !(showFont.value);
+
+                                            showChapter.value = false;
+                                            showSettings.value = false;
                                           },
                                           child: Wrap(
                                             direction: Axis.vertical,
@@ -913,6 +919,9 @@ class _ReadPageState extends State<ReadPage> {
                                           onTap: () {
                                             showSettings.value =
                                                 !(showSettings.value);
+
+                                            showChapter.value = false;
+                                            showFont.value = false;
                                           },
                                           child: Wrap(
                                             direction: Axis.vertical,

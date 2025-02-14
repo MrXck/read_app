@@ -6,7 +6,6 @@ import 'package:read_app/pojo/settings.dart';
 typedef UpdateFunc = void Function(Settings setting);
 typedef UpdateExpFunc = void Function(String text);
 
-
 class ReadSettings extends StatefulWidget {
   final Settings settings;
   final UpdateFunc updateFunc;
@@ -16,11 +15,11 @@ class ReadSettings extends StatefulWidget {
 
   const ReadSettings(
       {super.key,
-        required this.chapterTitleExpController,
-        required this.settings,
-        required this.updateFunc,
-        required this.updateExpFunc,
-        required this.backgroundColorList});
+      required this.chapterTitleExpController,
+      required this.settings,
+      required this.updateFunc,
+      required this.updateExpFunc,
+      required this.backgroundColorList});
 
   @override
   State<ReadSettings> createState() => _ReadSettingsState();
@@ -45,12 +44,75 @@ class _ReadSettingsState extends State<ReadSettings> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      Text(
+                        '翻页模式',
+                        style: TextStyle(
+                          fontFamily: widget.settings.fontFamily,
+                        ),
+                      ),
                       InkWell(
-                        onTap: () {
-                          widget.settings.isVer = !widget.settings.isVer;
-                          widget.updateFunc(widget.settings);
-                        },
-                        child: widget.settings.isVer ? const Text('左右滚动') : const Text('上下滚动'),
+                          onTap: () {
+                            widget.settings.isVer = false;
+                            widget.updateFunc(widget.settings);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(40)),
+                                border: widget.settings.isVer == false
+                                    ? Border.all(
+                                        color: Colors.black,
+                                        style: BorderStyle.solid,
+                                        width: 2)
+                                    : Border.all(color: Colors.white,
+                                    style: BorderStyle.solid,
+                                    width: 2)),
+                            child: Text(
+                              '左右滚动',
+                              style: TextStyle(
+                                fontFamily: widget.settings.fontFamily,
+                              ),
+                            ),
+                          )),
+                      InkWell(
+                          onTap: () {
+                            widget.settings.isVer = true;
+                            widget.updateFunc(widget.settings);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(40)),
+                                border: widget.settings.isVer == true
+                                    ? Border.all(
+                                        color: Colors.black,
+                                        style: BorderStyle.solid,
+                                        width: 2)
+                                    : Border.all(color: Colors.white,
+                                    style: BorderStyle.solid,
+                                    width: 2)),
+                            child: Text(
+                              '上下滚动',
+                              style: TextStyle(
+                                fontFamily: widget.settings.fontFamily,
+                              ),
+                            ),
+                          )),
+                    ],
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '背景颜色',
+                        style: TextStyle(
+                          fontFamily: widget.settings.fontFamily,
+                        ),
                       ),
                       ...widget.backgroundColorList.map((item) {
                         return InkWell(
@@ -60,16 +122,16 @@ class _ReadSettingsState extends State<ReadSettings> {
                           },
                           child: Container(
                             height: 30,
-                            width: width / 7,
+                            width: 30,
                             decoration: BoxDecoration(
                                 color: Color(item),
                                 borderRadius:
-                                const BorderRadius.all(Radius.circular(40)),
+                                    const BorderRadius.all(Radius.circular(40)),
                                 border: widget.settings.backgroundColor == item
                                     ? Border.all(
-                                    color: Colors.black,
-                                    style: BorderStyle.solid,
-                                    width: 2)
+                                        color: Colors.black,
+                                        style: BorderStyle.solid,
+                                        width: 2)
                                     : Border.all(color: Colors.white)),
                           ),
                         );
@@ -77,67 +139,54 @@ class _ReadSettingsState extends State<ReadSettings> {
                     ],
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Text(
-                      '减宽度',
-                      style: TextStyle(
-                        fontFamily: widget.settings.fontFamily,
-                      ),
-                    ),
-                    Text(
-                      '减高度',
-                      style: TextStyle(
-                        fontFamily: widget.settings.fontFamily,
-                      ),
-                    ),
-                  ],
-                ),
                 Container(
                   margin: const EdgeInsets.only(bottom: 10),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '背景颜色：',
+                        '背景颜色',
                         style: TextStyle(
                           fontFamily: widget.settings.fontFamily,
                         ),
                       ),
-                      TextButton(onPressed: () {
-                        Get.defaultDialog(
-                            title: '背景颜色',
-                            content: ColorPicker(
-                              pickerColor: Color(widget.settings.backgroundColor),
-                              onColorChanged: (color) {
-                                setState(() {
-                                  widget.settings.backgroundColor = color.value;
-                                });
-                              },
-                              colorPickerWidth: 300,
-                              pickerAreaHeightPercent: 0.7,
-                              enableAlpha: true,
-                              labelTypes: const [
-                                ColorLabelType.hsl,
-                                ColorLabelType.hsv
-                              ],
-                              displayThumbColor: true,
-                              paletteType: PaletteType.hsl,
-                              pickerAreaBorderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(2),
-                                topRight: Radius.circular(2),
-                              ),
-                              hexInputBar: false,
-                            )
-                        );
-                      }, child: Text(
-                        '颜色',
-                        style: TextStyle(
-                          fontFamily: widget.settings.fontFamily,
-                          color: Color(widget.settings.backgroundColor),
+                      TextButton(
+                        onPressed: () {
+                          Get.defaultDialog(
+                              title: '背景颜色',
+                              content: ColorPicker(
+                                pickerColor:
+                                Color(widget.settings.backgroundColor),
+                                onColorChanged: (color) {
+                                  setState(() {
+                                    widget.settings.backgroundColor =
+                                        color.value;
+                                  });
+                                },
+                                colorPickerWidth: 300,
+                                pickerAreaHeightPercent: 0.7,
+                                enableAlpha: true,
+                                labelTypes: const [
+                                  ColorLabelType.hsl,
+                                  ColorLabelType.hsv
+                                ],
+                                displayThumbColor: true,
+                                paletteType: PaletteType.hsl,
+                                pickerAreaBorderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(2),
+                                  topRight: Radius.circular(2),
+                                ),
+                                hexInputBar: false,
+                              ));
+                        },
+                        child: Text(
+                          '颜色',
+                          style: TextStyle(
+                            fontFamily: widget.settings.fontFamily,
+                            color: Color(widget.settings.backgroundColor),
+                          ),
                         ),
-                      ),),
+                      ),
                       TextButton(
                           onPressed: () async {
                             widget.updateFunc(widget.settings);
@@ -156,6 +205,12 @@ class _ReadSettingsState extends State<ReadSettings> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      Text(
+                        '减去宽度',
+                        style: TextStyle(
+                          fontFamily: widget.settings.fontFamily,
+                        ),
+                      ),
                       InkWell(
                         onTap: () {
                           widget.settings.needDecreaseWidth--;
@@ -203,6 +258,20 @@ class _ReadSettingsState extends State<ReadSettings> {
                           ),
                         ),
                       ),
+                    ],
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '减去高度',
+                        style: TextStyle(
+                          fontFamily: widget.settings.fontFamily,
+                        ),
+                      ),
                       InkWell(
                         onTap: () {
                           widget.settings.needDecreaseHeight--;
@@ -213,7 +282,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                              BorderRadius.all(Radius.circular(40))),
+                                  BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '-',
                             style: TextStyle(
@@ -241,7 +310,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                              BorderRadius.all(Radius.circular(40))),
+                                  BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '+',
                             style: TextStyle(
@@ -253,126 +322,6 @@ class _ReadSettingsState extends State<ReadSettings> {
                     ],
                   ),
                 ),
-                // Container(
-                //   margin: const EdgeInsets.only(bottom: 10),
-                //   child: Row(
-                //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //     children: [
-                //       const Text('内容英文大写字母除系数'),
-                //       InkWell(
-                //         onTap: () {
-                //           widget.settings.chapterContentEnglishUpperStrDivisionCoefficient -=
-                //               0.01;
-                //           widget.updateFunc(widget.settings);
-                //         },
-                //         child: Container(
-                //           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                //           decoration: const BoxDecoration(
-                //               color: Color(0xFFEAEAEA),
-                //               borderRadius:
-                //                   BorderRadius.all(Radius.circular(40))),
-                //           child: Text(
-                //             '-',
-                //             style: TextStyle(
-                //               fontFamily: widget.settings.fontFamily,
-                //             ),
-                //           ),
-                //         ),
-                //       ),
-                //       Container(
-                //         margin: const EdgeInsets.only(left: 6, right: 6),
-                //         child: Text(
-                //           widget.settings
-                //               .chapterContentEnglishUpperStrDivisionCoefficient
-                //               .toStringAsFixed(2),
-                //           style: TextStyle(
-                //             fontFamily: widget.settings.fontFamily,
-                //           ),
-                //         ),
-                //       ),
-                //       InkWell(
-                //         onTap: () {
-                //           widget.settings.chapterContentEnglishUpperStrDivisionCoefficient +=
-                //               0.01;
-                //           widget.updateFunc(widget.settings);
-                //         },
-                //         child: Container(
-                //           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                //           decoration: const BoxDecoration(
-                //               color: Color(0xFFEAEAEA),
-                //               borderRadius:
-                //                   BorderRadius.all(Radius.circular(40))),
-                //           child: Text(
-                //             '+',
-                //             style: TextStyle(
-                //               fontFamily: widget.settings.fontFamily,
-                //             ),
-                //           ),
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // ),
-                // Container(
-                //   margin: const EdgeInsets.only(bottom: 10),
-                //   child: Row(
-                //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //     children: [
-                //       const Text('内容英文小写字母除系数'),
-                //       InkWell(
-                //         onTap: () {
-                //           widget.settings.chapterContentEnglishLowerStrDivisionCoefficient -=
-                //               0.01;
-                //           widget.updateFunc(widget.settings);
-                //         },
-                //         child: Container(
-                //           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                //           decoration: const BoxDecoration(
-                //               color: Color(0xFFEAEAEA),
-                //               borderRadius:
-                //                   BorderRadius.all(Radius.circular(40))),
-                //           child: Text(
-                //             '-',
-                //             style: TextStyle(
-                //               fontFamily: widget.settings.fontFamily,
-                //             ),
-                //           ),
-                //         ),
-                //       ),
-                //       Container(
-                //         margin: const EdgeInsets.only(left: 6, right: 6),
-                //         child: Text(
-                //           widget.settings
-                //               .chapterContentEnglishLowerStrDivisionCoefficient
-                //               .toStringAsFixed(2),
-                //           style: TextStyle(
-                //             fontFamily: widget.settings.fontFamily,
-                //           ),
-                //         ),
-                //       ),
-                //       InkWell(
-                //         onTap: () {
-                //           widget.settings.chapterContentEnglishLowerStrDivisionCoefficient +=
-                //               0.01;
-                //           widget.updateFunc(widget.settings);
-                //         },
-                //         child: Container(
-                //           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                //           decoration: const BoxDecoration(
-                //               color: Color(0xFFEAEAEA),
-                //               borderRadius:
-                //                   BorderRadius.all(Radius.circular(40))),
-                //           child: Text(
-                //             '+',
-                //             style: TextStyle(
-                //               fontFamily: widget.settings.fontFamily,
-                //             ),
-                //           ),
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // ),
                 Container(
                   margin: const EdgeInsets.only(bottom: 10),
                   child: Row(
@@ -381,8 +330,9 @@ class _ReadSettingsState extends State<ReadSettings> {
                       const Text('内容空格除系数'),
                       InkWell(
                         onTap: () {
-                          widget.settings.chapterContentEmptyStrDivisionCoefficient -=
-                          0.01;
+                          widget.settings
+                                  .chapterContentEmptyStrDivisionCoefficient -=
+                              0.01;
                           widget.updateFunc(widget.settings);
                         },
                         child: Container(
@@ -390,7 +340,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                              BorderRadius.all(Radius.circular(40))),
+                                  BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '-',
                             style: TextStyle(
@@ -402,7 +352,8 @@ class _ReadSettingsState extends State<ReadSettings> {
                       Container(
                         margin: const EdgeInsets.only(left: 6, right: 6),
                         child: Text(
-                          widget.settings.chapterContentEmptyStrDivisionCoefficient
+                          widget.settings
+                              .chapterContentEmptyStrDivisionCoefficient
                               .toStringAsFixed(2),
                           style: TextStyle(
                             fontFamily: widget.settings.fontFamily,
@@ -411,8 +362,9 @@ class _ReadSettingsState extends State<ReadSettings> {
                       ),
                       InkWell(
                         onTap: () {
-                          widget.settings.chapterContentEmptyStrDivisionCoefficient +=
-                          0.01;
+                          widget.settings
+                                  .chapterContentEmptyStrDivisionCoefficient +=
+                              0.01;
                           widget.updateFunc(widget.settings);
                         },
                         child: Container(
@@ -420,7 +372,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                              BorderRadius.all(Radius.circular(40))),
+                                  BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '+',
                             style: TextStyle(
@@ -432,87 +384,17 @@ class _ReadSettingsState extends State<ReadSettings> {
                     ],
                   ),
                 ),
-                // Container(
-                //   margin: const EdgeInsets.only(bottom: 10),
-                //   child: Row(
-                //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //     children: [
-                //       const Text('内容数字除系数'),
-                //       InkWell(
-                //         onTap: () {
-                //           widget.settings.chapterContentNumStrDivisionCoefficient -=
-                //           0.01;
-                //           widget.updateFunc(widget.settings);
-                //         },
-                //         child: Container(
-                //           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                //           decoration: const BoxDecoration(
-                //               color: Color(0xFFEAEAEA),
-                //               borderRadius:
-                //               BorderRadius.all(Radius.circular(40))),
-                //           child: Text(
-                //             '-',
-                //             style: TextStyle(
-                //               fontFamily: widget.settings.fontFamily,
-                //             ),
-                //           ),
-                //         ),
-                //       ),
-                //       Container(
-                //         margin: const EdgeInsets.only(left: 6, right: 6),
-                //         child: Text(
-                //           widget.settings.chapterContentNumStrDivisionCoefficient
-                //               .toStringAsFixed(2),
-                //           style: TextStyle(
-                //             fontFamily: widget.settings.fontFamily,
-                //           ),
-                //         ),
-                //       ),
-                //       InkWell(
-                //         onTap: () {
-                //           widget.settings.chapterContentNumStrDivisionCoefficient +=
-                //           0.01;
-                //           widget.updateFunc(widget.settings);
-                //         },
-                //         child: Container(
-                //           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                //           decoration: const BoxDecoration(
-                //               color: Color(0xFFEAEAEA),
-                //               borderRadius:
-                //               BorderRadius.all(Radius.circular(40))),
-                //           child: Text(
-                //             '+',
-                //             style: TextStyle(
-                //               fontFamily: widget.settings.fontFamily,
-                //             ),
-                //           ),
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Text(
-                      '减去行高',
-                      style: TextStyle(
-                        fontFamily: widget.settings.fontFamily,
-                      ),
-                    ),
-                    Text(
-                      '字体相乘大小',
-                      style: TextStyle(
-                        fontFamily: widget.settings.fontFamily,
-                      ),
-                    ),
-                  ],
-                ),
                 Container(
                   margin: const EdgeInsets.only(bottom: 10),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      Text(
+                        '减去行高',
+                        style: TextStyle(
+                          fontFamily: widget.settings.fontFamily,
+                        ),
+                      ),
                       InkWell(
                         onTap: () {
                           widget.settings.needIncreaseLineHeight -= 0.01;
@@ -535,7 +417,8 @@ class _ReadSettingsState extends State<ReadSettings> {
                       Container(
                         margin: const EdgeInsets.only(left: 6, right: 6),
                         child: Text(
-                          widget.settings.needIncreaseLineHeight.toStringAsFixed(2),
+                          widget.settings.needIncreaseLineHeight
+                              .toStringAsFixed(2),
                           style: TextStyle(
                             fontFamily: widget.settings.fontFamily,
                           ),
@@ -558,6 +441,20 @@ class _ReadSettingsState extends State<ReadSettings> {
                               fontFamily: widget.settings.fontFamily,
                             ),
                           ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '字体相乘大小',
+                        style: TextStyle(
+                          fontFamily: widget.settings.fontFamily,
                         ),
                       ),
                       InkWell(
@@ -610,200 +507,83 @@ class _ReadSettingsState extends State<ReadSettings> {
                     ],
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Text(
-                      '章节标题相乘大小',
-                      style: TextStyle(
-                        fontFamily: widget.settings.fontFamily,
-                      ),
-                    ),
-                    // Text(
-                    //   '内容非中除系数',
-                    //   style: TextStyle(
-                    //     fontFamily: widget.settings.fontFamily,
-                    //   ),
-                    // ),
-                    InkWell(
-                      onTap: () {
-                        widget.settings.chapterTitleMultiFontSize -= 0.01;
-                        widget.updateFunc(widget.settings);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                        decoration: const BoxDecoration(
-                            color: Color(0xFFEAEAEA),
-                            borderRadius:
-                            BorderRadius.all(Radius.circular(40))),
-                        child: Text(
-                          '-',
-                          style: TextStyle(
-                            fontFamily: widget.settings.fontFamily,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.only(left: 6, right: 6),
-                      child: Text(
-                        widget.settings.chapterTitleMultiFontSize.toStringAsFixed(2),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '章节标题相乘大小',
                         style: TextStyle(
                           fontFamily: widget.settings.fontFamily,
                         ),
                       ),
-                    ),
-                    InkWell(
-                      onTap: () {
-                        widget.settings.chapterTitleMultiFontSize += 0.01;
-                        widget.updateFunc(widget.settings);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                        decoration: const BoxDecoration(
-                            color: Color(0xFFEAEAEA),
-                            borderRadius:
-                            BorderRadius.all(Radius.circular(40))),
+                      InkWell(
+                        onTap: () {
+                          widget.settings.chapterTitleMultiFontSize -= 0.01;
+                          widget.updateFunc(widget.settings);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+                          decoration: const BoxDecoration(
+                              color: Color(0xFFEAEAEA),
+                              borderRadius:
+                              BorderRadius.all(Radius.circular(40))),
+                          child: Text(
+                            '-',
+                            style: TextStyle(
+                              fontFamily: widget.settings.fontFamily,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(left: 6, right: 6),
                         child: Text(
-                          '+',
+                          widget.settings.chapterTitleMultiFontSize
+                              .toStringAsFixed(2),
                           style: TextStyle(
                             fontFamily: widget.settings.fontFamily,
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                // Container(
-                //   margin: const EdgeInsets.only(bottom: 10),
-                //   child: Row(
-                //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //     children: [
-                //       InkWell(
-                //         onTap: () {
-                //           widget.settings.chapterTitleMultiFontSize -= 0.01;
-                //           widget.updateFunc(widget.settings);
-                //         },
-                //         child: Container(
-                //           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                //           decoration: const BoxDecoration(
-                //               color: Color(0xFFEAEAEA),
-                //               borderRadius:
-                //                   BorderRadius.all(Radius.circular(40))),
-                //           child: Text(
-                //             '-',
-                //             style: TextStyle(
-                //               fontFamily: widget.settings.fontFamily,
-                //             ),
-                //           ),
-                //         ),
-                //       ),
-                //       Container(
-                //         margin: const EdgeInsets.only(left: 6, right: 6),
-                //         child: Text(
-                //           widget.settings.chapterTitleMultiFontSize.toStringAsFixed(2),
-                //           style: TextStyle(
-                //             fontFamily: widget.settings.fontFamily,
-                //           ),
-                //         ),
-                //       ),
-                //       InkWell(
-                //         onTap: () {
-                //           widget.settings.chapterTitleMultiFontSize += 0.01;
-                //           widget.updateFunc(widget.settings);
-                //         },
-                //         child: Container(
-                //           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                //           decoration: const BoxDecoration(
-                //               color: Color(0xFFEAEAEA),
-                //               borderRadius:
-                //                   BorderRadius.all(Radius.circular(40))),
-                //           child: Text(
-                //             '+',
-                //             style: TextStyle(
-                //               fontFamily: widget.settings.fontFamily,
-                //             ),
-                //           ),
-                //         ),
-                //       ),
-                //       InkWell(
-                //         onTap: () {
-                //           widget.settings.chapterContentNotChinaStrDivisionCoefficient -=
-                //               0.01;
-                //           widget.updateFunc(widget.settings);
-                //         },
-                //         child: Container(
-                //           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                //           decoration: const BoxDecoration(
-                //               color: Color(0xFFEAEAEA),
-                //               borderRadius:
-                //                   BorderRadius.all(Radius.circular(40))),
-                //           child: Text(
-                //             '-',
-                //             style: TextStyle(
-                //               fontFamily: widget.settings.fontFamily,
-                //             ),
-                //           ),
-                //         ),
-                //       ),
-                //       Container(
-                //         margin: const EdgeInsets.only(left: 6, right: 6),
-                //         child: Text(
-                //           widget.settings.chapterContentNotChinaStrDivisionCoefficient
-                //               .toStringAsFixed(2),
-                //           style: TextStyle(
-                //             fontFamily: widget.settings.fontFamily,
-                //           ),
-                //         ),
-                //       ),
-                //       InkWell(
-                //         onTap: () {
-                //           widget.settings.chapterContentNotChinaStrDivisionCoefficient +=
-                //               0.01;
-                //           widget.updateFunc(widget.settings);
-                //         },
-                //         child: Container(
-                //           padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                //           decoration: const BoxDecoration(
-                //               color: Color(0xFFEAEAEA),
-                //               borderRadius:
-                //                   BorderRadius.all(Radius.circular(40))),
-                //           child: Text(
-                //             '+',
-                //             style: TextStyle(
-                //               fontFamily: widget.settings.fontFamily,
-                //             ),
-                //           ),
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Text(
-                      '标题非中除系数',
-                      style: TextStyle(
-                        fontFamily: widget.settings.fontFamily,
+                      InkWell(
+                        onTap: () {
+                          widget.settings.chapterTitleMultiFontSize += 0.01;
+                          widget.updateFunc(widget.settings);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+                          decoration: const BoxDecoration(
+                              color: Color(0xFFEAEAEA),
+                              borderRadius:
+                              BorderRadius.all(Radius.circular(40))),
+                          child: Text(
+                            '+',
+                            style: TextStyle(
+                              fontFamily: widget.settings.fontFamily,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                    Text(
-                      '标题字数除系数',
-                      style: TextStyle(
-                        fontFamily: widget.settings.fontFamily,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 Container(
                   margin: const EdgeInsets.only(bottom: 10),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      Text(
+                        '标题非中除系数',
+                        style: TextStyle(
+                          fontFamily: widget.settings.fontFamily,
+                        ),
+                      ),
                       InkWell(
                         onTap: () {
-                          widget.settings.chapterTitleNotChinaStrDivisionCoefficient -=
+                          widget.settings
+                              .chapterTitleNotChinaStrDivisionCoefficient -=
                           0.01;
                           widget.updateFunc(widget.settings);
                         },
@@ -824,7 +604,8 @@ class _ReadSettingsState extends State<ReadSettings> {
                       Container(
                         margin: const EdgeInsets.only(left: 6, right: 6),
                         child: Text(
-                          widget.settings.chapterTitleNotChinaStrDivisionCoefficient
+                          widget.settings
+                              .chapterTitleNotChinaStrDivisionCoefficient
                               .toStringAsFixed(2),
                           style: TextStyle(
                             fontFamily: widget.settings.fontFamily,
@@ -833,7 +614,8 @@ class _ReadSettingsState extends State<ReadSettings> {
                       ),
                       InkWell(
                         onTap: () {
-                          widget.settings.chapterTitleNotChinaStrDivisionCoefficient +=
+                          widget.settings
+                              .chapterTitleNotChinaStrDivisionCoefficient +=
                           0.01;
                           widget.updateFunc(widget.settings);
                         },
@@ -851,9 +633,24 @@ class _ReadSettingsState extends State<ReadSettings> {
                           ),
                         ),
                       ),
+                    ],
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '标题字数除系数',
+                        style: TextStyle(
+                          fontFamily: widget.settings.fontFamily,
+                        ),
+                      ),
                       InkWell(
                         onTap: () {
-                          widget.settings.chapterTitleStrDivisionCoefficient -= 0.01;
+                          widget.settings.chapterTitleStrDivisionCoefficient -=
+                              0.01;
                           widget.updateFunc(widget.settings);
                         },
                         child: Container(
@@ -861,7 +658,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                              BorderRadius.all(Radius.circular(40))),
+                                  BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '-',
                             style: TextStyle(
@@ -882,7 +679,8 @@ class _ReadSettingsState extends State<ReadSettings> {
                       ),
                       InkWell(
                         onTap: () {
-                          widget.settings.chapterTitleStrDivisionCoefficient += 0.01;
+                          widget.settings.chapterTitleStrDivisionCoefficient +=
+                              0.01;
                           widget.updateFunc(widget.settings);
                         },
                         child: Container(
@@ -890,7 +688,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                              BorderRadius.all(Radius.circular(40))),
+                                  BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '+',
                             style: TextStyle(
@@ -933,7 +731,8 @@ class _ReadSettingsState extends State<ReadSettings> {
                       ),
                       TextButton(
                           onPressed: () async {
-                            widget.updateExpFunc(widget.chapterTitleExpController.text);
+                            widget.updateExpFunc(
+                                widget.chapterTitleExpController.text);
                           },
                           child: Text(
                             '确定',
