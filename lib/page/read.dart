@@ -15,6 +15,7 @@ import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/db.dart';
 import 'package:read_app/utils/regex_utils.dart';
 import 'package:read_app/utils/volume_utils.dart';
+import 'package:read_app/widget/read/brightness_setting.dart';
 import 'package:read_app/widget/read/chapter_list.dart';
 import 'package:read_app/widget/read/font_setting.dart';
 import 'package:read_app/widget/read/settings.dart';
@@ -34,6 +35,7 @@ class _ReadPageState extends State<ReadPage> {
   ValueNotifier<bool> showSettings = ValueNotifier(false);
   ValueNotifier<bool> showChapter = ValueNotifier(false);
   ValueNotifier<bool> showFont = ValueNotifier(false);
+  ValueNotifier<bool> showBrightness = ValueNotifier(false);
   List<int> backgroundColorList = [
     0xFFF8F7F3,
     0xFFE6DBC5,
@@ -621,6 +623,7 @@ class _ReadPageState extends State<ReadPage> {
                       showSettings.value = false;
                       showChapter.value = false;
                       showFont.value = false;
+                      showBrightness.value = false;
                     },
                     child: SizedBox(
                       height: height,
@@ -835,6 +838,8 @@ class _ReadPageState extends State<ReadPage> {
 
                                             showSettings.value = false;
                                             showFont.value = false;
+                                            showBrightness.value = false;
+                                            showOption.value = false;
                                           },
                                           child: Wrap(
                                             direction: Axis.vertical,
@@ -859,6 +864,8 @@ class _ReadPageState extends State<ReadPage> {
 
                                             showChapter.value = false;
                                             showSettings.value = false;
+                                            showBrightness.value = false;
+                                            showOption.value = false;
                                           },
                                           child: Wrap(
                                             direction: Axis.vertical,
@@ -877,11 +884,11 @@ class _ReadPageState extends State<ReadPage> {
                                         ),
                                         InkWell(
                                           onTap: () {
-                                            SystemChrome
-                                                .setSystemUIOverlayStyle(
-                                                    SystemUiOverlayStyle
-                                                        .dark // 设置为暗色模式
-                                                    );
+                                            showChapter.value = false;
+                                            showSettings.value = false;
+                                            showBrightness.value = true;
+                                            showOption.value = false;
+                                            showFont.value = false;
                                           },
                                           child: Wrap(
                                             direction: Axis.vertical,
@@ -922,6 +929,8 @@ class _ReadPageState extends State<ReadPage> {
 
                                             showChapter.value = false;
                                             showFont.value = false;
+                                            showBrightness.value = true;
+                                            showOption.value = false;
                                           },
                                           child: Wrap(
                                             direction: Axis.vertical,
@@ -1020,6 +1029,13 @@ class _ReadPageState extends State<ReadPage> {
                                 });
                               },
                             ))
+                        : const SizedBox.shrink();
+                  }),
+              ValueListenableBuilder(
+                  valueListenable: showBrightness,
+                  builder: (context, value, child) {
+                    return value
+                        ? const BrightnessSetting()
                         : const SizedBox.shrink();
                   }),
             ],
