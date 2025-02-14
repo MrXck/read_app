@@ -839,7 +839,6 @@ class _ReadPageState extends State<ReadPage> {
                                             showSettings.value = false;
                                             showFont.value = false;
                                             showBrightness.value = false;
-                                            showOption.value = false;
                                           },
                                           child: Wrap(
                                             direction: Axis.vertical,
@@ -865,7 +864,6 @@ class _ReadPageState extends State<ReadPage> {
                                             showChapter.value = false;
                                             showSettings.value = false;
                                             showBrightness.value = false;
-                                            showOption.value = false;
                                           },
                                           child: Wrap(
                                             direction: Axis.vertical,
@@ -887,7 +885,6 @@ class _ReadPageState extends State<ReadPage> {
                                             showChapter.value = false;
                                             showSettings.value = false;
                                             showBrightness.value = true;
-                                            showOption.value = false;
                                             showFont.value = false;
                                           },
                                           child: Wrap(
@@ -929,8 +926,7 @@ class _ReadPageState extends State<ReadPage> {
 
                                             showChapter.value = false;
                                             showFont.value = false;
-                                            showBrightness.value = true;
-                                            showOption.value = false;
+                                            showBrightness.value = false;
                                           },
                                           child: Wrap(
                                             direction: Axis.vertical,
