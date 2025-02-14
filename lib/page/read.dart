@@ -884,7 +884,7 @@ class _ReadPageState extends State<ReadPage> {
                                           onTap: () {
                                             showChapter.value = false;
                                             showSettings.value = false;
-                                            showBrightness.value = true;
+                                            showBrightness.value = !(showBrightness.value);
                                             showFont.value = false;
                                           },
                                           child: Wrap(
