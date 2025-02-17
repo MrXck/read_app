@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:archive/archive.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as path;
+import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:read_app/pojo/book.dart';
@@ -218,6 +220,11 @@ class FileUtils {
     String filePath = path.join(assetsDir, filename);
     File file = File.fromUri(Uri.file(filePath));
     await file.writeAsBytes(fileBytes);
+
+    final ByteData fontData = ByteData.sublistView(await File(file.path).readAsBytes());
+    final loader = FontLoader(basename(file.path).split('.')[0]);
+    loader.addFont(Future.value(fontData));
+    await loader.load();
   }
 
   static Future<void> selectAndImportFile(String parentId) async {
