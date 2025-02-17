@@ -86,7 +86,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
     super.initState();
   }
 
-  Future<void> moveDialog(width) async {
+  Future<void> moveDialog(width, height) async {
     var directories = await DatabaseHelper.db.getDirectoryByPatentId('');
     var li = ValueNotifier<List<Book>>(
         directories.where((item) => !checkedList.contains(item.id)).toList());
@@ -137,7 +137,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                 }),
             SizedBox(
               width: width,
-              height: 400,
+              height: height - 220,
               child: ValueListenableBuilder(
                   valueListenable: li,
                   builder: (context, value, child) {
@@ -668,7 +668,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                               } else {
                                 return InkWell(
                                   onTap: () async {
-                                    await moveDialog(width);
+                                    await moveDialog(width, height);
                                   },
                                   child: const Text('移动至'),
                                 );
