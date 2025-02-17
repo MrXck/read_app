@@ -1,7 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:read_app/pojo/app_settings.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/file_utils.dart';
@@ -23,10 +26,23 @@ class _SettingsPageState extends State<SettingsPage> {
     super.initState();
   }
 
+  Future<void> initFontList() async {
+    fontFamilyList = List.from(Constant.fontFamilyList);
+
+    Directory directory = await getApplicationDocumentsDirectory();
+
+    final fontPath = join(directory.path, join('read', 'font'));
+
+    if (await Directory(fontPath).exists()) {
+      List<FileSystemEntity> files = Directory(fontPath).listSync();
+      for (var file in files) {
+        fontFamilyList.add(basename(file.path).split('.')[0]);
+      }
+    }
+  }
+
   Future<void> init() async {
-
-    fontFamilyList = Constant.fontFamilyList;
-
+    await initFontList();
     var value = await SharedPreferences.getInstance();
     var appConfig = const JsonDecoder()
         .convert(value.getString(Constant.appConfigKey) ?? '{}');
@@ -88,28 +104,37 @@ class _SettingsPageState extends State<SettingsPage> {
                                       padding: const EdgeInsets.all(16),
                                       decoration: const BoxDecoration(
                                         color: Colors.white,
-                                        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                                        borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(16)),
                                       ),
                                       child: ListView(
                                           children: fontFamilyList.map((item) {
-                                            return ListTile(
-                                                title: Text(
-                                                  item,
-                                                  style: TextStyle(
-                                                      fontFamily: item,
-                                                      color: appSettings.appFont == item
-                                                          ? Colors.blue
-                                                          : Colors.black),
-                                                ),
-                                                onTap: () async {
-                                                  setState(() {
-                                                    appSettings.appFont = item;
-                                                  });
-                                                  var value = await SharedPreferences.getInstance();
-                                                  value.setString(Constant.appConfigKey, const JsonEncoder().convert(appSettings.toMap()));
-                                                  Get.changeTheme(ThemeData(fontFamily: appSettings.appFont));
-                                                });
-                                          }).toList()),
+                                        return ListTile(
+                                            title: Text(
+                                              item,
+                                              style: TextStyle(
+                                                  fontFamily: item,
+                                                  color: appSettings.appFont ==
+                                                          item
+                                                      ? Colors.blue
+                                                      : Colors.black),
+                                            ),
+                                            onTap: () async {
+                                              setState(() {
+                                                appSettings.appFont = item;
+                                              });
+                                              var value =
+                                                  await SharedPreferences
+                                                      .getInstance();
+                                              value.setString(
+                                                  Constant.appConfigKey,
+                                                  const JsonEncoder().convert(
+                                                      appSettings.toMap()));
+                                              Get.changeTheme(ThemeData(
+                                                  fontFamily:
+                                                      appSettings.appFont));
+                                            });
+                                      }).toList()),
                                     ),
                                   );
                                 },
