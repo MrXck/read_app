@@ -1,14 +1,19 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/tab/book_shelf.dart';
 import 'package:read_app/utils/book_utils.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/db.dart';
+import 'package:read_app/utils/file_utils.dart';
 import 'package:read_app/utils/loading_utils.dart';
+import 'package:read_app/utils/random.dart';
 import 'package:read_app/utils/sortable_grid_view.dart';
 import 'package:read_app/widget/book_shelf/book.dart';
 
@@ -353,6 +358,28 @@ class _BookShelfBodyState extends State<BookShelfBody> {
     breadList.value = checkedBreadList;
   }
 
+  Future<void> updateCover() async {
+    String id = checkedList.first;
+    var book = await DatabaseHelper.db.getById(id);
+
+    var image = await FilePicker.platform.pickFiles(allowedExtensions: ['jpg', 'png', 'jpeg']);
+
+    if (image == null) {
+      return;
+    }
+
+    var file = File(image.files.single.path!);
+
+    final dir = await getApplicationDocumentsDirectory();
+
+    var path = join(File(book.path).parent.path, '${generateRandomString(32)}.${FileUtils.getFileExtension(image.files.single.path!)}');
+
+    await file.copy(join(dir.path, path));
+    book.cover = path;
+    await DatabaseHelper.db.updateById(book);
+    updateParentId(parentId);
+  }
+
   @override
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height;
@@ -668,6 +695,23 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                                       await updateDialog();
                                     },
                                     child: const Text('编辑名称'),
+                                  );
+                                }
+                              }),
+                          ValueListenableBuilder(
+                              valueListenable: count,
+                              builder: (context, value, child) {
+                                if (value != 1) {
+                                  return const Text(
+                                    '编辑封面',
+                                    style: TextStyle(color: Color(0xB2C4C4C4)),
+                                  );
+                                } else {
+                                  return InkWell(
+                                    onTap: () async {
+                                      await updateCover();
+                                    },
+                                    child: const Text('编辑封面'),
                                   );
                                 }
                               }),
