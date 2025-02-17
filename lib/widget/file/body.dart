@@ -31,11 +31,13 @@ class _FileBodyState extends State<FileBody> {
     'read\\data',
     'read\\pdf',
     'read\\media',
+    'read\\font',
     'read/book',
     'read/comic',
     'read/data',
     'read/pdf',
     'read/media'
+    'read/font'
   ];
   List<String> pathList = [];
 
