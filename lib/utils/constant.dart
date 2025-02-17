@@ -27,7 +27,21 @@ class Constant {
   ];
   static List<String> allTextType = ['txt'];
   static List<String> allPdfType = ['pdf'];
+  static List<String> allFontType = ['otf', 'ttf'];
 
   static String readConfigKey = 'config';
   static String appConfigKey = 'app_config';
+
+  static List<String> fontFamilyList = [
+    'pingfang',
+    'hanchanbanyuanti',
+    'hanchanduanheisong',
+    'jiyinghuipianheyuan',
+    'lianxiangxiaoxinheitichanggui',
+    'yousheshayufeitejiankangti',
+    'DFPKingGothicGB-Light-2',
+    'DFPKingGothicGB-Medium-2',
+    'DFPKingGothicGB-Semibold-2',
+    'HuaKangJinGangHei-Regular-2',
+  ];
 }

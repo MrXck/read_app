@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:read_app/pojo/settings.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:read_app/utils/constant.dart';
 
 typedef UpdateFunc = void Function(Settings setting);
 
@@ -29,18 +30,6 @@ class _ReadFontSettingState extends State<ReadFontSetting> {
 
   @override
   Widget build(BuildContext context) {
-    final List<String> fontFamilyList = [
-      'pingfang',
-      'hanchanbanyuanti',
-      'hanchanduanheisong',
-      'jiyinghuipianheyuan',
-      'lianxiangxiaoxinheitichanggui',
-      'yousheshayufeitejiankangti',
-      'DFPKingGothicGB-Light-2',
-      'DFPKingGothicGB-Medium-2',
-      'DFPKingGothicGB-Semibold-2',
-      'HuaKangJinGangHei-Regular-2',
-    ];
     final textController = TextEditingController();
     var size = MediaQuery.of(context).size;
     textController.text = hexToStringWithPrefix(widget.settings.fontColor);
@@ -377,7 +366,7 @@ class _ReadFontSettingState extends State<ReadFontSetting> {
                 height: 130,
                 width: size.width,
                 child: ListView(
-                    children: fontFamilyList.map((item) {
+                    children: Constant.fontFamilyList.map((item) {
                       return ListTile(
                           title: Text(
                             item,

@@ -78,6 +78,8 @@ class FileUtils {
       uploadMedia(fileBytes, filename);
     } else if (Constant.allTextType.contains(extension)) {
       uploadText(fileBytes, filename);
+    } else if (Constant.allFontType.contains(extension)) {
+      uploadFont(fileBytes, filename);
     }
   }
 
@@ -203,6 +205,21 @@ class FileUtils {
     await DatabaseHelper.db.insert(book);
   }
 
+  static Future<void> uploadFont(List<int> fileBytes, filename) async {
+    Directory directory = await getApplicationDocumentsDirectory();
+    final relativeDirPath = path.join('read', 'font');
+
+    final assetsDir = path.join(directory.path, relativeDirPath);
+
+    if (!await Directory(assetsDir).exists()) {
+      await Directory(assetsDir).create(recursive: true);
+    }
+
+    String filePath = path.join(assetsDir, filename);
+    File file = File.fromUri(Uri.file(filePath));
+    await file.writeAsBytes(fileBytes);
+  }
+
   static Future<void> selectAndImportFile(String parentId) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom, allowedExtensions: Constant.allTextType);
@@ -210,6 +227,17 @@ class FileUtils {
     if (result != null) {
       for (var i = 0; i < result.files.length; i++) {
         await saveBook(result.files[i].path, parentId);
+      }
+    }
+  }
+
+  static Future<void> selectAndImportFont() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom, allowedExtensions: Constant.allFontType);
+
+    if (result != null) {
+      for (var i = 0; i < result.files.length; i++) {
+        await uploadFile(await File(result.files[i].path!).readAsBytes(), result.files[i].name);
       }
     }
   }
