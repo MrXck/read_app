@@ -238,15 +238,20 @@ class FileUtils {
     }
   }
 
-  static Future<void> selectAndImportFont() async {
+  static Future<List<String>> selectAndImportFont() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom, allowedExtensions: Constant.allFontType);
+
+    List<String> successList = [];
 
     if (result != null) {
       for (var i = 0; i < result.files.length; i++) {
         await uploadFile(await File(result.files[i].path!).readAsBytes(), result.files[i].name);
+        successList.add(path.basename(result.files[i].name).split('0')[0]);
       }
     }
+
+    return successList;
   }
 
   static Future<void> saveBook(var selectFile, String parentId) async {

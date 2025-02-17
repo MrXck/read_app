@@ -142,8 +142,11 @@ class _SettingsPageState extends State<SettingsPage> {
                                 trailing: Text(appSettings.appFont),
                               ),
                               ListTile(
-                                onTap: () {
-                                  FileUtils.selectAndImportFont();
+                                onTap: () async {
+                                  List<String> successList = await FileUtils.selectAndImportFont();
+                                  setState(() {
+                                    fontFamilyList.addAll(successList);
+                                  });
                                 },
                                 title: const Text('导入字体'),
                               )
