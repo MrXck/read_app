@@ -97,15 +97,24 @@ flutter:
     - family: jiyinghuipianheyuan
       fonts:
         - asset: assets/fonts/jiyinghuipianheyuan.ttf
-    - family: shiweijiatangsongti
-      fonts:
-        - asset: assets/fonts/shiweijiatangsongti.ttf
     - family: lianxiangxiaoxinheitichanggui
       fonts:
         - asset: assets/fonts/lianxiangxiaoxinheitichanggui.ttf
     - family: yousheshayufeitejiankangti
       fonts:
         - asset: assets/fonts/yousheshayufeitejiankangti.ttf
+    - family: DFPKingGothicGB-Light-2
+      fonts:
+        - asset: assets/fonts/DFPKingGothicGB-Light-2.ttf
+    - family: DFPKingGothicGB-Medium-2
+      fonts:
+        - asset: assets/fonts/DFPKingGothicGB-Medium-2.ttf
+    - family: DFPKingGothicGB-Semibold-2
+      fonts:
+        - asset: assets/fonts/DFPKingGothicGB-Semibold-2.ttf
+    - family: HuaKangJinGangHei-Regular-2
+      fonts:
+        - asset: assets/fonts/HuaKangJinGangHei-Regular-2.ttf
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

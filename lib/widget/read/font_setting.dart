@@ -34,9 +34,12 @@ class _ReadFontSettingState extends State<ReadFontSetting> {
       'hanchanbanyuanti',
       'hanchanduanheisong',
       'jiyinghuipianheyuan',
-      'shiweijiatangsongti',
       'lianxiangxiaoxinheitichanggui',
       'yousheshayufeitejiankangti',
+      'DFPKingGothicGB-Light-2',
+      'DFPKingGothicGB-Medium-2',
+      'DFPKingGothicGB-Semibold-2',
+      'HuaKangJinGangHei-Regular-2',
     ];
     final textController = TextEditingController();
     var size = MediaQuery.of(context).size;

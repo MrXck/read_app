@@ -23,7 +23,7 @@ class _BrightnessSettingState extends State<BrightnessSetting> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('亮度'),
+              const Text('亮度'),
               Slider(value: brightness, onChanged: (value) async {
 
                 setState(() {
