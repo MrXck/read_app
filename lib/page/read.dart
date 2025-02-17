@@ -125,7 +125,7 @@ class _ReadPageState extends State<ReadPage> {
     });
 
     var value = await SharedPreferences.getInstance();
-    var config = const JsonDecoder().convert(value.getString('config') ?? '{}');
+    var config = const JsonDecoder().convert(value.getString(Constant.readConfigKey) ?? '{}');
     settings = Settings.fromMap(config);
 
     _pageController.addListener(() {
@@ -1048,7 +1048,7 @@ class _ReadPageState extends State<ReadPage> {
     book.currentChapter = currentSeqNo.value;
     DatabaseHelper.db.updateById(book);
     SharedPreferences.getInstance().then((value) {
-      value.setString('config', const JsonEncoder().convert(settings.toMap()));
+      value.setString(Constant.readConfigKey, const JsonEncoder().convert(settings.toMap()));
     });
     if (settingController.isOpenVolumeFlip.value) {
       volumeUtils.removeListener(needRestore: true);

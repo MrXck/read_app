@@ -5,6 +5,7 @@ import 'package:read_app/page/read.dart';
 import 'package:read_app/page/read_outside.dart';
 import 'package:read_app/page/search.dart';
 import 'package:read_app/page/search_outside.dart';
+import 'package:read_app/page/settings.dart';
 import 'package:read_app/page/upload_file.dart';
 import 'package:read_app/page/video.dart';
 import 'package:read_app/tab/tab.dart';
@@ -50,6 +51,10 @@ class AppPage {
     GetPage(
       name: "/pdf",
       page: () => const PdfPage(),
+    ),
+    GetPage(
+      name: "/settings",
+      page: () => const SettingsPage(),
     ),
   ];
 }

@@ -27,4 +27,7 @@ class Constant {
   ];
   static List<String> allTextType = ['txt'];
   static List<String> allPdfType = ['pdf'];
+
+  static String readConfigKey = 'config';
+  static String appConfigKey = 'app_config';
 }

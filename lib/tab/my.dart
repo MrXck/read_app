@@ -26,7 +26,8 @@ class _MyPageState extends State<MyPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListView(
+      body: SafeArea(
+          child: ListView(
         children: [
           TextButton(
               onPressed: () async {
@@ -55,7 +56,8 @@ class _MyPageState extends State<MyPage> {
                   final fromPath = join(dir.path, 'read_import');
                   await FileUtils.unzipFile(zipPath, fromPath);
 
-                  await FileUtils.copyDirectory(fromPath, join(dir.path, 'read'));
+                  await FileUtils.copyDirectory(
+                      fromPath, join(dir.path, 'read'));
 
                   FileUtils.deleteDirectoryRecursively(Directory(fromPath));
                 } catch (e) {
@@ -79,14 +81,19 @@ class _MyPageState extends State<MyPage> {
             return TextButton(
                 onPressed: () async {
                   settingController.isOpenVolumeFlip.value =
-                  !settingController.isOpenVolumeFlip.value;
+                      !settingController.isOpenVolumeFlip.value;
                 },
                 child: settingController.isOpenVolumeFlip.value
                     ? const Text('关闭音量翻页')
                     : const Text('开启音量翻页'));
           }),
+          TextButton(
+              onPressed: () {
+                Get.toNamed('/settings');
+              },
+              child: const Text('更多设置')),
         ],
-      ),
+      )),
     );
   }
 }

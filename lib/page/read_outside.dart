@@ -107,7 +107,7 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
     });
 
     var value = await SharedPreferences.getInstance();
-    var config = const JsonDecoder().convert(value.getString('config') ?? '{}');
+    var config = const JsonDecoder().convert(value.getString(Constant.readConfigKey) ?? '{}');
     settings = Settings.fromMap(config);
 
     _pageController.addListener(() {
@@ -1098,7 +1098,7 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
       DatabaseHelper.db.updateById(book);
     }
     SharedPreferences.getInstance().then((value) {
-      value.setString('config', const JsonEncoder().convert(settings.toMap()));
+      value.setString(Constant.readConfigKey, const JsonEncoder().convert(settings.toMap()));
     });
     if (settingController.isOpenVolumeFlip.value) {
       volumeUtils.removeListener(needRestore: true);

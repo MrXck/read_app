@@ -10,6 +10,7 @@ import 'package:photo_view/photo_view_gallery.dart';
 import 'package:read_app/controller/setting_controller.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/pojo/settings.dart';
+import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/db.dart';
 import 'package:read_app/utils/volume_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -70,7 +71,7 @@ class _ComicPageState extends State<ComicPage> {
     }
 
     var value = await SharedPreferences.getInstance();
-    var config = const JsonDecoder().convert(value.getString('config') ?? '{}');
+    var config = const JsonDecoder().convert(value.getString(Constant.readConfigKey) ?? '{}');
     settings = Settings.fromMap(config);
   }
 
@@ -258,7 +259,7 @@ class _ComicPageState extends State<ComicPage> {
         100;
     DatabaseHelper.db.updateById(book);
     SharedPreferences.getInstance().then((value) {
-      value.setString('config', const JsonEncoder().convert(settings.toMap()));
+      value.setString(Constant.readConfigKey, const JsonEncoder().convert(settings.toMap()));
     });
     if (settingController.isOpenVolumeFlip.value) {
       volumeUtils.removeListener(needRestore: true);
