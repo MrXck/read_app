@@ -165,14 +165,10 @@ class _FileBodyState extends State<FileBody> {
                 },
                 title: file.bookName == '暂无id' ? Text(files[index].bookName!, style: const TextStyle(color: Colors.red),) : Text(files[index].bookName!),
                 subtitle: Text(files[index].path),
-                leading: rootTypePath.contains(files[index].path) || file.bookName == '返回上一级'
-                    ? const SizedBox(
-                        width: 10,
-                        height: 10,
-                      )
-                    : Checkbox(
+                leading: Checkbox(
                         value: checkedIds.contains(files[index].id) || pathList.contains(file.path),
-                        onChanged: (bool? checked) {
+                        onChanged: rootTypePath.contains(files[index].path) || file.bookName == '返回上一级'
+                            ? null : (bool? checked) {
                           if (checked != null) {
                             if (checked) {
                               if (file.bookName == '暂无id') {
