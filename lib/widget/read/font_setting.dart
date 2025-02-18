@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:read_app/pojo/settings.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:read_app/utils/constant.dart';
@@ -20,12 +24,29 @@ class ReadFontSetting extends StatefulWidget {
 
 class _ReadFontSettingState extends State<ReadFontSetting> {
 
+  List<String> fontFamilyList = [];
+
   String hexToStringWithPrefix(int hexValue) {
     return hexValue.toRadixString(16);
   }
 
   int hexStringToInt(String hex) {
     return int.parse(hex, radix: 16);
+  }
+
+  Future<void> initFontList() async {
+    fontFamilyList = List.from(Constant.fontFamilyList);
+
+    Directory directory = await getApplicationDocumentsDirectory();
+
+    final fontPath = join(directory.path, join('read', 'font'));
+
+    if (await Directory(fontPath).exists()) {
+      List<FileSystemEntity> files = Directory(fontPath).listSync();
+      for (var file in files) {
+        fontFamilyList.add(basename(file.path).split('.')[0]);
+      }
+    }
   }
 
   @override
@@ -362,25 +383,45 @@ class _ReadFontSettingState extends State<ReadFontSetting> {
                 ],
               ),
             ),
-            SizedBox(
-                height: 130,
-                width: size.width,
-                child: ListView(
-                    children: Constant.fontFamilyList.map((item) {
-                      return ListTile(
-                          title: Text(
-                            item,
-                            style: TextStyle(
-                                fontFamily: item,
-                                color: widget.settings.fontFamily == item
-                                    ? Colors.blue
-                                    : Colors.black),
-                          ),
-                          onTap: () {
-                            widget.settings.fontFamily = item;
-                            widget.updateFunc(widget.settings);
-                          });
-                    }).toList()))
+            FutureBuilder(future: initFontList(), builder: (BuildContext context, AsyncSnapshot snapshot) {
+              switch (snapshot.connectionState) {
+                case ConnectionState.none:
+                  return const Text("未连接");
+                case ConnectionState.waiting:
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                case ConnectionState.active:
+                  return const Text("");
+                case ConnectionState.done:
+                  if (snapshot.hasError) {
+                    return Text(
+                      "请求失败 , 报错信息 : ${snapshot.error}",
+                      style: const TextStyle(color: Colors.red),
+                    );
+                  } else {
+                    return SizedBox(
+                        height: 130,
+                        width: size.width,
+                        child: ListView(
+                            children: fontFamilyList.map((item) {
+                              return ListTile(
+                                  title: Text(
+                                    item,
+                                    style: TextStyle(
+                                        fontFamily: item,
+                                        color: widget.settings.fontFamily == item
+                                            ? Colors.blue
+                                            : Colors.black),
+                                  ),
+                                  onTap: () {
+                                    widget.settings.fontFamily = item;
+                                    widget.updateFunc(widget.settings);
+                                  });
+                            }).toList()));
+                  }
+              }
+            })
           ]),
         ),
       ),
