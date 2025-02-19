@@ -23,9 +23,28 @@ class UpdateUtils {
       return;
     }
 
-    await Permission.storage.request();
-    await Permission.requestInstallPackages.request();
-    showUpdateDialog(updateData);
+    var storageStatus = await Permission.storage.request();
+
+    if (!storageStatus.isGranted) {
+      return;
+    }
+
+    var installStatus = await Permission.requestInstallPackages.request();
+
+    if (!installStatus.isGranted) {
+      return;
+    }
+
+    switch (Platform.operatingSystem) {
+      case 'android':
+        showUpdateDialog(updateData);
+        break;
+      case 'windows':
+        break;
+      default:
+        break;
+    }
+
   }
 
   static Future<UpdateData> getNewVersion() async {
