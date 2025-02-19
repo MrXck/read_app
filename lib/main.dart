@@ -28,7 +28,6 @@ bool isDesktop() {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await UpdateUtils.updateApp();
   if (isDesktop()) {
     await windowManager.ensureInitialized();
 
@@ -77,6 +76,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    UpdateUtils.updateApp();
     if (isDesktop()) {
       databaseFactory = databaseFactoryFfi;
     }
