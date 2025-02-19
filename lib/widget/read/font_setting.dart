@@ -10,20 +10,18 @@ import 'package:read_app/utils/constant.dart';
 
 typedef UpdateFunc = void Function(Settings setting);
 
-
 class ReadFontSetting extends StatefulWidget {
   final UpdateFunc updateFunc;
   final Settings settings;
 
-
-  const ReadFontSetting({super.key, required this.settings, required this.updateFunc});
+  const ReadFontSetting(
+      {super.key, required this.settings, required this.updateFunc});
 
   @override
   State<ReadFontSetting> createState() => _ReadFontSettingState();
 }
 
 class _ReadFontSettingState extends State<ReadFontSetting> {
-
   List<String> fontFamilyList = [];
 
   String hexToStringWithPrefix(int hexValue) {
@@ -34,8 +32,14 @@ class _ReadFontSettingState extends State<ReadFontSetting> {
     return int.parse(hex, radix: 16);
   }
 
+  @override
+  void initState() {
+    initFontList();
+    super.initState();
+  }
+
   Future<void> initFontList() async {
-    fontFamilyList = List.from(Constant.fontFamilyList);
+    List<String> fontList = List.from(Constant.fontFamilyList);
 
     Directory directory = await getApplicationDocumentsDirectory();
 
@@ -44,9 +48,12 @@ class _ReadFontSettingState extends State<ReadFontSetting> {
     if (await Directory(fontPath).exists()) {
       List<FileSystemEntity> files = Directory(fontPath).listSync();
       for (var file in files) {
-        fontFamilyList.add(basename(file.path).split('.')[0]);
+        fontList.add(basename(file.path).split('.')[0]);
       }
     }
+    setState(() {
+      fontFamilyList = fontList;
+    });
   }
 
   @override
@@ -140,7 +147,8 @@ class _ReadFontSettingState extends State<ReadFontSetting> {
                   ),
                   Container(
                     margin: const EdgeInsets.only(left: 10, right: 10),
-                    child: Text((widget.settings.lineHeight).toStringAsFixed(1)),
+                    child:
+                        Text((widget.settings.lineHeight).toStringAsFixed(1)),
                   ),
                   InkWell(
                     onTap: () {
@@ -280,39 +288,41 @@ class _ReadFontSettingState extends State<ReadFontSetting> {
                       fontFamily: widget.settings.fontFamily,
                     ),
                   ),
-                  TextButton(onPressed: () {
-                    Get.defaultDialog(
-                      title: '字体颜色',
-                      content: ColorPicker(
-                        pickerColor: Color(widget.settings.fontColor),
-                        onColorChanged: (color) {
-                          setState(() {
-                            widget.settings.fontColor = color.value;
-                          });
-                        },
-                        colorPickerWidth: 300,
-                        pickerAreaHeightPercent: 0.7,
-                        enableAlpha: true,
-                        labelTypes: const [
-                          ColorLabelType.hsl,
-                          ColorLabelType.hsv
-                        ],
-                        displayThumbColor: true,
-                        paletteType: PaletteType.hsl,
-                        pickerAreaBorderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(2),
-                          topRight: Radius.circular(2),
-                        ),
-                        hexInputBar: false,
-                      )
-                    );
-                  }, child: Text(
-                    '颜色',
-                    style: TextStyle(
-                      fontFamily: widget.settings.fontFamily,
-                      color: Color(widget.settings.fontColor),
+                  TextButton(
+                    onPressed: () {
+                      Get.defaultDialog(
+                          title: '字体颜色',
+                          content: ColorPicker(
+                            pickerColor: Color(widget.settings.fontColor),
+                            onColorChanged: (color) {
+                              setState(() {
+                                widget.settings.fontColor = color.value;
+                              });
+                            },
+                            colorPickerWidth: 300,
+                            pickerAreaHeightPercent: 0.7,
+                            enableAlpha: true,
+                            labelTypes: const [
+                              ColorLabelType.hsl,
+                              ColorLabelType.hsv
+                            ],
+                            displayThumbColor: true,
+                            paletteType: PaletteType.hsl,
+                            pickerAreaBorderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(2),
+                              topRight: Radius.circular(2),
+                            ),
+                            hexInputBar: false,
+                          ));
+                    },
+                    child: Text(
+                      '颜色',
+                      style: TextStyle(
+                        fontFamily: widget.settings.fontFamily,
+                        color: Color(widget.settings.fontColor),
+                      ),
                     ),
-                  ),),
+                  ),
                   TextButton(
                       onPressed: () async {
                         widget.updateFunc(widget.settings);
@@ -337,39 +347,41 @@ class _ReadFontSettingState extends State<ReadFontSetting> {
                       fontFamily: widget.settings.fontFamily,
                     ),
                   ),
-                  TextButton(onPressed: () {
-                    Get.defaultDialog(
-                        title: '左上角字体颜色',
-                        content: ColorPicker(
-                          pickerColor: Color(widget.settings.titleFontColor),
-                          onColorChanged: (color) {
-                            setState(() {
-                              widget.settings.titleFontColor = color.value;
-                            });
-                          },
-                          colorPickerWidth: 300,
-                          pickerAreaHeightPercent: 0.7,
-                          enableAlpha: true,
-                          labelTypes: const [
-                            ColorLabelType.hsl,
-                            ColorLabelType.hsv
-                          ],
-                          displayThumbColor: true,
-                          paletteType: PaletteType.hsl,
-                          pickerAreaBorderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(2),
-                            topRight: Radius.circular(2),
-                          ),
-                          hexInputBar: false,
-                        )
-                    );
-                  }, child: Text(
-                    '颜色',
-                    style: TextStyle(
-                      fontFamily: widget.settings.fontFamily,
-                      color: Color(widget.settings.titleFontColor),
+                  TextButton(
+                    onPressed: () {
+                      Get.defaultDialog(
+                          title: '左上角字体颜色',
+                          content: ColorPicker(
+                            pickerColor: Color(widget.settings.titleFontColor),
+                            onColorChanged: (color) {
+                              setState(() {
+                                widget.settings.titleFontColor = color.value;
+                              });
+                            },
+                            colorPickerWidth: 300,
+                            pickerAreaHeightPercent: 0.7,
+                            enableAlpha: true,
+                            labelTypes: const [
+                              ColorLabelType.hsl,
+                              ColorLabelType.hsv
+                            ],
+                            displayThumbColor: true,
+                            paletteType: PaletteType.hsl,
+                            pickerAreaBorderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(2),
+                              topRight: Radius.circular(2),
+                            ),
+                            hexInputBar: false,
+                          ));
+                    },
+                    child: Text(
+                      '颜色',
+                      style: TextStyle(
+                        fontFamily: widget.settings.fontFamily,
+                        color: Color(widget.settings.titleFontColor),
+                      ),
                     ),
-                  ),),
+                  ),
                   TextButton(
                       onPressed: () async {
                         widget.updateFunc(widget.settings);
@@ -383,45 +395,25 @@ class _ReadFontSettingState extends State<ReadFontSetting> {
                 ],
               ),
             ),
-            FutureBuilder(future: initFontList(), builder: (BuildContext context, AsyncSnapshot snapshot) {
-              switch (snapshot.connectionState) {
-                case ConnectionState.none:
-                  return const Text("未连接");
-                case ConnectionState.waiting:
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                case ConnectionState.active:
-                  return const Text("");
-                case ConnectionState.done:
-                  if (snapshot.hasError) {
-                    return Text(
-                      "请求失败 , 报错信息 : ${snapshot.error}",
-                      style: const TextStyle(color: Colors.red),
-                    );
-                  } else {
-                    return SizedBox(
-                        height: 130,
-                        width: size.width,
-                        child: ListView(
-                            children: fontFamilyList.map((item) {
-                              return ListTile(
-                                  title: Text(
-                                    item,
-                                    style: TextStyle(
-                                        fontFamily: item,
-                                        color: widget.settings.fontFamily == item
-                                            ? Colors.blue
-                                            : Colors.black),
-                                  ),
-                                  onTap: () {
-                                    widget.settings.fontFamily = item;
-                                    widget.updateFunc(widget.settings);
-                                  });
-                            }).toList()));
-                  }
-              }
-            })
+            SizedBox(
+                height: 130,
+                width: size.width,
+                child: ListView(
+                    children: fontFamilyList.map((item) {
+                  return ListTile(
+                      title: Text(
+                        item,
+                        style: TextStyle(
+                            fontFamily: item,
+                            color: widget.settings.fontFamily == item
+                                ? Colors.blue
+                                : Colors.black),
+                      ),
+                      onTap: () {
+                        widget.settings.fontFamily = item;
+                        widget.updateFunc(widget.settings);
+                      });
+                }).toList()))
           ]),
         ),
       ),
