@@ -14,6 +14,7 @@ import 'package:read_app/router/router.dart';
 import 'package:get/get.dart';
 import 'package:read_app/tab/tab.dart';
 import 'package:read_app/utils/constant.dart';
+import 'package:read_app/utils/update_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:window_manager/window_manager.dart';
@@ -26,8 +27,9 @@ bool isDesktop() {
 }
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await UpdateUtils.updateApp();
   if (isDesktop()) {
-    WidgetsFlutterBinding.ensureInitialized();
     await windowManager.ensureInitialized();
 
     WindowOptions windowOptions = const WindowOptions(

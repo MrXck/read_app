@@ -1,5 +1,6 @@
 class Constant {
-  static String baseUrl = '';
+  static String baseUrl = 'https://www.yuumi.cc';
+  static String getAppVersionUrl = '$baseUrl/api/version';
 
   static int bookType = 1;
   static int comicType = 2;
