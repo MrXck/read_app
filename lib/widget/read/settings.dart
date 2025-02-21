@@ -287,6 +287,230 @@ class _ReadSettingsState extends State<ReadSettings> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      const Text('页面上边距'),
+                      InkWell(
+                        onTap: () {
+                          widget.settings.pageTopPadding -= 1;
+                          widget.updateFunc(widget.settings);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+                          decoration: const BoxDecoration(
+                              color: Color(0xFFEAEAEA),
+                              borderRadius:
+                              BorderRadius.all(Radius.circular(40))),
+                          child: Text(
+                            '-',
+                            style: TextStyle(
+                              fontFamily: widget.settings.fontFamily,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(left: 6, right: 6),
+                        child: Text(
+                          widget.settings.pageTopPadding.toString(),
+                          style: TextStyle(
+                            fontFamily: widget.settings.fontFamily,
+                          ),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          widget.settings.pageTopPadding += 1;
+                          widget.updateFunc(widget.settings);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+                          decoration: const BoxDecoration(
+                              color: Color(0xFFEAEAEA),
+                              borderRadius:
+                              BorderRadius.all(Radius.circular(40))),
+                          child: Text(
+                            '+',
+                            style: TextStyle(
+                              fontFamily: widget.settings.fontFamily,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('页面左边距'),
+                      InkWell(
+                        onTap: () {
+                          widget.settings.pageLeftPadding -= 1;
+                          widget.updateFunc(widget.settings);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+                          decoration: const BoxDecoration(
+                              color: Color(0xFFEAEAEA),
+                              borderRadius:
+                              BorderRadius.all(Radius.circular(40))),
+                          child: Text(
+                            '-',
+                            style: TextStyle(
+                              fontFamily: widget.settings.fontFamily,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(left: 6, right: 6),
+                        child: Text(
+                          widget.settings.pageLeftPadding.toString(),
+                          style: TextStyle(
+                            fontFamily: widget.settings.fontFamily,
+                          ),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          widget.settings.pageLeftPadding += 1;
+                          widget.updateFunc(widget.settings);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+                          decoration: const BoxDecoration(
+                              color: Color(0xFFEAEAEA),
+                              borderRadius:
+                              BorderRadius.all(Radius.circular(40))),
+                          child: Text(
+                            '+',
+                            style: TextStyle(
+                              fontFamily: widget.settings.fontFamily,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('页面下边距'),
+                      InkWell(
+                        onTap: () {
+                          widget.settings.pageBottomPadding -= 1;
+                          widget.updateFunc(widget.settings);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+                          decoration: const BoxDecoration(
+                              color: Color(0xFFEAEAEA),
+                              borderRadius:
+                              BorderRadius.all(Radius.circular(40))),
+                          child: Text(
+                            '-',
+                            style: TextStyle(
+                              fontFamily: widget.settings.fontFamily,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(left: 6, right: 6),
+                        child: Text(
+                          widget.settings.pageBottomPadding.toString(),
+                          style: TextStyle(
+                            fontFamily: widget.settings.fontFamily,
+                          ),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          widget.settings.pageBottomPadding += 1;
+                          widget.updateFunc(widget.settings);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+                          decoration: const BoxDecoration(
+                              color: Color(0xFFEAEAEA),
+                              borderRadius:
+                              BorderRadius.all(Radius.circular(40))),
+                          child: Text(
+                            '+',
+                            style: TextStyle(
+                              fontFamily: widget.settings.fontFamily,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('页面右边距'),
+                      InkWell(
+                        onTap: () {
+                          widget.settings.pageRightPadding -= 1;
+                          widget.updateFunc(widget.settings);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+                          decoration: const BoxDecoration(
+                              color: Color(0xFFEAEAEA),
+                              borderRadius:
+                              BorderRadius.all(Radius.circular(40))),
+                          child: Text(
+                            '-',
+                            style: TextStyle(
+                              fontFamily: widget.settings.fontFamily,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(left: 6, right: 6),
+                        child: Text(
+                          widget.settings.pageRightPadding.toString(),
+                          style: TextStyle(
+                            fontFamily: widget.settings.fontFamily,
+                          ),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          widget.settings.pageRightPadding += 1;
+                          widget.updateFunc(widget.settings);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+                          decoration: const BoxDecoration(
+                              color: Color(0xFFEAEAEA),
+                              borderRadius:
+                              BorderRadius.all(Radius.circular(40))),
+                          child: Text(
+                            '+',
+                            style: TextStyle(
+                              fontFamily: widget.settings.fontFamily,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
                       const Text('内容空格除系数'),
                       InkWell(
                         onTap: () {

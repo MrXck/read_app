@@ -79,15 +79,25 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
   List<int> chapterPageNumList = [];
   int startHasContentPage = 500;
 
-  double pageTopPadding = 0;
-  double pageBottomPadding = 30;
-  double pageLeftPadding = 10;
-  double pageRightPadding = 10;
-
   Timer? _throttleTimer;
   Timer? _timeTimer;
 
   Future<void> init(Book? book, OutSideBook? outSideBook1) async {
+  if (settingController.isOpenVolumeFlip.value) {
+      volumeUtils.init((double beforeVolume, double nowVolume) {
+        if (beforeVolume < nowVolume) {
+          _pageController.nextPage(
+              duration: const Duration(milliseconds: 100),
+              curve: Curves.easeOut);
+        } else if (beforeVolume > nowVolume) {
+          _pageController.previousPage(
+              duration: const Duration(milliseconds: 100),
+              curve: Curves.easeIn);
+        }
+        volumeUtils.setVolume(0.1);
+      });
+    }
+
     String bookSourceId;
     String url;
 
@@ -292,6 +302,9 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
   }
 
   void switchChapter(int seqNo, bool isAfter) async {
+    if (seqNo == -1) {
+      return;
+    }
     isLoading = true;
 
     OutSideChapter currentChapter;
@@ -369,85 +382,106 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
       if (hasChapterTitle) {
         widgetList.add(Text(
           text.trim(),
-          maxLines: 3,
           textAlign: TextAlign.center,
           style: TextStyle(
               height: settings.lineHeight * settings.chapterTitleMultiFontSize,
               fontSize: settings.fontSize * settings.chapterTitleMultiFontSize,
               fontFamily: settings.fontFamily,
               color: Color(settings.fontColor),
-              fontWeight: FontWeight.bold),
+              fontWeight: fontWeightList[settings.titleFontWeight]),
         ));
       } else {
-        if (text.startsWith('      ')) {
-          text = text.replaceFirst('       ', '      ');
+        if (text.startsWith('       ')) {
+          text = text.replaceFirst('       ', '');
           var textList1 = text.split('');
 
-          if (textList1.length - 5 < everyLineFontNum) {
-            widgetList.add(Text(
-              text,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                height: settings.lineHeight,
-                fontSize: settings.fontSize,
-                fontFamily: settings.fontFamily,
-                color: Color(settings.fontColor),
-              ),
-            ));
-          } else {
+          if (!item['isLast']) {
             List<Widget> tt = [];
+            tt.add(Row(
+              children: [
+                SizedBox(
+                  width: settings.fontSize * 2,
+                  height: everyLineHeight,
+                )
+              ],
+            ));
+            List<Widget> rowChildren = [];
             for (var j = 0; j < textList1.length; j++) {
               var item = textList1[j];
-              tt.add(Text(
+              rowChildren.add(Text(
                 item,
                 style: TextStyle(
-                  height: settings.lineHeight,
-                  fontSize: settings.fontSize,
-                  fontFamily: settings.fontFamily,
-                  color: Color(settings.fontColor),
-                ),
+                    height: settings.lineHeight,
+                    fontSize: settings.fontSize,
+                    fontFamily: settings.fontFamily,
+                    color: Color(settings.fontColor),
+                    fontWeight: fontWeightList[settings.contentFontWeight]),
               ));
             }
+            tt.add(Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: rowChildren,
+                )));
 
             widgetList.add(Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: tt,
+            ));
+          } else {
+            widgetList.add(Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: settings.fontSize * 2,
+                  height: everyLineHeight,
+                ),
+                Text(
+                  text,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      height: settings.lineHeight,
+                      fontSize: settings.fontSize,
+                      fontFamily: settings.fontFamily,
+                      color: Color(settings.fontColor),
+                      fontWeight: fontWeightList[settings.contentFontWeight]),
+                )
+              ],
             ));
           }
         } else {
           List<Widget> tt = [];
           var textList1 = text.trim().split('');
 
-          if (textList1.length < everyLineFontNum) {
-            widgetList.add(Text(
-              text,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                height: settings.lineHeight,
-                fontSize: settings.fontSize,
-                fontFamily: settings.fontFamily,
-                color: Color(settings.fontColor),
-              ),
-            ));
-          } else {
+          if (!item['isLast']) {
             for (var j = 0; j < textList1.length; j++) {
               var item = textList1[j];
               tt.add(Text(
                 item,
                 style: TextStyle(
-                  height: settings.lineHeight,
-                  fontSize: settings.fontSize,
-                  fontFamily: settings.fontFamily,
-                  color: Color(settings.fontColor),
-                ),
+                    height: settings.lineHeight,
+                    fontSize: settings.fontSize,
+                    fontFamily: settings.fontFamily,
+                    color: Color(settings.fontColor),
+                    fontWeight: fontWeightList[settings.contentFontWeight]),
               ));
             }
 
             widgetList.add(Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: tt,
+            ));
+          } else {
+            widgetList.add(Text(
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  height: settings.lineHeight,
+                  fontSize: settings.fontSize,
+                  fontFamily: settings.fontFamily,
+                  color: Color(settings.fontColor),
+                  fontWeight: fontWeightList[settings.contentFontWeight]),
             ));
           }
         }
@@ -455,11 +489,10 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
     }
 
     return Container(
-      width: 200,
-      padding: EdgeInsets.fromLTRB(
-          pageLeftPadding, pageTopPadding, pageRightPadding, pageBottomPadding),
+      padding: EdgeInsets.fromLTRB(settings.pageLeftPadding, settings.pageTopPadding, settings.pageRightPadding, settings.showBottom ? settings.pageBottomPadding : 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        // mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: widgetList,
       ),
     );
@@ -480,11 +513,13 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
       double fontSize, double lineHeight) {
 
     if (settings.showBottom) {
-      height = height - 30 - 30;
-    } else {
       height = height - 30;
     }
-    width = width - pageLeftPadding - pageRightPadding;
+
+    height -= settings.pageTopPadding;
+    height -= settings.pageBottomPadding;
+
+    width = width - settings.pageLeftPadding - settings.pageRightPadding;
 
     var textPainter = calculateTextHeight(
         "测",
@@ -649,7 +684,7 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
     var conte = MediaQuery.of(context);
     var topTitleHeight = 30.0;
     height = conte.size.height - conte.padding.top - conte.padding.bottom;
-    width = conte.size.width;
+    width = conte.size.width - conte.padding.left - conte.padding.right;
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: null,
@@ -770,33 +805,35 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                   bottom: 0,
                   child: Container(
                     height: 30,
-                    padding: EdgeInsets.fromLTRB(pageLeftPadding, 0, pageRightPadding, 10),
+                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
                     color: Color(settings.backgroundColor),
                     width: width,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        ValueListenableBuilder(
-                            valueListenable: _now,
-                            builder: (context, value, child) {
-                              return Text(
-                                value,
-                                style: TextStyle(
-                                  fontFamily: settings.fontFamily,
-                                ),
-                              );
-                            }),
-                        ValueListenableBuilder(
-                            valueListenable: _currentPage,
-                            builder: (context, value, child) {
-                              return Text(
-                                '${(((currentSeqNo.value + 1) / chapterList.length) * 100).toStringAsFixed(2)}%',
-                                style: TextStyle(
-                                  fontFamily: settings.fontFamily,
-                                ),
-                              );
-                            })
-                      ],
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ValueListenableBuilder(
+                              valueListenable: _now,
+                              builder: (context, value, child) {
+                                return Text(
+                                  value,
+                                  style: TextStyle(
+                                    fontFamily: settings.fontFamily,
+                                  ),
+                                );
+                              }),
+                          ValueListenableBuilder(
+                              valueListenable: _currentPage,
+                              builder: (context, value, child) {
+                                return Text(
+                                  '${(((currentSeqNo.value + 1) / chapterList.length) * 100).toStringAsFixed(2)}%',
+                                  style: TextStyle(
+                                    fontFamily: settings.fontFamily,
+                                  ),
+                                );
+                              })
+                        ],
+                      ),
                     ),
                   )) : const SizedBox.shrink(),
               ValueListenableBuilder(

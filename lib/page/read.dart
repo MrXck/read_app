@@ -76,11 +76,6 @@ class _ReadPageState extends State<ReadPage> {
   List<int> chapterPageNumList = [];
   int startHasContentPage = 500;
 
-  double pageTopPadding = 0;
-  double pageBottomPadding = 30;
-  double pageLeftPadding = 10;
-  double pageRightPadding = 10;
-
   Timer? _throttleTimer;
   Timer? _timeTimer;
   Timer? _dataTimer;
@@ -438,7 +433,7 @@ class _ReadPageState extends State<ReadPage> {
     }
 
     return Container(
-      padding: EdgeInsets.fromLTRB(pageLeftPadding, pageTopPadding, pageRightPadding, settings.showBottom ? pageBottomPadding : 0),
+      padding: EdgeInsets.fromLTRB(settings.pageLeftPadding, settings.pageTopPadding, settings.pageRightPadding, settings.showBottom ? settings.pageBottomPadding : 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         // mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -462,11 +457,13 @@ class _ReadPageState extends State<ReadPage> {
       double fontSize, double lineHeight) {
 
     if (settings.showBottom) {
-      height = height - 30 - 30;
-    } else {
       height = height - 30;
     }
-    width = width - pageLeftPadding - pageRightPadding;
+
+    height -= settings.pageTopPadding;
+    height -= settings.pageBottomPadding;
+
+    width = width - settings.pageLeftPadding - settings.pageRightPadding;
 
     var textPainter = calculateTextHeight(
         "测",
@@ -631,7 +628,7 @@ class _ReadPageState extends State<ReadPage> {
     var conte = MediaQuery.of(context);
     var topTitleHeight = 30.0;
     height = conte.size.height - conte.padding.top - conte.padding.bottom;
-    width = conte.size.width;
+    width = conte.size.width - conte.padding.left - conte.padding.right;
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: null,
@@ -749,33 +746,35 @@ class _ReadPageState extends State<ReadPage> {
                   bottom: 0,
                   child: Container(
                     height: 30,
-                    padding: EdgeInsets.fromLTRB(pageLeftPadding, 0, pageRightPadding, 10),
+                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
                     color: Color(settings.backgroundColor),
                     width: width,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        ValueListenableBuilder(
-                            valueListenable: _now,
-                            builder: (context, value, child) {
-                              return Text(
-                                value,
-                                style: TextStyle(
-                                  fontFamily: settings.fontFamily,
-                                ),
-                              );
-                            }),
-                        ValueListenableBuilder(
-                            valueListenable: _currentPage,
-                            builder: (context, value, child) {
-                              return Text(
-                                '${(((currentSeqNo.value + 1) / chapterList.length) * 100).toStringAsFixed(2)}%',
-                                style: TextStyle(
-                                  fontFamily: settings.fontFamily,
-                                ),
-                              );
-                            })
-                      ],
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ValueListenableBuilder(
+                              valueListenable: _now,
+                              builder: (context, value, child) {
+                                return Text(
+                                  value,
+                                  style: TextStyle(
+                                    fontFamily: settings.fontFamily,
+                                  ),
+                                );
+                              }),
+                          ValueListenableBuilder(
+                              valueListenable: _currentPage,
+                              builder: (context, value, child) {
+                                return Text(
+                                  '${(((currentSeqNo.value + 1) / chapterList.length) * 100).toStringAsFixed(2)}%',
+                                  style: TextStyle(
+                                    fontFamily: settings.fontFamily,
+                                  ),
+                                );
+                              })
+                        ],
+                      ),
                     ),
                   )) : const SizedBox.shrink(),
               ValueListenableBuilder(

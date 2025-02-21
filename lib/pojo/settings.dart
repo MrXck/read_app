@@ -22,6 +22,10 @@ class Settings {
   late int titleFontColor = 0xCFCACACA;
   late bool showBottom = true;
   late bool openFlip = true;
+  late double pageLeftPadding = 10;
+  late double pageRightPadding = 10;
+  late double pageTopPadding = 0;
+  late double pageBottomPadding = 30;
 
   static Settings fromMap(Map<String, dynamic> config) {
     Settings settings = Settings();
@@ -56,6 +60,10 @@ class Settings {
     settings.titleFontColor = config['titleFontColor'] ?? 0xCFCACACA;
     settings.showBottom = config['showBottom'] ?? true;
     settings.openFlip = config['openFlip'] ?? true;
+    settings.pageLeftPadding = config['pageLeftPadding'] ?? 10;
+    settings.pageRightPadding = config['pageRightPadding'] ?? 10;
+    settings.pageTopPadding = config['pageTopPadding'] ?? 0;
+    settings.pageBottomPadding = config['pageBottomPadding'] ?? 30;
     return settings;
   }
 
@@ -91,6 +99,10 @@ class Settings {
       'titleFontColor': titleFontColor,
       'showBottom': showBottom,
       'openFlip': openFlip,
+      'pageLeftPadding': pageLeftPadding,
+      'pageRightPadding': pageRightPadding,
+      'pageTopPadding': pageTopPadding,
+      'pageBottomPadding': pageBottomPadding,
     };
   }
 
