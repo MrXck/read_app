@@ -21,6 +21,7 @@ class Settings {
   late bool isVer = false;
   late int titleFontColor = 0xCFCACACA;
   late bool showBottom = true;
+  late bool openFlip = true;
 
   static Settings fromMap(Map<String, dynamic> config) {
     Settings settings = Settings();
@@ -54,6 +55,7 @@ class Settings {
     settings.contentFontWeight = config['contentFontWeight'] ?? 4;
     settings.titleFontColor = config['titleFontColor'] ?? 0xCFCACACA;
     settings.showBottom = config['showBottom'] ?? true;
+    settings.openFlip = config['openFlip'] ?? true;
     return settings;
   }
 
@@ -88,6 +90,7 @@ class Settings {
       'contentFontWeight': contentFontWeight,
       'titleFontColor': titleFontColor,
       'showBottom': showBottom,
+      'openFlip': openFlip,
     };
   }
 

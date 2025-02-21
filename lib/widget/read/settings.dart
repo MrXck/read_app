@@ -269,6 +269,24 @@ class _ReadSettingsState extends State<ReadSettings> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      Text(
+                        '两侧翻页',
+                        style: TextStyle(
+                          fontFamily: widget.settings.fontFamily,
+                        ),
+                      ),
+                      Switch.adaptive(value: widget.settings.openFlip, onChanged: (value) {
+                        widget.settings.openFlip = value;
+                        widget.updateFunc(widget.settings);
+                      })
+                    ],
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
                       const Text('内容空格除系数'),
                       InkWell(
                         onTap: () {

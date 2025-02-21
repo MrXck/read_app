@@ -16,6 +16,7 @@ import 'package:read_app/utils/regex_utils.dart';
 import 'package:read_app/utils/volume_utils.dart';
 import 'package:read_app/widget/read/brightness_setting.dart';
 import 'package:read_app/widget/read/chapter_list.dart';
+import 'package:read_app/widget/read/flip.dart';
 import 'package:read_app/widget/read/font_setting.dart';
 import 'package:read_app/widget/read/settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -738,6 +739,11 @@ class _ReadPageState extends State<ReadPage> {
                           })
                     ],
                   )),
+              settings.openFlip ? ReadFlip(settings: settings, prevFunc: () {
+                _pageController.previousPage(duration: const Duration(milliseconds: 100), curve: Curves.easeIn);
+              }, nextFunc: () {
+                _pageController.nextPage(duration: const Duration(milliseconds: 100), curve: Curves.easeIn);
+              }, height: height, width: width) : const SizedBox.shrink(),
               settings.showBottom ? Positioned(
                   left: 0,
                   bottom: 0,
