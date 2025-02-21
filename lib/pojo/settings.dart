@@ -20,6 +20,7 @@ class Settings {
   late int contentFontWeight = 4;
   late bool isVer = false;
   late int titleFontColor = 0xCFCACACA;
+  late bool showBottom = true;
 
   static Settings fromMap(Map<String, dynamic> config) {
     Settings settings = Settings();
@@ -52,6 +53,7 @@ class Settings {
     settings.titleFontWeight = config['titleFontWeight'] ?? 7;
     settings.contentFontWeight = config['contentFontWeight'] ?? 4;
     settings.titleFontColor = config['titleFontColor'] ?? 0xCFCACACA;
+    settings.showBottom = config['showBottom'] ?? true;
     return settings;
   }
 
@@ -85,6 +87,7 @@ class Settings {
       'titleFontWeight': titleFontWeight,
       'contentFontWeight': contentFontWeight,
       'titleFontColor': titleFontColor,
+      'showBottom': showBottom,
     };
   }
 

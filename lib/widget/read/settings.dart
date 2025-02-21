@@ -206,119 +206,61 @@ class _ReadSettingsState extends State<ReadSettings> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '减去宽度',
+                        '底部时间',
                         style: TextStyle(
                           fontFamily: widget.settings.fontFamily,
                         ),
                       ),
                       InkWell(
-                        onTap: () {
-                          widget.settings.needDecreaseWidth--;
-                          widget.updateFunc(widget.settings);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                          decoration: const BoxDecoration(
-                              color: Color(0xFFEAEAEA),
-                              borderRadius:
-                              BorderRadius.all(Radius.circular(40))),
-                          child: Text(
-                            '-',
-                            style: TextStyle(
-                              fontFamily: widget.settings.fontFamily,
+                          onTap: () {
+                            widget.settings.showBottom = false;
+                            widget.updateFunc(widget.settings);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                                borderRadius:
+                                const BorderRadius.all(Radius.circular(40)),
+                                border: widget.settings.showBottom == false
+                                    ? Border.all(
+                                    color: Colors.black,
+                                    style: BorderStyle.solid,
+                                    width: 2)
+                                    : Border.all(color: Colors.white,
+                                    style: BorderStyle.solid,
+                                    width: 2)),
+                            child: Text(
+                              '隐藏',
+                              style: TextStyle(
+                                fontFamily: widget.settings.fontFamily,
+                              ),
                             ),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 6, right: 6),
-                        child: Text(
-                          '${widget.settings.needDecreaseWidth}',
-                          style: TextStyle(
-                            fontFamily: widget.settings.fontFamily,
-                          ),
-                        ),
-                      ),
+                          )),
                       InkWell(
-                        onTap: () {
-                          widget.settings.needDecreaseWidth++;
-                          widget.updateFunc(widget.settings);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                          decoration: const BoxDecoration(
-                              color: Color(0xFFEAEAEA),
-                              borderRadius:
-                              BorderRadius.all(Radius.circular(40))),
-                          child: Text(
-                            '+',
-                            style: TextStyle(
-                              fontFamily: widget.settings.fontFamily,
+                          onTap: () {
+                            widget.settings.showBottom = true;
+                            widget.updateFunc(widget.settings);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                                borderRadius:
+                                const BorderRadius.all(Radius.circular(40)),
+                                border: widget.settings.showBottom == true
+                                    ? Border.all(
+                                    color: Colors.black,
+                                    style: BorderStyle.solid,
+                                    width: 2)
+                                    : Border.all(color: Colors.white,
+                                    style: BorderStyle.solid,
+                                    width: 2)),
+                            child: Text(
+                              '显示',
+                              style: TextStyle(
+                                fontFamily: widget.settings.fontFamily,
+                              ),
                             ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '减去高度',
-                        style: TextStyle(
-                          fontFamily: widget.settings.fontFamily,
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          widget.settings.needDecreaseHeight--;
-                          widget.updateFunc(widget.settings);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                          decoration: const BoxDecoration(
-                              color: Color(0xFFEAEAEA),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
-                          child: Text(
-                            '-',
-                            style: TextStyle(
-                              fontFamily: widget.settings.fontFamily,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 6, right: 6),
-                        child: Text(
-                          '${widget.settings.needDecreaseHeight}',
-                          style: TextStyle(
-                            fontFamily: widget.settings.fontFamily,
-                          ),
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          widget.settings.needDecreaseHeight++;
-                          widget.updateFunc(widget.settings);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                          decoration: const BoxDecoration(
-                              color: Color(0xFFEAEAEA),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
-                          child: Text(
-                            '+',
-                            style: TextStyle(
-                              fontFamily: widget.settings.fontFamily,
-                            ),
-                          ),
-                        ),
-                      ),
+                          )),
                     ],
                   ),
                 ),
@@ -390,130 +332,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '减去行高',
-                        style: TextStyle(
-                          fontFamily: widget.settings.fontFamily,
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          widget.settings.needIncreaseLineHeight -= 0.01;
-                          widget.updateFunc(widget.settings);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                          decoration: const BoxDecoration(
-                              color: Color(0xFFEAEAEA),
-                              borderRadius:
-                              BorderRadius.all(Radius.circular(40))),
-                          child: Text(
-                            '-',
-                            style: TextStyle(
-                              fontFamily: widget.settings.fontFamily,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 6, right: 6),
-                        child: Text(
-                          widget.settings.needIncreaseLineHeight
-                              .toStringAsFixed(2),
-                          style: TextStyle(
-                            fontFamily: widget.settings.fontFamily,
-                          ),
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          widget.settings.needIncreaseLineHeight += 0.01;
-                          widget.updateFunc(widget.settings);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                          decoration: const BoxDecoration(
-                              color: Color(0xFFEAEAEA),
-                              borderRadius:
-                              BorderRadius.all(Radius.circular(40))),
-                          child: Text(
-                            '+',
-                            style: TextStyle(
-                              fontFamily: widget.settings.fontFamily,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '字体相乘大小',
-                        style: TextStyle(
-                          fontFamily: widget.settings.fontFamily,
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          widget.settings.needMultiFontSize -= 0.01;
-                          widget.updateFunc(widget.settings);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                          decoration: const BoxDecoration(
-                              color: Color(0xFFEAEAEA),
-                              borderRadius:
-                              BorderRadius.all(Radius.circular(40))),
-                          child: Text(
-                            '-',
-                            style: TextStyle(
-                              fontFamily: widget.settings.fontFamily,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 6, right: 6),
-                        child: Text(
-                          widget.settings.needMultiFontSize.toStringAsFixed(2),
-                          style: TextStyle(
-                            fontFamily: widget.settings.fontFamily,
-                          ),
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          widget.settings.needMultiFontSize += 0.01;
-                          widget.updateFunc(widget.settings);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                          decoration: const BoxDecoration(
-                              color: Color(0xFFEAEAEA),
-                              borderRadius:
-                              BorderRadius.all(Radius.circular(40))),
-                          child: Text(
-                            '+',
-                            style: TextStyle(
-                              fontFamily: widget.settings.fontFamily,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '章节标题相乘大小',
+                        '章节标题乘大小',
                         style: TextStyle(
                           fontFamily: widget.settings.fontFamily,
                         ),

@@ -125,7 +125,8 @@ class _ReadPageState extends State<ReadPage> {
     });
 
     var value = await SharedPreferences.getInstance();
-    var config = const JsonDecoder().convert(value.getString(Constant.readConfigKey) ?? '{}');
+    var config = const JsonDecoder()
+        .convert(value.getString(Constant.readConfigKey) ?? '{}');
     settings = Settings.fromMap(config);
 
     _pageController.addListener(() {
@@ -317,7 +318,7 @@ class _ReadPageState extends State<ReadPage> {
     });
   }
 
-  Widget addPage(List<Map> textList, int totalPageNum, int everyLineFontNum) {
+  Widget addPage(List<Map> textList, int totalPageNum, int everyLineFontNum, double everyLineHeight) {
     List<Widget> widgetList = [];
 
     for (var i = 0; i < textList.length; i++) {
@@ -348,7 +349,7 @@ class _ReadPageState extends State<ReadPage> {
               children: [
                 SizedBox(
                   width: settings.fontSize * 2,
-                  height: settings.fontSize,
+                  height: everyLineHeight,
                 )
               ],
             ));
@@ -380,7 +381,7 @@ class _ReadPageState extends State<ReadPage> {
               children: [
                 SizedBox(
                   width: settings.fontSize * 2,
-                  height: settings.fontSize,
+                  height: everyLineHeight,
                 ),
                 Text(
                   text,
@@ -396,8 +397,7 @@ class _ReadPageState extends State<ReadPage> {
               ],
             ));
           }
-        }
-        else {
+        } else {
           List<Widget> tt = [];
           var textList1 = text.trim().split('');
 
@@ -437,27 +437,51 @@ class _ReadPageState extends State<ReadPage> {
     }
 
     return Container(
-      width: 200,
-      padding: EdgeInsets.fromLTRB(
-          pageLeftPadding, pageTopPadding, pageRightPadding, pageBottomPadding),
+      padding: EdgeInsets.fromLTRB(pageLeftPadding, pageTopPadding, pageRightPadding, settings.showBottom ? pageBottomPadding : 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        // mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: widgetList,
       ),
     );
   }
 
+  TextPainter calculateTextHeight(
+      String text, TextStyle style, double maxWidth) {
+    final TextPainter textPainter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      maxLines: null, // null 表示不限制行数
+      textDirection: TextDirection.ltr,
+    )..layout(maxWidth: maxWidth);
+
+    return textPainter;
+  }
+
   List<Widget> calcPage(String data, double height, double width,
       double fontSize, double lineHeight) {
-    double everyLineHeight =
-        (fontSize * (lineHeight + settings.needIncreaseLineHeight))
-            .ceilToDouble();
-    int lineNum =
-        ((height - settings.needDecreaseHeight) / everyLineHeight).floor();
 
-    int everyLineFontNum = ((width - settings.needDecreaseWidth) /
-            (fontSize * settings.needMultiFontSize))
-        .floor();
+    if (settings.showBottom) {
+      height = height - 30 - 30;
+    } else {
+      height = height - 30;
+    }
+    width = width - pageLeftPadding - pageRightPadding;
+
+    var textPainter = calculateTextHeight(
+        "测",
+        TextStyle(
+            height: settings.lineHeight,
+            fontSize: settings.fontSize,
+            fontFamily: settings.fontFamily,
+            color: Color(settings.fontColor),
+            fontWeight: fontWeightList[settings.contentFontWeight]),
+        width);
+
+    double everyLineHeight = textPainter.size.height.ceilToDouble();
+
+    int lineNum = (height / everyLineHeight).floor();
+
+    int everyLineFontNum = (width / textPainter.size.width).floor();
 
     // data = data.replaceAll(RegExp(r'\r'), '');
     // data = data.replaceAll(RegExp(r'(?<!\r?\n)\r?\n(?!\r?\n)'), '\n\n');
@@ -526,13 +550,13 @@ class _ReadPageState extends State<ReadPage> {
 
       var hasChapterTitle = item['hasChapterTitle'];
       if (hasChapterTitle && xxx.isNotEmpty) {
-        pageList.add(addPage(xxx, pageList.length, everyLineFontNum));
+        pageList.add(addPage(xxx, pageList.length, everyLineFontNum, everyLineHeight));
         xxx = [];
         currentLine = 0;
       }
 
       if (currentLine >= lineNum) {
-        pageList.add(addPage(xxx, pageList.length, everyLineFontNum));
+        pageList.add(addPage(xxx, pageList.length, everyLineFontNum, everyLineHeight));
         currentLine = 0;
         xxx = [];
       }
@@ -554,8 +578,13 @@ class _ReadPageState extends State<ReadPage> {
         if (xxx.isEmpty && text.trim().isEmpty) {
           continue;
         }
-        var addMap = {'text': text, 'hasChapterTitle': hasChapterTitle, 'isLast': true};
-        if (n != pageTextList.length - 1 && pageTextList[n + 1]['text'].trim().isNotEmpty) {
+        var addMap = {
+          'text': text,
+          'hasChapterTitle': hasChapterTitle,
+          'isLast': true
+        };
+        if (n != pageTextList.length - 1 &&
+            pageTextList[n + 1]['text'].trim().isNotEmpty) {
           addMap['isLast'] = false;
         }
 
@@ -565,7 +594,7 @@ class _ReadPageState extends State<ReadPage> {
     }
 
     if (xxx.isNotEmpty) {
-      pageList.add(addPage(xxx, pageList.length, everyLineFontNum));
+      pageList.add(addPage(xxx, pageList.length, everyLineFontNum, everyLineHeight));
     }
 
     return pageList;
@@ -599,6 +628,7 @@ class _ReadPageState extends State<ReadPage> {
   @override
   Widget build(BuildContext context) {
     var conte = MediaQuery.of(context);
+    var topTitleHeight = 30.0;
     height = conte.size.height - conte.padding.top - conte.padding.bottom;
     width = conte.size.width;
     return Scaffold(
@@ -613,7 +643,7 @@ class _ReadPageState extends State<ReadPage> {
             children: [
               Positioned(
                   left: 0,
-                  top: 30,
+                  top: topTitleHeight,
                   right: 0,
                   bottom: 0,
                   child: GestureDetector(
@@ -628,10 +658,9 @@ class _ReadPageState extends State<ReadPage> {
                       height: height,
                       width: width,
                       child: Center(
-                        child: Container(
+                        child: SizedBox(
                           width: width,
                           height: height,
-                          padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
                           child: PageView.builder(
                             controller: _pageController,
                             scrollDirection: settings.isVer
@@ -689,7 +718,7 @@ class _ReadPageState extends State<ReadPage> {
                   top: 0,
                   left: 10,
                   right: 0,
-                  height: 30,
+                  height: topTitleHeight,
                   child: Row(
                     children: [
                       ValueListenableBuilder(
@@ -709,11 +738,13 @@ class _ReadPageState extends State<ReadPage> {
                           })
                     ],
                   )),
-              Positioned(
+              settings.showBottom ? Positioned(
                   left: 0,
                   bottom: 0,
                   child: Container(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                    height: 30,
+                    padding: EdgeInsets.fromLTRB(pageLeftPadding, 0, pageRightPadding, 10),
+                    color: Color(settings.backgroundColor),
                     width: width,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -740,7 +771,7 @@ class _ReadPageState extends State<ReadPage> {
                             })
                       ],
                     ),
-                  )),
+                  )) : const SizedBox.shrink(),
               ValueListenableBuilder(
                   valueListenable: showOption,
                   builder: (context, value, child) {
@@ -883,7 +914,8 @@ class _ReadPageState extends State<ReadPage> {
                                           onTap: () {
                                             showChapter.value = false;
                                             showSettings.value = false;
-                                            showBrightness.value = !(showBrightness.value);
+                                            showBrightness.value =
+                                                !(showBrightness.value);
                                             showFont.value = false;
                                           },
                                           child: Wrap(
@@ -1048,7 +1080,8 @@ class _ReadPageState extends State<ReadPage> {
     book.currentChapter = currentSeqNo.value;
     DatabaseHelper.db.updateById(book);
     SharedPreferences.getInstance().then((value) {
-      value.setString(Constant.readConfigKey, const JsonEncoder().convert(settings.toMap()));
+      value.setString(Constant.readConfigKey,
+          const JsonEncoder().convert(settings.toMap()));
     });
     if (settingController.isOpenVolumeFlip.value) {
       volumeUtils.removeListener(needRestore: true);
