@@ -123,7 +123,7 @@ class BookShelfHeader extends StatelessWidget {
                                   } catch (e) {
                                     Get.snackbar('错误', e.toString());
                                   } finally {
-                                    LoadingUtils.showLoading();
+                                    LoadingUtils.hideLoading();
                                     data.refresh();
                                   }
                                 } else {
