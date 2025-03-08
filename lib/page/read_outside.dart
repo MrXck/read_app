@@ -16,7 +16,6 @@ import 'package:read_app/utils/spider_utils.dart';
 import 'package:read_app/utils/volume_utils.dart';
 import 'package:read_app/widget/read/brightness_setting.dart';
 import 'package:read_app/widget/read/chapter_list.dart';
-import 'package:read_app/widget/read/flip.dart';
 import 'package:read_app/widget/read/font_setting.dart';
 import 'package:read_app/widget/read/settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -674,12 +673,43 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                   right: 0,
                   bottom: 0,
                   child: GestureDetector(
-                    onTap: () {
-                      showOption.value = !(showOption.value);
-                      showSettings.value = false;
-                      showChapter.value = false;
-                      showFont.value = false;
-                      showBrightness.value = false;
+                    onTapDown: (details) {
+                      if (settings.openFlip) {
+                        var dx = details.globalPosition.dx;
+                        var dy = details.globalPosition.dy;
+
+                        if (settings.isVer) {
+                          if (dy < height / 5) {
+                            _pageController.previousPage(duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+                          } else if (dy > height / 5 * 4) {
+                            _pageController.nextPage(duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+                          } else {
+                            showOption.value = !(showOption.value);
+                            showSettings.value = false;
+                            showChapter.value = false;
+                            showFont.value = false;
+                            showBrightness.value = false;
+                          }
+                        } else {
+                          if (dx < width / 5) {
+                            _pageController.previousPage(duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+                          } else if (dx > width / 5 * 4) {
+                            _pageController.nextPage(duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+                          } else {
+                            showOption.value = !(showOption.value);
+                            showSettings.value = false;
+                            showChapter.value = false;
+                            showFont.value = false;
+                            showBrightness.value = false;
+                          }
+                        }
+                      } else {
+                        showOption.value = !(showOption.value);
+                        showSettings.value = false;
+                        showChapter.value = false;
+                        showFont.value = false;
+                        showBrightness.value = false;
+                      }
                     },
                     child: SizedBox(
                       height: height,
@@ -789,11 +819,6 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                           })
                     ],
                   )),
-              settings.openFlip ? ReadFlip(settings: settings, prevFunc: () {
-                _pageController.previousPage(duration: const Duration(milliseconds: 100), curve: Curves.easeIn);
-              }, nextFunc: () {
-                _pageController.nextPage(duration: const Duration(milliseconds: 100), curve: Curves.easeIn);
-              }, height: height, width: width) : const SizedBox.shrink(),
               settings.showBottom ? Positioned(
                   left: 0,
                   bottom: 0,

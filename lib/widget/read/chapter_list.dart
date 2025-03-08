@@ -23,7 +23,7 @@ class ReadChapterList extends StatelessWidget {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       var offset = (currentSeqNo - 2) * 60.0;
-      scrollController.jumpTo(offset);
+      scrollController.animateTo(offset, duration: const Duration(milliseconds: 300), curve: Curves.ease);
     });
 
     return Container(
