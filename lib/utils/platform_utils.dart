@@ -175,4 +175,8 @@ class PlatFormUtils {
       'deviceId': data.deviceId,
     };
   }
+
+  static Future<int> getSdkVersion() async {
+    return (await initPlatformState())['version.sdkInt'];
+  }
 }
