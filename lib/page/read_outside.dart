@@ -137,33 +137,6 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
     var config = const JsonDecoder().convert(value.getString(Constant.readConfigKey) ?? '{}');
     settings = Settings.fromMap(config);
 
-    _pageController.addListener(() {
-      var beforePage = _currentPage.value;
-      _currentPage.value = _pageController.page!.round() + 1;
-
-      if (isLoading) {
-        return;
-      }
-
-      if (beforePage > _currentPage.value) {
-        if (beforePage - startHasContentPage < 4) {
-          if (isLoading) {
-            return;
-          }
-          switchChapter(currentSeqNo.value - 1, false);
-        }
-      }
-
-      if (beforePage < _currentPage.value) {
-        if (widgetList.length - _currentPage.value < 4) {
-          if (isLoading) {
-            return;
-          }
-          switchChapter(currentSeqNo.value + 1, true);
-        }
-      }
-    });
-
     switchChapter1(currentSeqNo.value);
   }
 
@@ -360,9 +333,9 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
         for (int i = pageList.length - 1; i >= 0; i--) {
           widgetList[startHasContentPage - (pageList.length - i)] = pageList[i];
         }
+        startHasContentPage -= pageList.length;
       }
       data = content;
-      startHasContentPage -= pageList.length;
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -733,6 +706,27 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
 
                               if (isLoading) {
                                 return;
+                              }
+
+                              var beforePage = _currentPage.value;
+                              _currentPage.value = _pageController.page!.round() + 1;
+
+                              if (beforePage > _currentPage.value) {
+                                if (beforePage - startHasContentPage < 4) {
+                                  if (isLoading) {
+                                    return;
+                                  }
+                                  switchChapter(currentSeqNo.value - 1, false);
+                                }
+                              }
+
+                              if (beforePage < _currentPage.value) {
+                                if (widgetList.length - _currentPage.value < 4) {
+                                  if (isLoading) {
+                                    return;
+                                  }
+                                  switchChapter(currentSeqNo.value + 1, true);
+                                }
                               }
 
                               if (book.id != '-1') {

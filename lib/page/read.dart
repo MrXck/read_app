@@ -277,9 +277,9 @@ class _ReadPageState extends State<ReadPage> {
         for (int i = pageList.length - 1; i >= 0; i--) {
           widgetList[startHasContentPage - (pageList.length - i)] = pageList[i];
         }
+        startHasContentPage -= pageList.length;
       }
       data = content;
-      startHasContentPage -= pageList.length;
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
