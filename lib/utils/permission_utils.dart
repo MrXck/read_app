@@ -7,7 +7,7 @@ class PermissionUtils {
 
     var version = await PlatFormUtils.getSdkVersion();
 
-    if (version >= 30) {
+    if (version > 28) {
       return await Permission
           .manageExternalStorage
           .request();
