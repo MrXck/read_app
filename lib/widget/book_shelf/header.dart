@@ -69,10 +69,10 @@ class BookShelfHeader extends StatelessWidget {
                             onTap: () async {
                               var status = await PermissionUtils.getFilePermission();
                               if (status.isGranted) {
-                                LoadingUtils.showLoading();
                                 var directoryPath =
                                     await FileUtils.selectDirectory();
                                 if (directoryPath.isNotEmpty) {
+                                  LoadingUtils.showLoading();
                                   try {
                                     await FileUtils.saveBookByDirectory(
                                         directoryPath, data.parentId);
@@ -82,9 +82,9 @@ class BookShelfHeader extends StatelessWidget {
                                     LoadingUtils.hideLoading();
                                     data.refresh();
                                   }
-                                } else {
-                                  Get.snackbar('提示', '没有权限');
                                 }
+                              } else {
+                                Get.snackbar('提示', '没有权限');
                               }
                             },
                           ),
@@ -113,10 +113,10 @@ class BookShelfHeader extends StatelessWidget {
                             onTap: () async {
                               var status = await PermissionUtils.getFilePermission();
                               if (status.isGranted) {
-                                LoadingUtils.showLoading();
                                 var directoryPath =
                                     await FileUtils.selectDirectory();
                                 if (directoryPath.isNotEmpty) {
+                                  LoadingUtils.showLoading();
                                   try {
                                     await FileUtils.saveComicByDirectory(
                                         directoryPath, data.parentId);
@@ -126,9 +126,9 @@ class BookShelfHeader extends StatelessWidget {
                                     LoadingUtils.hideLoading();
                                     data.refresh();
                                   }
-                                } else {
-                                  Get.snackbar('提示', '没有权限');
                                 }
+                              } else {
+                                Get.snackbar('提示', '没有权限');
                               }
                             },
                           ),
