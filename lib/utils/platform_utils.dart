@@ -177,6 +177,10 @@ class PlatFormUtils {
   }
 
   static Future<int> getSdkVersion() async {
-    return (await initPlatformState())['version.sdkInt'];
+    try {
+      return (await initPlatformState())['version.sdkInt'];
+    } catch (e) {
+      return 0;
+    }
   }
 }
