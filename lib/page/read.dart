@@ -102,10 +102,6 @@ class _ReadPageState extends State<ReadPage> {
     chapterTitleExp = book.chapterTitleExp;
     currentSeqNo.value = book.currentChapter;
 
-    if (book.currentChapter == 0) {
-      startHasContentPage = 0;
-    }
-
     var time = DateTime.now();
     _now.value =
         '${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')} ${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:${time.second.toString().padLeft(2, '0')}';
@@ -175,6 +171,12 @@ class _ReadPageState extends State<ReadPage> {
 
     var content = '';
 
+    if (book.currentChapter == 0) {
+      startHasContentPage = 0;
+    } else {
+      startHasContentPage = 500;
+    }
+
     List<Widget> pageList =
         List.generate(startHasContentPage, (index) => const SizedBox.shrink());
 
@@ -200,7 +202,6 @@ class _ReadPageState extends State<ReadPage> {
     }
 
     setState(() {
-      startHasContentPage = 500;
       data = content;
       widgetList = pageList;
     });
@@ -227,6 +228,10 @@ class _ReadPageState extends State<ReadPage> {
 
     try {
       currentChapter = chapterList[seqNo];
+      if (chapterTitlePageNumMap.containsKey(currentChapter.title)) {
+        isLoading = false;
+        return;
+      }
     } catch (e) {
       isLoading = false;
       return;
