@@ -35,6 +35,7 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
   ValueNotifier<bool> showChapter = ValueNotifier(false);
   ValueNotifier<bool> showFont = ValueNotifier(false);
   ValueNotifier<bool> showBrightness = ValueNotifier(false);
+  ValueNotifier<bool> showMask = ValueNotifier(false);
   List<int> backgroundColorList = [
     0xFFF8F7F3,
     0xFFE6DBC5,
@@ -855,6 +856,18 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                       ),
                     ),
                   )) : const SizedBox.shrink(),
+              ValueListenableBuilder(valueListenable: showMask, builder: (context, value, child) {
+                return value ? Positioned.fill(
+                  child: ModalBarrier(
+                      color: Colors.black54, dismissible: true, onDismiss: () {
+                    showChapter.value = false;
+                    showFont.value = false;
+                    showBrightness.value = false;
+                    showSettings.value = false;
+                    showMask.value = false;
+                  }),
+                ) : const SizedBox.shrink();
+              }),
               ValueListenableBuilder(
                   valueListenable: showOption,
                   builder: (context, value, child) {
@@ -994,6 +1007,12 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                                             showSettings.value = false;
                                             showFont.value = false;
                                             showBrightness.value = false;
+
+                                            if (showChapter.value || showSettings.value || showFont.value || showBrightness.value) {
+                                              showMask.value = true;
+                                            } else {
+                                              showMask.value = false;
+                                            }
                                           },
                                           child: Wrap(
                                             direction: Axis.vertical,
@@ -1019,6 +1038,12 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                                             showChapter.value = false;
                                             showSettings.value = false;
                                             showBrightness.value = false;
+
+                                            if (showChapter.value || showSettings.value || showFont.value || showBrightness.value) {
+                                              showMask.value = true;
+                                            } else {
+                                              showMask.value = false;
+                                            }
                                           },
                                           child: Wrap(
                                             direction: Axis.vertical,
@@ -1042,6 +1067,12 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                                             showBrightness.value =
                                                 !(showBrightness.value);
                                             showFont.value = false;
+
+                                            if (showChapter.value || showSettings.value || showFont.value || showBrightness.value) {
+                                              showMask.value = true;
+                                            } else {
+                                              showMask.value = false;
+                                            }
                                           },
                                           child: Wrap(
                                             direction: Axis.vertical,
@@ -1083,6 +1114,12 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                                             showChapter.value = false;
                                             showFont.value = false;
                                             showBrightness.value = false;
+
+                                            if (showChapter.value || showSettings.value || showFont.value || showBrightness.value) {
+                                              showMask.value = true;
+                                            } else {
+                                              showMask.value = false;
+                                            }
                                           },
                                           child: Wrap(
                                             direction: Axis.vertical,
