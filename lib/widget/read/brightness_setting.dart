@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:read_app/pojo/settings.dart';
 
 class BrightnessSetting extends StatefulWidget {
-  const BrightnessSetting({super.key});
+  final Settings settings;
+  
+  const BrightnessSetting({super.key, required this.settings});
 
   @override
   State<BrightnessSetting> createState() => _BrightnessSettingState();
@@ -18,7 +21,10 @@ class _BrightnessSettingState extends State<BrightnessSetting> {
         left: 0,
         right: 0,
         child: Container(
-          color: Colors.white,
+          decoration: BoxDecoration(
+            color: Color(widget.settings.backgroundColor),
+            borderRadius: const BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
+          ),
           height: 100,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -36,7 +36,11 @@ class _ReadSettingsState extends State<ReadSettings> {
         child: Container(
             height: 272,
             padding: const EdgeInsets.all(10),
-            decoration: const BoxDecoration(color: Colors.white),
+            decoration: BoxDecoration(
+              color: Color(widget.settings.backgroundColor),
+              borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(10), topRight: Radius.circular(10)),
+            ),
             child: ListView(
               children: [
                 Container(
@@ -44,11 +48,8 @@ class _ReadSettingsState extends State<ReadSettings> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
+                      const Text(
                         '翻页模式',
-                        style: TextStyle(
-                          fontFamily: widget.settings.fontFamily,
-                        ),
                       ),
                       InkWell(
                           onTap: () {
@@ -65,9 +66,10 @@ class _ReadSettingsState extends State<ReadSettings> {
                                         color: Colors.black,
                                         style: BorderStyle.solid,
                                         width: 2)
-                                    : Border.all(color: Colors.white,
-                                    style: BorderStyle.solid,
-                                    width: 2)),
+                                    : Border.all(
+                                        color: Colors.white,
+                                        style: BorderStyle.solid,
+                                        width: 2)),
                             child: Text(
                               '左右滚动',
                               style: TextStyle(
@@ -90,9 +92,10 @@ class _ReadSettingsState extends State<ReadSettings> {
                                         color: Colors.black,
                                         style: BorderStyle.solid,
                                         width: 2)
-                                    : Border.all(color: Colors.white,
-                                    style: BorderStyle.solid,
-                                    width: 2)),
+                                    : Border.all(
+                                        color: Colors.white,
+                                        style: BorderStyle.solid,
+                                        width: 2)),
                             child: Text(
                               '上下滚动',
                               style: TextStyle(
@@ -108,11 +111,8 @@ class _ReadSettingsState extends State<ReadSettings> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
+                      const Text(
                         '背景颜色',
-                        style: TextStyle(
-                          fontFamily: widget.settings.fontFamily,
-                        ),
                       ),
                       ...widget.backgroundColorList.map((item) {
                         return InkWell(
@@ -144,11 +144,8 @@ class _ReadSettingsState extends State<ReadSettings> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
+                      const Text(
                         '背景颜色',
-                        style: TextStyle(
-                          fontFamily: widget.settings.fontFamily,
-                        ),
                       ),
                       TextButton(
                         onPressed: () {
@@ -156,7 +153,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                               title: '背景颜色',
                               content: ColorPicker(
                                 pickerColor:
-                                Color(widget.settings.backgroundColor),
+                                    Color(widget.settings.backgroundColor),
                                 onColorChanged: (color) {
                                   setState(() {
                                     widget.settings.backgroundColor =
@@ -205,11 +202,8 @@ class _ReadSettingsState extends State<ReadSettings> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
+                      const Text(
                         '底部时间',
-                        style: TextStyle(
-                          fontFamily: widget.settings.fontFamily,
-                        ),
                       ),
                       InkWell(
                           onTap: () {
@@ -220,15 +214,16 @@ class _ReadSettingsState extends State<ReadSettings> {
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
                                 borderRadius:
-                                const BorderRadius.all(Radius.circular(40)),
+                                    const BorderRadius.all(Radius.circular(40)),
                                 border: widget.settings.showBottom == false
                                     ? Border.all(
-                                    color: Colors.black,
-                                    style: BorderStyle.solid,
-                                    width: 2)
-                                    : Border.all(color: Colors.white,
-                                    style: BorderStyle.solid,
-                                    width: 2)),
+                                        color: Colors.black,
+                                        style: BorderStyle.solid,
+                                        width: 2)
+                                    : Border.all(
+                                        color: Colors.white,
+                                        style: BorderStyle.solid,
+                                        width: 2)),
                             child: Text(
                               '隐藏',
                               style: TextStyle(
@@ -245,15 +240,16 @@ class _ReadSettingsState extends State<ReadSettings> {
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
                                 borderRadius:
-                                const BorderRadius.all(Radius.circular(40)),
+                                    const BorderRadius.all(Radius.circular(40)),
                                 border: widget.settings.showBottom == true
                                     ? Border.all(
-                                    color: Colors.black,
-                                    style: BorderStyle.solid,
-                                    width: 2)
-                                    : Border.all(color: Colors.white,
-                                    style: BorderStyle.solid,
-                                    width: 2)),
+                                        color: Colors.black,
+                                        style: BorderStyle.solid,
+                                        width: 2)
+                                    : Border.all(
+                                        color: Colors.white,
+                                        style: BorderStyle.solid,
+                                        width: 2)),
                             child: Text(
                               '显示',
                               style: TextStyle(
@@ -269,16 +265,15 @@ class _ReadSettingsState extends State<ReadSettings> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
+                      const Text(
                         '两侧翻页',
-                        style: TextStyle(
-                          fontFamily: widget.settings.fontFamily,
-                        ),
                       ),
-                      Switch.adaptive(value: widget.settings.openFlip, onChanged: (value) {
-                        widget.settings.openFlip = value;
-                        widget.updateFunc(widget.settings);
-                      })
+                      Switch.adaptive(
+                          value: widget.settings.openFlip,
+                          onChanged: (value) {
+                            widget.settings.openFlip = value;
+                            widget.updateFunc(widget.settings);
+                          })
                     ],
                   ),
                 ),
@@ -298,7 +293,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                              BorderRadius.all(Radius.circular(40))),
+                                  BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '-',
                             style: TextStyle(
@@ -326,7 +321,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                              BorderRadius.all(Radius.circular(40))),
+                                  BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '+',
                             style: TextStyle(
@@ -354,7 +349,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                              BorderRadius.all(Radius.circular(40))),
+                                  BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '-',
                             style: TextStyle(
@@ -382,7 +377,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                              BorderRadius.all(Radius.circular(40))),
+                                  BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '+',
                             style: TextStyle(
@@ -410,7 +405,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                              BorderRadius.all(Radius.circular(40))),
+                                  BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '-',
                             style: TextStyle(
@@ -438,7 +433,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                              BorderRadius.all(Radius.circular(40))),
+                                  BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '+',
                             style: TextStyle(
@@ -466,7 +461,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                              BorderRadius.all(Radius.circular(40))),
+                                  BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '-',
                             style: TextStyle(
@@ -494,7 +489,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                              BorderRadius.all(Radius.circular(40))),
+                                  BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '+',
                             style: TextStyle(
@@ -573,11 +568,8 @@ class _ReadSettingsState extends State<ReadSettings> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
+                      const Text(
                         '章节标题乘大小',
-                        style: TextStyle(
-                          fontFamily: widget.settings.fontFamily,
-                        ),
                       ),
                       InkWell(
                         onTap: () {
@@ -589,7 +581,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                              BorderRadius.all(Radius.circular(40))),
+                                  BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '-',
                             style: TextStyle(
@@ -618,7 +610,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                              BorderRadius.all(Radius.circular(40))),
+                                  BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '+',
                             style: TextStyle(
@@ -635,17 +627,14 @@ class _ReadSettingsState extends State<ReadSettings> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
+                      const Text(
                         '标题非中除系数',
-                        style: TextStyle(
-                          fontFamily: widget.settings.fontFamily,
-                        ),
                       ),
                       InkWell(
                         onTap: () {
                           widget.settings
-                              .chapterTitleNotChinaStrDivisionCoefficient -=
-                          0.01;
+                                  .chapterTitleNotChinaStrDivisionCoefficient -=
+                              0.01;
                           widget.updateFunc(widget.settings);
                         },
                         child: Container(
@@ -653,7 +642,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                              BorderRadius.all(Radius.circular(40))),
+                                  BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '-',
                             style: TextStyle(
@@ -676,8 +665,8 @@ class _ReadSettingsState extends State<ReadSettings> {
                       InkWell(
                         onTap: () {
                           widget.settings
-                              .chapterTitleNotChinaStrDivisionCoefficient +=
-                          0.01;
+                                  .chapterTitleNotChinaStrDivisionCoefficient +=
+                              0.01;
                           widget.updateFunc(widget.settings);
                         },
                         child: Container(
@@ -685,7 +674,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                           decoration: const BoxDecoration(
                               color: Color(0xFFEAEAEA),
                               borderRadius:
-                              BorderRadius.all(Radius.circular(40))),
+                                  BorderRadius.all(Radius.circular(40))),
                           child: Text(
                             '+',
                             style: TextStyle(
@@ -702,11 +691,8 @@ class _ReadSettingsState extends State<ReadSettings> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
+                      const Text(
                         '标题字数除系数',
-                        style: TextStyle(
-                          fontFamily: widget.settings.fontFamily,
-                        ),
                       ),
                       InkWell(
                         onTap: () {
@@ -768,11 +754,8 @@ class _ReadSettingsState extends State<ReadSettings> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(
+                      const Text(
                         '章节正则：',
-                        style: TextStyle(
-                          fontFamily: widget.settings.fontFamily,
-                        ),
                       ),
                       SizedBox(
                         width: width - 180,

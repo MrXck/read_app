@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/pojo/chapter.dart';
+import 'package:read_app/pojo/settings.dart';
 
 typedef ClickFunc = void Function(String chapterTitle, int pageNum);
 
@@ -9,13 +10,15 @@ class ReadChapterList extends StatelessWidget {
   final Book book;
   final int currentSeqNo;
   final List<Chapter> chapterList;
+  final Settings settings;
 
   const ReadChapterList(
       {super.key,
       required this.book,
       required this.currentSeqNo,
       required this.chapterList,
-      required this.clickFunc});
+      required this.clickFunc,
+      required this.settings});
 
   @override
   Widget build(BuildContext context) {
@@ -29,9 +32,9 @@ class ReadChapterList extends StatelessWidget {
 
     return Container(
         width: double.infinity,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
+        decoration: BoxDecoration(
+          color: Color(settings.backgroundColor),
+          borderRadius: const BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
         ),
         height: MediaQuery.of(context).size.height,
         child: Stack(

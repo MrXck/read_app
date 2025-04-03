@@ -1196,6 +1196,7 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                                 _nowChapter.value = chapterTitle;
                                 switchChapter1(seqNo);
                               },
+                              settings: settings,
                             ))
                         : const SizedBox.shrink();
                   }),
@@ -1223,7 +1224,7 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                   valueListenable: showBrightness,
                   builder: (context, value, child) {
                     return value
-                        ? const BrightnessSetting()
+                        ? BrightnessSetting(settings: settings,)
                         : const SizedBox.shrink();
                   }),
             ],

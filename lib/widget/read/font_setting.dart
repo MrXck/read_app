@@ -63,8 +63,9 @@ class _ReadFontSettingState extends State<ReadFontSetting> {
     textController.text = hexToStringWithPrefix(widget.settings.fontColor);
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: Color(widget.settings.backgroundColor),
+        borderRadius: const BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
       ),
       height: size.height,
       padding: const EdgeInsets.all(10),

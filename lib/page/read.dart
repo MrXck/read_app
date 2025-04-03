@@ -844,7 +844,7 @@ class _ReadPageState extends State<ReadPage> {
                             child: Container(
                               height: 40,
                               decoration:
-                                  const BoxDecoration(color: Colors.white),
+                                  BoxDecoration(color: Color(settings.backgroundColor)),
                               child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -873,8 +873,7 @@ class _ReadPageState extends State<ReadPage> {
                             right: 0,
                             child: Container(
                               height: 110,
-                              decoration:
-                                  const BoxDecoration(color: Colors.white),
+                              decoration: BoxDecoration(color: Color(settings.backgroundColor)),
                               child: Column(
                                 children: [
                                   Row(
@@ -1116,11 +1115,13 @@ class _ReadPageState extends State<ReadPage> {
                               chapterList: chapterList,
                               book: book,
                               currentSeqNo: currentSeqNo.value,
+
                               clickFunc: (String chapterTitle, int seqNo) {
                                 nowChapterPage = 0;
                                 _nowChapter.value = chapterTitle;
                                 switchChapter1(seqNo);
                               },
+                              settings: settings,
                             ))
                         : const SizedBox.shrink();
                   }),
@@ -1148,7 +1149,7 @@ class _ReadPageState extends State<ReadPage> {
                   valueListenable: showBrightness,
                   builder: (context, value, child) {
                     return value
-                        ? const BrightnessSetting()
+                        ? BrightnessSetting(settings: settings)
                         : const SizedBox.shrink();
                   }),
             ],
