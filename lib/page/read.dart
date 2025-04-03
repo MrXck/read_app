@@ -35,6 +35,7 @@ class _ReadPageState extends State<ReadPage> {
   ValueNotifier<bool> showChapter = ValueNotifier(false);
   ValueNotifier<bool> showFont = ValueNotifier(false);
   ValueNotifier<bool> showBrightness = ValueNotifier(false);
+  ValueNotifier<bool> showMask = ValueNotifier(false);
   List<int> backgroundColorList = [
     0xFFF8F7F3,
     0xFFE6DBC5,
@@ -291,7 +292,8 @@ class _ReadPageState extends State<ReadPage> {
     });
   }
 
-  Widget addPage(List<Map> textList, int totalPageNum, int everyLineFontNum, double everyLineHeight) {
+  Widget addPage(List<Map> textList, int totalPageNum, int everyLineFontNum,
+      double everyLineHeight) {
     List<Widget> widgetList = [];
 
     for (var i = 0; i < textList.length; i++) {
@@ -410,7 +412,11 @@ class _ReadPageState extends State<ReadPage> {
     }
 
     return Container(
-      padding: EdgeInsets.fromLTRB(settings.pageLeftPadding, settings.pageTopPadding, settings.pageRightPadding, settings.showBottom ? settings.pageBottomPadding : 0),
+      padding: EdgeInsets.fromLTRB(
+          settings.pageLeftPadding,
+          settings.pageTopPadding,
+          settings.pageRightPadding,
+          settings.showBottom ? settings.pageBottomPadding : 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         // mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -432,7 +438,6 @@ class _ReadPageState extends State<ReadPage> {
 
   List<Widget> calcPage(String data, double height, double width,
       double fontSize, double lineHeight) {
-
     if (settings.showBottom) {
       height = height - 30;
     }
@@ -525,13 +530,15 @@ class _ReadPageState extends State<ReadPage> {
 
       var hasChapterTitle = item['hasChapterTitle'];
       if (hasChapterTitle && xxx.isNotEmpty) {
-        pageList.add(addPage(xxx, pageList.length, everyLineFontNum, everyLineHeight));
+        pageList.add(
+            addPage(xxx, pageList.length, everyLineFontNum, everyLineHeight));
         xxx = [];
         currentLine = 0;
       }
 
       if (currentLine >= lineNum) {
-        pageList.add(addPage(xxx, pageList.length, everyLineFontNum, everyLineHeight));
+        pageList.add(
+            addPage(xxx, pageList.length, everyLineFontNum, everyLineHeight));
         currentLine = 0;
         xxx = [];
       }
@@ -569,7 +576,8 @@ class _ReadPageState extends State<ReadPage> {
     }
 
     if (xxx.isNotEmpty) {
-      pageList.add(addPage(xxx, pageList.length, everyLineFontNum, everyLineHeight));
+      pageList.add(
+          addPage(xxx, pageList.length, everyLineFontNum, everyLineHeight));
     }
 
     return pageList;
@@ -629,9 +637,13 @@ class _ReadPageState extends State<ReadPage> {
 
                         if (settings.isVer) {
                           if (dy < height / 5) {
-                            _pageController.previousPage(duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+                            _pageController.previousPage(
+                                duration: const Duration(milliseconds: 200),
+                                curve: Curves.easeIn);
                           } else if (dy > height / 5 * 4) {
-                            _pageController.nextPage(duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+                            _pageController.nextPage(
+                                duration: const Duration(milliseconds: 200),
+                                curve: Curves.easeIn);
                           } else {
                             showOption.value = !(showOption.value);
                             showSettings.value = false;
@@ -641,9 +653,13 @@ class _ReadPageState extends State<ReadPage> {
                           }
                         } else {
                           if (dx < width / 5) {
-                            _pageController.previousPage(duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+                            _pageController.previousPage(
+                                duration: const Duration(milliseconds: 200),
+                                curve: Curves.easeIn);
                           } else if (dx > width / 5 * 4) {
-                            _pageController.nextPage(duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+                            _pageController.nextPage(
+                                duration: const Duration(milliseconds: 200),
+                                curve: Curves.easeIn);
                           } else {
                             showOption.value = !(showOption.value);
                             showSettings.value = false;
@@ -688,7 +704,8 @@ class _ReadPageState extends State<ReadPage> {
                               }
 
                               var beforePage = _currentPage.value;
-                              _currentPage.value = _pageController.page!.round() + 1;
+                              _currentPage.value =
+                                  _pageController.page!.round() + 1;
 
                               if (beforePage > _currentPage.value) {
                                 if (beforePage - startHasContentPage < 4) {
@@ -700,7 +717,8 @@ class _ReadPageState extends State<ReadPage> {
                               }
 
                               if (beforePage < _currentPage.value) {
-                                if (widgetList.length - _currentPage.value < 4) {
+                                if (widgetList.length - _currentPage.value <
+                                    4) {
                                   if (isLoading) {
                                     return;
                                   }
@@ -765,42 +783,56 @@ class _ReadPageState extends State<ReadPage> {
                           })
                     ],
                   )),
-              settings.showBottom ? Positioned(
-                  left: 0,
-                  bottom: 0,
-                  child: Container(
-                    height: 30,
-                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                    color: Color(settings.backgroundColor),
-                    width: width,
-                    child: Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          ValueListenableBuilder(
-                              valueListenable: _now,
-                              builder: (context, value, child) {
-                                return Text(
-                                  value,
-                                  style: TextStyle(
-                                    fontFamily: settings.fontFamily,
-                                  ),
-                                );
-                              }),
-                          ValueListenableBuilder(
-                              valueListenable: _currentPage,
-                              builder: (context, value, child) {
-                                return Text(
-                                  '${(((currentSeqNo.value + 1) / chapterList.length) * 100).toStringAsFixed(2)}%',
-                                  style: TextStyle(
-                                    fontFamily: settings.fontFamily,
-                                  ),
-                                );
-                              })
-                        ],
-                      ),
-                    ),
-                  )) : const SizedBox.shrink(),
+              settings.showBottom
+                  ? Positioned(
+                      left: 0,
+                      bottom: 0,
+                      child: Container(
+                        height: 30,
+                        padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                        color: Color(settings.backgroundColor),
+                        width: width,
+                        child: Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              ValueListenableBuilder(
+                                  valueListenable: _now,
+                                  builder: (context, value, child) {
+                                    return Text(
+                                      value,
+                                      style: TextStyle(
+                                        fontFamily: settings.fontFamily,
+                                      ),
+                                    );
+                                  }),
+                              ValueListenableBuilder(
+                                  valueListenable: _currentPage,
+                                  builder: (context, value, child) {
+                                    return Text(
+                                      '${(((currentSeqNo.value + 1) / chapterList.length) * 100).toStringAsFixed(2)}%',
+                                      style: TextStyle(
+                                        fontFamily: settings.fontFamily,
+                                      ),
+                                    );
+                                  })
+                            ],
+                          ),
+                        ),
+                      ))
+                  : const SizedBox.shrink(),
+              ValueListenableBuilder(valueListenable: showMask, builder: (context, value, child) {
+                return value ? Positioned.fill(
+                  child: ModalBarrier(
+                      color: Colors.black54, dismissible: true, onDismiss: () {
+                        showChapter.value = false;
+                        showFont.value = false;
+                        showBrightness.value = false;
+                        showSettings.value = false;
+                        showMask.value = false;
+                  }),
+                ) : const SizedBox.shrink();
+              }),
               ValueListenableBuilder(
                   valueListenable: showOption,
                   builder: (context, value, child) {
@@ -898,6 +930,13 @@ class _ReadPageState extends State<ReadPage> {
                                             showSettings.value = false;
                                             showFont.value = false;
                                             showBrightness.value = false;
+
+                                            if (showChapter.value || showSettings.value || showFont.value || showBrightness.value) {
+                                              showMask.value = true;
+                                            } else {
+                                              showMask.value = false;
+                                            }
+
                                           },
                                           child: Wrap(
                                             direction: Axis.vertical,
@@ -923,6 +962,12 @@ class _ReadPageState extends State<ReadPage> {
                                             showChapter.value = false;
                                             showSettings.value = false;
                                             showBrightness.value = false;
+
+                                            if (showChapter.value || showSettings.value || showFont.value || showBrightness.value) {
+                                              showMask.value = true;
+                                            } else {
+                                              showMask.value = false;
+                                            }
                                           },
                                           child: Wrap(
                                             direction: Axis.vertical,
@@ -946,6 +991,12 @@ class _ReadPageState extends State<ReadPage> {
                                             showBrightness.value =
                                                 !(showBrightness.value);
                                             showFont.value = false;
+
+                                            if (showChapter.value || showSettings.value || showFont.value || showBrightness.value) {
+                                              showMask.value = true;
+                                            } else {
+                                              showMask.value = false;
+                                            }
                                           },
                                           child: Wrap(
                                             direction: Axis.vertical,
@@ -987,6 +1038,12 @@ class _ReadPageState extends State<ReadPage> {
                                             showChapter.value = false;
                                             showFont.value = false;
                                             showBrightness.value = false;
+
+                                            if (showChapter.value || showSettings.value || showFont.value || showBrightness.value) {
+                                              showMask.value = true;
+                                            } else {
+                                              showMask.value = false;
+                                            }
                                           },
                                           child: Wrap(
                                             direction: Axis.vertical,
