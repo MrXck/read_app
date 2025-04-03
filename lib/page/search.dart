@@ -64,13 +64,12 @@ class _SearchPageState extends State<SearchPage> {
                       ),
                       controller: _textEditingController,
                       onChanged: (value) async {
-                        var books = await DatabaseHelper.db.getByTitle(value);
                         var dataDir = await getApplicationDocumentsDirectory();
                         _searchController.sink.add([]);
 
                         if (isSearchContent.value) {
                           List<Book> bookList = [];
-
+                          var books = await DatabaseHelper.db.getByTitle('');
                           for (var book in books) {
                             if (book.type == Constant.bookType) {
                               var bookPath = join(dataDir.path, book.path);
@@ -83,11 +82,11 @@ class _SearchPageState extends State<SearchPage> {
                             } else {
                               bookList.add(book);
                             }
-
                             _searchController.sink.add(bookList);
                           }
 
                         } else {
+                          var books = await DatabaseHelper.db.getByTitle(value);
                           _searchController.sink.add(books);
                         }
                       },
