@@ -80,7 +80,9 @@ class _SearchPageState extends State<SearchPage> {
                                 bookList.add(book);
                               }
                             } else {
-                              bookList.add(book);
+                              if (book.title.contains(value)) {
+                                bookList.add(book);
+                              }
                             }
                             _searchController.sink.add(bookList);
                           }
