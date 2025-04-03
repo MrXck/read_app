@@ -31,18 +31,19 @@ class ReadChapterList extends StatelessWidget {
         width: double.infinity,
         decoration: const BoxDecoration(
           color: Colors.white,
+          borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
         ),
         height: MediaQuery.of(context).size.height,
         child: Stack(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
               child: Text(
                 book.title,
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style:
-                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
             Positioned(
