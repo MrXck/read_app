@@ -131,8 +131,11 @@ class BookUtils {
   }
 
   static Future<void> changeChapterTitleExp(
-      Book book, String chapterTitleExp, List<Chapter> chapterList) async {
+      Book book, String chapterTitleExp) async {
     var directory = await getApplicationDocumentsDirectory();
+
+    List<Chapter> chapterList =
+        await DatabaseHelper.db.getChapterByBookId(book.id);
 
     for (var i = 0; i < chapterList.length; i++) {
       var chapter = chapterList[i];

@@ -1128,7 +1128,7 @@ class _ReadPageState extends State<ReadPage> {
                               showSettings.value = false;
 
                               await BookUtils.changeChapterTitleExp(book,
-                                  _chapterTitleExpController.text, chapterList);
+                                  _chapterTitleExpController.text);
 
                               nowChapterPage = 0;
                               currentSeqNo.value = 0;
