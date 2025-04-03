@@ -22,7 +22,7 @@ class ReadChapterList extends StatelessWidget {
     var scrollController = ScrollController();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      var offset = (currentSeqNo - 2) * 60.0;
+      var offset = (currentSeqNo - 1) * 60.0;
       scrollController.animateTo(offset,
           duration: const Duration(milliseconds: 300), curve: Curves.ease);
     });
@@ -80,10 +80,14 @@ class ReadChapterList extends StatelessWidget {
                               currentSeqNo == index
                                   ? Text(
                                       chapterTitle,
+                                      maxLines: 2,
                                       style:
                                           const TextStyle(color: Colors.blue),
                                     )
-                                  : Text(chapterTitle),
+                                  : Text(
+                                      chapterTitle,
+                                      maxLines: 2,
+                                    ),
                             ],
                           ),
                         ),

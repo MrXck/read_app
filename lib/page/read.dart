@@ -1054,7 +1054,7 @@ class _ReadPageState extends State<ReadPage> {
                             left: 0,
                             right: 0,
                             bottom: 70,
-                            height: 400,
+                            height: height * 0.7,
                             child: ReadChapterList(
                               chapterList: chapterList,
                               book: book,
