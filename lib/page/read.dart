@@ -185,6 +185,18 @@ class _ReadPageState extends State<ReadPage> {
       var chapter = chapterList[i];
       var chapterContent =
           await BookUtils.loadBook(join(dataDir.path, chapter.path));
+      chapterContent = chapterContent.replaceAll('\r', '');
+
+      chapterContent = chapterContent.replaceAllMapped(
+          RegExp(RegExp.escape(chapter.title) + r'(\n){2,}[^\n]',
+              multiLine: true), (Match match) {
+        return '${chapter.title}\n';
+      });
+
+      chapterContent = chapterContent.replaceAllMapped(
+          RegExp(r'(\n){2,}[^\n]', multiLine: true), (Match match) {
+        return '\n';
+      });
 
       var beforeAddLength = pageList.length;
 
@@ -260,6 +272,18 @@ class _ReadPageState extends State<ReadPage> {
     var chapter = chapterList[end];
     var chapterContent =
         await BookUtils.loadBook(join(dataDir.path, chapter.path));
+    chapterContent = chapterContent.replaceAll('\r', '');
+
+    chapterContent = chapterContent.replaceAllMapped(
+        RegExp(RegExp.escape(chapter.title) + r'(\n){2,}[^\n]', multiLine: true),
+        (Match match) {
+      return '${match.group(0)!.replaceAll(match.group(1)!, '')}\n';
+    });
+
+    chapterContent = chapterContent.replaceAllMapped(
+        RegExp(r'(\n){2,}[^\n]', multiLine: true), (Match match) {
+      return '\n';
+    });
 
     var beforeAddLength = widgetList.length;
 
@@ -821,18 +845,24 @@ class _ReadPageState extends State<ReadPage> {
                         ),
                       ))
                   : const SizedBox.shrink(),
-              ValueListenableBuilder(valueListenable: showMask, builder: (context, value, child) {
-                return value ? Positioned.fill(
-                  child: ModalBarrier(
-                      color: Colors.black54, dismissible: true, onDismiss: () {
-                        showChapter.value = false;
-                        showFont.value = false;
-                        showBrightness.value = false;
-                        showSettings.value = false;
-                        showMask.value = false;
+              ValueListenableBuilder(
+                  valueListenable: showMask,
+                  builder: (context, value, child) {
+                    return value
+                        ? Positioned.fill(
+                            child: ModalBarrier(
+                                color: Colors.black54,
+                                dismissible: true,
+                                onDismiss: () {
+                                  showChapter.value = false;
+                                  showFont.value = false;
+                                  showBrightness.value = false;
+                                  showSettings.value = false;
+                                  showMask.value = false;
+                                }),
+                          )
+                        : const SizedBox.shrink();
                   }),
-                ) : const SizedBox.shrink();
-              }),
               ValueListenableBuilder(
                   valueListenable: showOption,
                   builder: (context, value, child) {
@@ -843,8 +873,8 @@ class _ReadPageState extends State<ReadPage> {
                             right: 0,
                             child: Container(
                               height: 40,
-                              decoration:
-                                  BoxDecoration(color: Color(settings.backgroundColor)),
+                              decoration: BoxDecoration(
+                                  color: Color(settings.backgroundColor)),
                               child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -873,7 +903,8 @@ class _ReadPageState extends State<ReadPage> {
                             right: 0,
                             child: Container(
                               height: 110,
-                              decoration: BoxDecoration(color: Color(settings.backgroundColor)),
+                              decoration: BoxDecoration(
+                                  color: Color(settings.backgroundColor)),
                               child: Column(
                                 children: [
                                   Row(
@@ -930,12 +961,14 @@ class _ReadPageState extends State<ReadPage> {
                                             showFont.value = false;
                                             showBrightness.value = false;
 
-                                            if (showChapter.value || showSettings.value || showFont.value || showBrightness.value) {
+                                            if (showChapter.value ||
+                                                showSettings.value ||
+                                                showFont.value ||
+                                                showBrightness.value) {
                                               showMask.value = true;
                                             } else {
                                               showMask.value = false;
                                             }
-
                                           },
                                           child: Wrap(
                                             direction: Axis.vertical,
@@ -962,7 +995,10 @@ class _ReadPageState extends State<ReadPage> {
                                             showSettings.value = false;
                                             showBrightness.value = false;
 
-                                            if (showChapter.value || showSettings.value || showFont.value || showBrightness.value) {
+                                            if (showChapter.value ||
+                                                showSettings.value ||
+                                                showFont.value ||
+                                                showBrightness.value) {
                                               showMask.value = true;
                                             } else {
                                               showMask.value = false;
@@ -991,7 +1027,10 @@ class _ReadPageState extends State<ReadPage> {
                                                 !(showBrightness.value);
                                             showFont.value = false;
 
-                                            if (showChapter.value || showSettings.value || showFont.value || showBrightness.value) {
+                                            if (showChapter.value ||
+                                                showSettings.value ||
+                                                showFont.value ||
+                                                showBrightness.value) {
                                               showMask.value = true;
                                             } else {
                                               showMask.value = false;
@@ -1038,7 +1077,10 @@ class _ReadPageState extends State<ReadPage> {
                                             showFont.value = false;
                                             showBrightness.value = false;
 
-                                            if (showChapter.value || showSettings.value || showFont.value || showBrightness.value) {
+                                            if (showChapter.value ||
+                                                showSettings.value ||
+                                                showFont.value ||
+                                                showBrightness.value) {
                                               showMask.value = true;
                                             } else {
                                               showMask.value = false;
@@ -1115,7 +1157,6 @@ class _ReadPageState extends State<ReadPage> {
                               chapterList: chapterList,
                               book: book,
                               currentSeqNo: currentSeqNo.value,
-
                               clickFunc: (String chapterTitle, int seqNo) {
                                 nowChapterPage = 0;
                                 _nowChapter.value = chapterTitle;
