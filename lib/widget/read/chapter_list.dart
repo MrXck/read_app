@@ -23,7 +23,8 @@ class ReadChapterList extends StatelessWidget {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       var offset = (currentSeqNo - 2) * 60.0;
-      scrollController.animateTo(offset, duration: const Duration(milliseconds: 300), curve: Curves.ease);
+      scrollController.animateTo(offset,
+          duration: const Duration(milliseconds: 300), curve: Curves.ease);
     });
 
     return Container(
@@ -56,24 +57,36 @@ class ReadChapterList extends StatelessWidget {
                     itemBuilder: (context, index) {
                       var chapter = chapterList[index];
                       var chapterTitle = chapter.title;
-                      return SizedBox(
+                      return Container(
                         width: double.infinity,
                         height: 60,
-                        child: ListTile(
-                            title: currentSeqNo == index
-                                ? Text(
-                              chapterTitle,
-                              style: const TextStyle(color: Colors.blue),
-                            )
-                                : Text(chapterTitle),
-                            onTap: () {
+                        margin: const EdgeInsets.fromLTRB(14, 0, 14, 0),
+                        decoration: const BoxDecoration(
+                          border: Border(
+                              bottom: BorderSide(color: Color(0xD6C8C8C8))),
+                        ),
+                        child: GestureDetector(
+                          onTap: () {
+                            if (chapter.seqNo == currentSeqNo) {
+                              return;
+                            }
 
-                              if (chapter.seqNo == currentSeqNo) {
-                                return;
-                              }
-
-                              clickFunc(chapterTitle, chapter.seqNo);
-                            }),
+                            clickFunc(chapterTitle, chapter.seqNo);
+                          },
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              currentSeqNo == index
+                                  ? Text(
+                                      chapterTitle,
+                                      style:
+                                          const TextStyle(color: Colors.blue),
+                                    )
+                                  : Text(chapterTitle),
+                            ],
+                          ),
+                        ),
                       );
                     }))
           ],
