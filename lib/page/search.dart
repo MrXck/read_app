@@ -71,9 +71,11 @@ class _SearchPageState extends State<SearchPage> {
                           Get.toNamed('/comic', arguments: book);
                         } else if (book.type == Constant.mediaType) {
                           Get.toNamed('/video', arguments: book);
+                        } else if (book.type == Constant.outSideType) {
+                          Get.toNamed('/read_outside', arguments: {'book': book, 'outSideBook': null});
+                        } else if (book.type == Constant.pdfType) {
+                          Get.toNamed('/pdf', arguments: book);
                         }
-
-
                       },
                       title: Text(_books[index].title),
                     );
