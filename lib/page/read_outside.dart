@@ -485,13 +485,9 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
       }
     }
 
-    return Container(
-      padding: EdgeInsets.fromLTRB(settings.pageLeftPadding, settings.pageTopPadding, settings.pageRightPadding, settings.showBottom ? settings.pageBottomPadding : 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        // mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: widgetList,
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: widgetList,
     );
   }
 
@@ -736,87 +732,88 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                         showBrightness.value = false;
                       }
                     },
-                    child: SizedBox(
+                    child: Container(
                       height: height,
                       width: width,
-                      child: Center(
-                        child: SizedBox(
-                          width: width,
-                          height: height,
-                          child: PageView.builder(
-                            controller: _pageController,
-                            scrollDirection: settings.isVer
-                                ? Axis.vertical
-                                : Axis.horizontal,
-                            pageSnapping: settings.isVer ? false : true,
-                            itemCount: widgetList.length,
-                            physics: const ClampingScrollPhysics(),
-                            itemBuilder: (BuildContext context, int index) {
-                              return widgetList[index];
-                            },
-                            onPageChanged: (page) {
-                              if (chapterPageNumTitleMap.isEmpty) {
-                                return;
-                              }
+                      padding: EdgeInsets.fromLTRB(
+                          settings.pageLeftPadding,
+                          0,
+                          settings.pageRightPadding,
+                          settings.showBottom ? 0 : 0),
+                      margin: EdgeInsets.fromLTRB(0, settings.pageTopPadding, 0,
+                          settings.pageBottomPadding),
+                      child: PageView.builder(
+                        controller: _pageController,
+                        scrollDirection: settings.isVer
+                            ? Axis.vertical
+                            : Axis.horizontal,
+                        pageSnapping: settings.isVer ? false : true,
+                        itemCount: widgetList.length,
+                        physics: const ClampingScrollPhysics(),
+                        itemBuilder: (BuildContext context, int index) {
+                          return widgetList[index];
+                        },
+                        onPageChanged: (page) {
+                          if (chapterPageNumTitleMap.isEmpty) {
+                            return;
+                          }
 
+                          if (isLoading) {
+                            return;
+                          }
+
+                          var beforePage = _currentPage.value;
+                          _currentPage.value = _pageController.page!.round() + 1;
+
+                          if (beforePage > _currentPage.value) {
+                            if (beforePage - startHasContentPage < 4) {
                               if (isLoading) {
                                 return;
                               }
+                              switchChapter(currentSeqNo.value - 1, false);
+                            }
+                          }
 
-                              var beforePage = _currentPage.value;
-                              _currentPage.value = _pageController.page!.round() + 1;
-
-                              if (beforePage > _currentPage.value) {
-                                if (beforePage - startHasContentPage < 4) {
-                                  if (isLoading) {
-                                    return;
-                                  }
-                                  switchChapter(currentSeqNo.value - 1, false);
-                                }
+                          if (beforePage < _currentPage.value) {
+                            if (widgetList.length - _currentPage.value < 4) {
+                              if (isLoading) {
+                                return;
                               }
+                              switchChapter(currentSeqNo.value + 1, true);
+                            }
+                          }
 
-                              if (beforePage < _currentPage.value) {
-                                if (widgetList.length - _currentPage.value < 4) {
-                                  if (isLoading) {
-                                    return;
-                                  }
-                                  switchChapter(currentSeqNo.value + 1, true);
-                                }
+                          if (book.id != '-1') {
+                            _throttleTimer?.cancel();
+                            book.page = nowChapterPage;
+                            book.percent = ((currentSeqNo.value + 1) /
+                                chapterList.length) *
+                                100;
+                            book.chapterTitleExp = chapterTitleExp;
+                            book.currentChapter = currentSeqNo.value;
+                            DatabaseHelper.db.updateById(book);
+                          }
+
+                          _throttleTimer = Timer(
+                              const Duration(milliseconds: 100), () async {
+
+                            if (page < chapterPageNumList[0]) {
+                              _nowChapter.value = '开始';
+                            } else {
+                              var chapterPage =
+                              chapterPageNumList[getChapterTitle(page)];
+                              nowChapterPage = page - chapterPage;
+
+                              var chapter =
+                              chapterPageNumTitleMap[chapterPage]!;
+                              currentSeqNo.value = chapter.seqNo;
+                              var title = chapter.title;
+                              if (_nowChapter.value != title) {
+                                _nowChapter.value = title;
                               }
-
-                              if (book.id != '-1') {
-                              _throttleTimer?.cancel();
-                                book.page = nowChapterPage;
-                                book.percent = ((currentSeqNo.value + 1) /
-                                        chapterList.length) *
-                                    100;
-                                book.chapterTitleExp = chapterTitleExp;
-                                book.currentChapter = currentSeqNo.value;
-                                DatabaseHelper.db.updateById(book);
-                              }
-
-                              _throttleTimer = Timer(
-                                  const Duration(milliseconds: 100), () async {
-
-                                if (page < chapterPageNumList[0]) {
-                                  _nowChapter.value = '开始';
-                                } else {
-                                  var chapterPage =
-                                      chapterPageNumList[getChapterTitle(page)];
-                                  nowChapterPage = page - chapterPage;
-
-                                  var chapter =
-                                      chapterPageNumTitleMap[chapterPage]!;
-                                  currentSeqNo.value = chapter.seqNo;
-                                  var title = chapter.title;
-                                  if (_nowChapter.value != title) {
-                                    _nowChapter.value = title;
-                                  }
-                                }
-                              });
-                            },
-                          ),
-                        ),
+                            }
+                          });
+                        },
                       ),
                     ),
                   )),
