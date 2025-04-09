@@ -646,7 +646,7 @@ class _ReadPageState extends State<ReadPage> {
                   right: 0,
                   bottom: 0,
                   child: GestureDetector(
-                    onTapDown: (details) {
+                    onTapUp: (details) {
                       if (settings.openFlip) {
                         var dx = details.globalPosition.dx;
                         var dy = details.globalPosition.dy;
