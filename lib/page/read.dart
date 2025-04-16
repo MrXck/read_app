@@ -435,9 +435,13 @@ class _ReadPageState extends State<ReadPage> {
       }
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: widgetList,
+    return Container(
+      padding: EdgeInsets.fromLTRB(settings.pageLeftPadding, 0,
+          settings.pageRightPadding, settings.showBottom ? 0 : 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: widgetList,
+      ),
     );
   }
 
@@ -511,7 +515,7 @@ class _ReadPageState extends State<ReadPage> {
         int end;
 
         if (hasChapterTitle) {
-          end = text.length;
+          end = text.length > Constant.defaultChapterTitleMaxLength ? Constant.defaultChapterTitleMaxLength : text.length;
         } else {
           end = num + everyLineFontNum > text.length
               ? text.length
@@ -693,15 +697,9 @@ class _ReadPageState extends State<ReadPage> {
                       }
                     },
                     child: Container(
+                      margin: EdgeInsets.fromLTRB(0, settings.pageTopPadding, 0, settings.showBottom ? settings.pageBottomPadding : 0),
                       height: height,
                       width: width,
-                      padding: EdgeInsets.fromLTRB(
-                          settings.pageLeftPadding,
-                          0,
-                          settings.pageRightPadding,
-                          settings.showBottom ? 0 : 0),
-                      margin: EdgeInsets.fromLTRB(0, settings.pageTopPadding, 0,
-                          settings.pageBottomPadding),
                       child: PageView.builder(
                         controller: _pageController,
                         scrollDirection:

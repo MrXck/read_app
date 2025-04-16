@@ -485,9 +485,13 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
       }
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: widgetList,
+    return Container(
+      padding: EdgeInsets.fromLTRB(settings.pageLeftPadding, 0,
+          settings.pageRightPadding, settings.showBottom ? 0 : 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: widgetList,
+      ),
     );
   }
 
@@ -562,7 +566,7 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
         int end;
 
         if (hasChapterTitle) {
-          end = text.length;
+          end = text.length > Constant.defaultChapterTitleMaxLength ? Constant.defaultChapterTitleMaxLength : text.length;
         } else {
           end = num + everyLineFontNum > text.length
               ? text.length
@@ -735,13 +739,7 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                     child: Container(
                       height: height,
                       width: width,
-                      padding: EdgeInsets.fromLTRB(
-                          settings.pageLeftPadding,
-                          0,
-                          settings.pageRightPadding,
-                          settings.showBottom ? 0 : 0),
-                      margin: EdgeInsets.fromLTRB(0, settings.pageTopPadding, 0,
-                          settings.pageBottomPadding),
+                      margin: EdgeInsets.fromLTRB(0, settings.pageTopPadding, 0, settings.showBottom ? settings.pageBottomPadding : 0),
                       child: PageView.builder(
                         controller: _pageController,
                         scrollDirection: settings.isVer

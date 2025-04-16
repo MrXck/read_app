@@ -13,6 +13,7 @@ class Constant {
   static String defaultChapterTitleExp = r'^\s*?第.*?章';
 
   static int defaultChapterContentMaxLength = 50000;
+  static int defaultChapterTitleMaxLength = 30;
 
   static String dataKeySplitStr = '~';
 

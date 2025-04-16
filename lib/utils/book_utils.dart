@@ -80,7 +80,11 @@ class BookUtils {
 
         for (var i = 0; i < contentList.length; i++) {
           if (contentList[i].trim().isNotEmpty) {
-            textList.add(contentList[i].trim());
+            var title = contentList[i].trim();
+            if (title.length > Constant.defaultChapterTitleMaxLength) {
+              title = title.substring(0, Constant.defaultChapterTitleMaxLength);
+            }
+            textList.add(title);
             break;
           }
         }
