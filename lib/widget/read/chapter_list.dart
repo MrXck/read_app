@@ -54,7 +54,12 @@ class ReadChapterList extends StatelessWidget {
                 left: 0,
                 right: 0,
                 bottom: 0,
-                child: ListView.builder(
+                child: Scrollbar(
+                    interactive: true,
+                    controller: scrollController,
+                    thickness: 8,
+                    radius: const Radius.circular(4),
+                    child: ListView.builder(
                     controller: scrollController,
                     padding: EdgeInsets.zero,
                     itemCount: chapterList.length,
@@ -83,20 +88,20 @@ class ReadChapterList extends StatelessWidget {
                             children: [
                               currentSeqNo == index
                                   ? Text(
-                                      chapterTitle,
-                                      maxLines: 2,
-                                      style:
-                                          const TextStyle(color: Colors.blue),
-                                    )
+                                chapterTitle,
+                                maxLines: 2,
+                                style:
+                                const TextStyle(color: Colors.blue),
+                              )
                                   : Text(
-                                      chapterTitle,
-                                      maxLines: 2,
-                                    ),
+                                chapterTitle,
+                                maxLines: 2,
+                              ),
                             ],
                           ),
                         ),
                       );
-                    }))
+                    })))
           ],
         ));
   }
