@@ -58,7 +58,12 @@ class UpdateUtils {
 
     Get.defaultDialog(
         title: "提示",
-        content: const Text("发现新版本，是否更新？"),
+        content: Column(
+          children: [
+            const Text("发现新版本，是否更新？"),
+            Text(updateData.versionDesc),
+          ],
+        ),
         textConfirm: "更新",
         textCancel: "取消",
         onConfirm: () async {
