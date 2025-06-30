@@ -61,6 +61,7 @@ dependencies:
   flutter_colorpicker: ^1.1.0
   package_info_plus: ^8.2.1
   open_filex: ^4.3.2
+  flutter_sharing_intent: ^1.1.1
 #  video_player_media_kit: ^1.0.4
 #  media_kit_libs_android_video: any
 #  media_kit_libs_ios_video: any

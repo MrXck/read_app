@@ -14,10 +14,13 @@ import 'package:read_app/router/router.dart';
 import 'package:get/get.dart';
 import 'package:read_app/tab/tab.dart';
 import 'package:read_app/utils/constant.dart';
+import 'package:read_app/utils/file_utils.dart';
 import 'package:read_app/utils/update_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:flutter_sharing_intent/flutter_sharing_intent.dart';
+import 'package:flutter_sharing_intent/model/sharing_file.dart';
 
 import 'bindings/bind_controller.dart';
 
@@ -66,7 +69,8 @@ class MyApp extends StatelessWidget {
     if (await Directory(fontPath).exists()) {
       List<FileSystemEntity> files = Directory(fontPath).listSync();
       for (var file in files) {
-        final ByteData fontData = ByteData.sublistView(await File(file.path).readAsBytes());
+        final ByteData fontData =
+            ByteData.sublistView(await File(file.path).readAsBytes());
         final loader = FontLoader(basename(file.path).split('.')[0]);
         loader.addFont(Future.value(fontData));
         await loader.load();
@@ -77,6 +81,38 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     UpdateUtils.updateApp();
+    // 监听共享数据流
+    FlutterSharingIntent.instance.getMediaStream().listen(
+        (List<SharedFile> value) async {
+      if (value.isEmpty) {
+        return;
+      }
+
+      for (var file in value) {
+        if (file.type == SharedMediaType.TEXT && file.value != null) {
+          await FileUtils.saveBook(file.value, '');
+        }
+      }
+    }, onError: (err) {
+      print("getIntentDataStream error: $err");
+    });
+
+    // 获取应用启动时的初始共享数据
+    FlutterSharingIntent.instance
+        .getInitialSharing()
+        .then((List<SharedFile> value) async {
+      if (value.isEmpty) {
+        return;
+      }
+
+      for (var file in value) {
+        if (file.type == SharedMediaType.TEXT && file.value != null) {
+          await FileUtils.saveBook(file.value, '');
+        }
+      }
+
+      FlutterSharingIntent.instance.reset();
+    });
     if (isDesktop()) {
       databaseFactory = databaseFactoryFfi;
     }
@@ -127,14 +163,13 @@ class MyApp extends StatelessWidget {
                   child: KeyboardListener(
                     onKeyEvent: (KeyEvent event) {
                       if (event is KeyDownEvent) {
-                        switch(event.logicalKey) {
+                        switch (event.logicalKey) {
                           case LogicalKeyboardKey.escape:
                             Get.back();
                             return;
                           case LogicalKeyboardKey.controlLeft:
                             exit(0);
                         }
-
                       }
                     },
                     focusNode: FocusNode()..requestFocus(),
