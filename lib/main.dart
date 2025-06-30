@@ -126,9 +126,15 @@ class MyApp extends StatelessWidget {
                   },
                   child: KeyboardListener(
                     onKeyEvent: (KeyEvent event) {
-                      if (event is KeyDownEvent &&
-                          event.logicalKey == LogicalKeyboardKey.escape) {
-                        Get.back();
+                      if (event is KeyDownEvent) {
+                        switch(event.logicalKey) {
+                          case LogicalKeyboardKey.escape:
+                            Get.back();
+                            return;
+                          case LogicalKeyboardKey.controlLeft:
+                            exit(0);
+                        }
+
                       }
                     },
                     focusNode: FocusNode()..requestFocus(),
