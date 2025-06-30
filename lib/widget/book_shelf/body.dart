@@ -715,6 +715,31 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                                   );
                                 }
                               }),
+                          ValueListenableBuilder(
+                              valueListenable: count,
+                              builder: (context, value, child) {
+                                if (value != 1) {
+                                  return const Text(
+                                    '分享',
+                                    style: TextStyle(color: Color(0xB2C4C4C4)),
+                                  );
+                                } else {
+                                  return InkWell(
+                                    onTap: () async {
+                                      String id = checkedList.first;
+                                      var book = await DatabaseHelper.db.getById(id);
+                                      if (book.type != Constant.bookType) {
+                                        Get.snackbar('提示', '只有文本才可以分享');
+                                        return;
+                                      }
+                                      var dir = await getApplicationDocumentsDirectory();
+
+                                      await FileUtils.shareFile(book.title, await File(join(dir.path, book.path)).readAsBytes(), FileUtils.getFileExtension(book.path));
+                                    },
+                                    child: const Text('分享'),
+                                  );
+                                }
+                              }),
                         ],
                       ),
                     )

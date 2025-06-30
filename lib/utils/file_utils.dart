@@ -724,4 +724,16 @@ class FileUtils {
     book.currentChapter = 0;
     DatabaseHelper.db.insert(book);
   }
+
+  static Future<void> shareFile(String filename, var bytes, String fileExtension) async {
+    final tempDir = await getTemporaryDirectory();
+    var filePath = path.join(tempDir.path, "$filename.$fileExtension");
+
+    var file = File(filePath);
+    await file.writeAsBytes(bytes);
+
+    final files = <XFile>[];
+    files.add(XFile(filePath));
+    Share.shareXFiles(files, text: "$filename.$fileExtension");
+  }
 }
