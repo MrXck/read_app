@@ -22,7 +22,7 @@ class UpdateUtils {
     var newVersion = updateData.version;
 
     if (nowVersion == newVersion) {
-      // return;
+      return;
     }
 
     var storageStatus = await Permission.storage.request();
