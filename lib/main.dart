@@ -78,22 +78,20 @@ class MyApp extends StatelessWidget {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    UpdateUtils.updateApp();
+  void initListenShare() {
     // 监听共享数据流
     FlutterSharingIntent.instance.getMediaStream().listen(
-        (List<SharedFile> value) async {
-      if (value.isEmpty) {
-        return;
-      }
+            (List<SharedFile> value) async {
+          if (value.isEmpty) {
+            return;
+          }
 
-      for (var file in value) {
-        if (file.type == SharedMediaType.TEXT && file.value != null) {
-          await FileUtils.saveBook(file.value, '');
-        }
-      }
-    }, onError: (err) {
+          for (var file in value) {
+            if (file.type == SharedMediaType.TEXT && file.value != null) {
+              await FileUtils.saveBook(file.value, '');
+            }
+          }
+        }, onError: (err) {
       print("getIntentDataStream error: $err");
     });
 
@@ -113,6 +111,20 @@ class MyApp extends StatelessWidget {
 
       FlutterSharingIntent.instance.reset();
     });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    UpdateUtils.updateApp();
+
+    switch (Platform.operatingSystem) {
+      case 'android':
+        initListenShare();
+        break;
+      default:
+        break;
+    }
+
     if (isDesktop()) {
       databaseFactory = databaseFactoryFfi;
     }
