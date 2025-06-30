@@ -188,13 +188,13 @@ class _ReadPageState extends State<ReadPage> {
       chapterContent = chapterContent.replaceAll('\r', '');
 
       chapterContent = chapterContent.replaceAllMapped(
-          RegExp(RegExp.escape(chapter.title) + r'(\n){2,}[^\n]',
+          RegExp(RegExp.escape(chapter.title) + r'(\n){2,}',
               multiLine: true), (Match match) {
         return '${chapter.title}\n';
       });
 
       chapterContent = chapterContent.replaceAllMapped(
-          RegExp(r'(\n){2,}[^\n]', multiLine: true), (Match match) {
+          RegExp(r'(\n){2,}', multiLine: true), (Match match) {
         return '\n';
       });
 
@@ -229,7 +229,7 @@ class _ReadPageState extends State<ReadPage> {
     });
   }
 
-  void switchChapter(int seqNo, bool isAfter) async {
+  void switchChapter(int seqNo, bool isAfter, int currentPage) async {
     if (seqNo == -1) {
       return;
     }
@@ -242,6 +242,13 @@ class _ReadPageState extends State<ReadPage> {
     try {
       currentChapter = chapterList[seqNo];
       if (chapterTitlePageNumMap.containsKey(currentChapter.title)) {
+
+        if (chapterTitlePageNumMap[currentChapter.title] == currentPage) {
+          switchChapter(seqNo + 1, true, currentPage);
+        } else if (chapterTitlePageNumMap[currentChapter.title] == startHasContentPage) {
+          switchChapter(seqNo - 1, true, currentPage);
+        }
+
         isLoading = false;
         return;
       }
@@ -275,13 +282,13 @@ class _ReadPageState extends State<ReadPage> {
     chapterContent = chapterContent.replaceAll('\r', '');
 
     chapterContent = chapterContent.replaceAllMapped(
-        RegExp(RegExp.escape(chapter.title) + r'(\n){2,}[^\n]',
+        RegExp(RegExp.escape(chapter.title) + r'(\n){2,}',
             multiLine: true), (Match match) {
       return '${match.group(0)!.replaceAll(match.group(1)!, '')}\n';
     });
 
     chapterContent = chapterContent.replaceAllMapped(
-        RegExp(r'(\n){2,}[^\n]', multiLine: true), (Match match) {
+        RegExp(r'(\n){2,}', multiLine: true), (Match match) {
       return '\n';
     });
 
@@ -728,7 +735,7 @@ class _ReadPageState extends State<ReadPage> {
                               if (isLoading) {
                                 return;
                               }
-                              switchChapter(currentSeqNo.value - 1, false);
+                              switchChapter(currentSeqNo.value - 1, false, _currentPage.value);
                             }
                           }
 
@@ -737,7 +744,7 @@ class _ReadPageState extends State<ReadPage> {
                               if (isLoading) {
                                 return;
                               }
-                              switchChapter(currentSeqNo.value + 1, true);
+                              switchChapter(currentSeqNo.value + 1, true, _currentPage.value);
                             }
                           }
 

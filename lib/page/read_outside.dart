@@ -244,13 +244,13 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
       chapterContent = chapterContent.replaceAll('\r', '');
 
       chapterContent = chapterContent.replaceAllMapped(
-          RegExp(RegExp.escape(chapter.title) + r'(\n){2,}[^\n]', multiLine: true),
+          RegExp(RegExp.escape(chapter.title) + r'(\n){2,}', multiLine: true),
               (Match match) {
             return '${match.group(0)!.replaceAll(match.group(1)!, '')}\n';
           });
 
       chapterContent = chapterContent.replaceAllMapped(
-          RegExp(r'(\n){2,}[^\n]', multiLine: true), (Match match) {
+          RegExp(r'(\n){2,}', multiLine: true), (Match match) {
         return '\n';
       });
 
@@ -326,13 +326,13 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
     chapterContent = chapterContent.replaceAll('\r', '');
 
     chapterContent = chapterContent.replaceAllMapped(
-        RegExp(RegExp.escape(chapter.title) + r'(\n){2,}[^\n]', multiLine: true),
+        RegExp(RegExp.escape(chapter.title) + r'(\n){2,}', multiLine: true),
             (Match match) {
           return '${match.group(0)!.replaceAll(match.group(1)!, '')}\n';
         });
 
     chapterContent = chapterContent.replaceAllMapped(
-        RegExp(r'(\n){2,}[^\n]', multiLine: true), (Match match) {
+        RegExp(r'(\n){2,}', multiLine: true), (Match match) {
       return '\n';
     });
 
