@@ -31,7 +31,7 @@ class RequestInterceptor extends Interceptor {
       RequestOptions options, RequestInterceptorHandler handler) async {
     if (options.path.startsWith(Constant.syncUrl)) {
       var value = await SharedPreferences.getInstance();
-      var token = value.getString('token') ?? '';
+      var token = value.getString(Constant.tokenKey) ?? '';
       if (token.isNotEmpty) {
         options.headers['authorization'] = token;
       }
@@ -48,7 +48,7 @@ class RequestInterceptor extends Interceptor {
       var token = response.headers['authorization']?[0] ?? '';
       if (token.isNotEmpty) {
         SharedPreferences.getInstance()
-            .then((value) => value.setString('token', token));
+            .then((value) => value.setString(Constant.tokenKey, token));
       }
     }
     return handler.next(response);

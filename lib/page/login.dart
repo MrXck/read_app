@@ -106,7 +106,7 @@ class _LoginPageState extends State<LoginPage> {
                             Get.snackbar("提示", result.data['msg']);
                           } else {
                             var shard = await SharedPreferences.getInstance();
-                            shard.setString("token", result.data['data']['token']);
+                            shard.setString(Constant.tokenKey, result.data['data']['token']);
                             shard.setString("user", const JsonEncoder().convert(result.data['data']['user']));
                             Get.offAndToNamed("/");
                           }

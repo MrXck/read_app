@@ -82,8 +82,9 @@ class _MyPageState extends State<MyPage> {
           Obx(() {
             return TextButton(
                 onPressed: () async {
-                  var shared = await SharedPreferences.getInstance();
-                  if (shared.getBool(Constant.syncConfigKey) ?? false) {
+                  var value = await SharedPreferences.getInstance();
+                  var token = value.getString(Constant.tokenKey) ?? '';
+                  if (token.isEmpty) {
                     Get.offNamed('/login');
                     return;
                   }
@@ -104,6 +105,14 @@ class _MyPageState extends State<MyPage> {
                     ? const Text('关闭音量翻页')
                     : const Text('开启音量翻页'));
           }),
+          TextButton(
+              onPressed: () async {
+                var value = await SharedPreferences.getInstance();
+                value.setString(Constant.tokenKey, '');
+                value.setBool(Constant.syncConfigKey, false);
+                settingController.isOpenSync.value = false;
+              },
+              child: const Text('退出登录')),
           TextButton(
               onPressed: () {
                 Get.toNamed('/settings');
