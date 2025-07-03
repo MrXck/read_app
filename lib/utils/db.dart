@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/pojo/chapter.dart';
 import 'package:read_app/pojo/operation_log.dart';
 import 'package:read_app/pojo/sync_log.dart';
-import 'package:read_app/request/request.dart';
 import 'package:read_app/spider/spider.dart';
+import 'package:read_app/utils/book_utils.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/file_utils.dart';
 import 'package:read_app/utils/hash_utils.dart';
@@ -393,7 +393,7 @@ class DatabaseHelper {
     await deleteById(id);
   }
 
-  Future<void> mergeDB(String dbPath) async {
+  Future<void> mergeDB(String dbPath, ValueNotifier<String> tipText) async {
     final newDb = await openDatabase(dbPath);
 
     try {
@@ -413,14 +413,19 @@ class DatabaseHelper {
 
       for (var book in books) {
         Book newBook = Book.fromMap(book);
+        tipText.value = '处理 ${newBook.title} 中...';
         newBook.updateTime = DateTime.now().millisecondsSinceEpoch;
         newBook.createTime = DateTime.now().millisecondsSinceEpoch;
 
         if (newBook.type == Constant.outSideType) {
-          var split = newBook.path.split('|');
-          var bookSourceId = split[0];
-          var url = split[1];
-          newBook.path = '${bookSourceIdMap[bookSourceId]}|$url';
+          try {
+            var split = newBook.path.split('|');
+            var bookSourceId = split[0];
+            var url = split[1];
+            newBook.path = '${bookSourceIdMap[bookSourceId]}|$url';
+          } catch (e) {
+            continue;
+          }
         }
 
         var bookId = await insert(newBook);
@@ -454,7 +459,17 @@ class DatabaseHelper {
         }
       }
 
+      tipText.value = '删除多余数据中...';
       await deleteNotExistsData();
+
+      var list = await getAllSyncBook([Constant.bookType]);
+      for (var book in list) {
+        Directory directory = Directory(join(Directory(book.path).parent.path, 'chapter'));
+        if (!(await directory.exists())) {
+          tipText.value = '重新生成 ${book.title} 章节中...';
+          await BookUtils.changeChapter(book, book.chapterTitleExp);
+        }
+      }
     } finally {
       await newDb.close();
     }
@@ -611,10 +626,6 @@ class DatabaseHelper {
           await deleteById(book.id);
         }
       } else if (book.type == Constant.directoryType) {
-        var bookPath = join(dataDir.path, book.path);
-        if (!(await Directory(bookPath).exists())) {
-          await deleteById(book.id);
-        }
       } else if (book.type == Constant.outSideType) {
       } else {
         var bookPath = join(dataDir.path, book.path);

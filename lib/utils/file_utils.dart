@@ -593,6 +593,72 @@ class FileUtils {
     saveFile('导出', zipData);
   }
 
+  static Future<void> compressSpecifiedDirectory(
+      String dirPath, String outputPath, List<int> typeList) async {
+    // 创建一个空的 ZIP 文件
+    var archive = Archive();
+
+    // 获取文件夹中的所有文件
+    var dir = Directory(dirPath);
+
+    // 将文件添加到 ZIP 存档中
+    await for (var file in dir.list(recursive: true)) {
+      if (file is File) {
+        if (file.path.endsWith('data.db')) {
+          var fileBytes = await file.readAsBytes();
+          var relativePath = path.relative(file.path, from: dirPath);
+          archive.addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
+          break;
+        }
+      }
+    }
+
+    dir = await getApplicationDocumentsDirectory();
+    var books = await DatabaseHelper.db.getAllSyncBook(typeList);
+
+    for (var book in books) {
+      var type = book.type;
+      switch (type) {
+        case Constant.bookType:
+          var file = File(path.join(dir.path, book.path));
+          var fileBytes = await file.readAsBytes();
+          var relativePath = path.relative(file.path, from: dirPath);
+          archive.addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
+          break;
+        case Constant.pdfType:
+          var file = File(path.join(dir.path, book.path));
+          var fileBytes = await file.readAsBytes();
+          var relativePath = path.relative(file.path, from: dirPath);
+          archive.addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
+          break;
+        case Constant.mediaType:
+          var file = File(path.join(dir.path, book.path));
+          var fileBytes = await file.readAsBytes();
+          var relativePath = path.relative(file.path, from: dirPath);
+          archive.addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
+          break;
+        case Constant.comicType:
+          var directory = Directory(path.join(dir.path, book.path));
+          await for (var file in directory.list(recursive: true)) {
+            if (file is File) {
+              var fileBytes = await file.readAsBytes();
+              var relativePath = path.relative(file.path, from: dirPath);
+              archive.addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
+            }
+          }
+          break;
+      }
+    }
+
+    // 将存档写入到文件
+    var zipData = await compute(encodeZip, archive);
+    // var outputFile = File(outputPath);
+    // await outputFile.writeAsBytes(zipData!);
+    // print('压缩完成，输出文件路径：$outputPath');
+
+    saveFile('导出', zipData);
+  }
+
   static List<int> encodeZip(Archive archive) {
     return ZipEncoder().encode(archive) ?? [];
   }
@@ -688,9 +754,11 @@ class FileUtils {
     print('解压完成，文件保存在：$outputDir');
   }
 
-  static Future<void> copyDirectory(String fromPath, String toPath) async {
+  static Future<void> copyDirectory(String fromPath, String toPath, ValueNotifier<String> tipText) async {
     final destination = Directory(toPath);
     final source = Directory(fromPath);
+
+    tipText.value = '复制文件中...';
 
     // 如果目标目录不存在则创建它
     if (!await destination.exists()) {
@@ -703,10 +771,11 @@ class FileUtils {
         // 递归复制子目录
         var newDirectory =
             Directory(path.join(destination.path, path.basename(entity.path)));
-        await copyDirectory(entity.path, newDirectory.path);
+        await copyDirectory(entity.path, newDirectory.path, tipText);
       } else if (entity is File) {
         if (entity.path.endsWith('data.db')) {
-          await DatabaseHelper.db.mergeDB(entity.path);
+          tipText.value = '合并数据库中...';
+          await DatabaseHelper.db.mergeDB(entity.path, tipText);
           continue;
         }
 

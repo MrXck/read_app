@@ -168,6 +168,39 @@ class BookUtils {
         chapterContentList, book.id);
   }
 
+  static Future<void> changeChapter(
+      Book book, String chapterTitleExp) async {
+    var directory = await getApplicationDocumentsDirectory();
+
+    List<Chapter> chapterList =
+    await DatabaseHelper.db.getChapterByBookId(book.id);
+
+    for (var i = 0; i < chapterList.length; i++) {
+      var chapter = chapterList[i];
+      await FileUtils.deletePath(join(directory.path, chapter.path));
+    }
+
+    await DatabaseHelper.db.deleteChapterByBookId(book.id);
+
+    book.page = book.page;
+    book.percent = book.percent;
+    book.chapterTitleExp = chapterTitleExp;
+    await DatabaseHelper.db.updateById(book);
+
+    var bookPath = book.path;
+
+    var absoluteBookPath = Directory(join(directory.path, bookPath));
+
+    var relativeDirPath =
+    join('read', 'book', basename(absoluteBookPath.parent.path));
+
+    var content = await BookUtils.loadBook(absoluteBookPath.path);
+    var chapterContentList =
+    BookUtils.splitChapterContent(content, chapterTitleExp);
+    await BookUtils.saveChapter(relativeDirPath, absoluteBookPath.parent.path,
+        chapterContentList, book.id);
+  }
+
   static Future<void> deleteBooks(List<String> checkedList) async {
     var dataDir = await getApplicationDocumentsDirectory();
 

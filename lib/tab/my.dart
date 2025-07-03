@@ -36,8 +36,18 @@ class _MyPageState extends State<MyPage> {
                 final dir = await getApplicationDocumentsDirectory();
                 try {
                   LoadingUtils.showLoading(tip: '导出中');
-                  await FileUtils.compressDirectory(
-                      join(dir.path, 'read'), join(dir.path, 'read.zip'));
+                  await FileUtils.compressSpecifiedDirectory(
+                      join(dir.path, 'read'),
+                      join(dir.path, 'read.zip'),
+                      [
+                        Constant.bookType,
+                        Constant.directoryType,
+                        Constant.comicType,
+                        Constant.mediaType,
+                        Constant.outSideType,
+                        Constant.pdfType,
+                      ],
+                  );
                 } catch (e) {
                   Get.snackbar('错误', e.toString());
                 } finally {
@@ -47,19 +57,59 @@ class _MyPageState extends State<MyPage> {
               child: const Text('导出')),
           TextButton(
               onPressed: () async {
+                final dir = await getApplicationDocumentsDirectory();
+                try {
+                  LoadingUtils.showLoading(tip: '导出中');
+                  await FileUtils.compressSpecifiedDirectory(
+                      join(dir.path, 'read'),
+                      join(dir.path, 'read_book.zip'),
+                      [
+                        Constant.bookType,
+                        Constant.directoryType
+                      ],
+                  );
+                } catch (e) {
+                  Get.snackbar('错误', e.toString());
+                } finally {
+                  LoadingUtils.hideLoading();
+                }
+              },
+              child: const Text('导出书籍')),
+          TextButton(
+              onPressed: () async {
+                final dir = await getApplicationDocumentsDirectory();
+                try {
+                  LoadingUtils.showLoading(tip: '导出中');
+                  await FileUtils.compressSpecifiedDirectory(
+                      join(dir.path, 'read'),
+                      join(dir.path, 'read_comic.zip'),
+                      [
+                        Constant.comicType,
+                        Constant.directoryType
+                      ],
+                  );
+                } catch (e) {
+                  Get.snackbar('错误', e.toString());
+                } finally {
+                  LoadingUtils.hideLoading();
+                }
+              },
+              child: const Text('导出图片')),
+          TextButton(
+              onPressed: () async {
                 final zipPath = await FileUtils.selectZipFile();
                 if (zipPath.isEmpty) {
                   return;
                 }
 
                 try {
-                  LoadingUtils.showLoading(tip: '导入中');
+                  var tipText = LoadingUtils.showLoading(tip: '导入中');
                   final dir = await getApplicationDocumentsDirectory();
                   final fromPath = join(dir.path, 'read_import');
                   await FileUtils.unzipFile(zipPath, fromPath);
 
                   await FileUtils.copyDirectory(
-                      fromPath, join(dir.path, 'read'));
+                      fromPath, join(dir.path, 'read'), tipText);
 
                   FileUtils.deleteDirectoryRecursively(Directory(fromPath));
                 } catch (e) {
