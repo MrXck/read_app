@@ -15,6 +15,7 @@ import 'package:get/get.dart';
 import 'package:read_app/tab/tab.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/file_utils.dart';
+import 'package:read_app/utils/sync_utils.dart';
 import 'package:read_app/utils/update_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -27,6 +28,41 @@ import 'bindings/bind_controller.dart';
 bool isDesktop() {
   return !kIsWeb &&
       (Platform.isWindows || Platform.isLinux || Platform.isMacOS);
+}
+
+void initListenShare() {
+  // 监听共享数据流
+  FlutterSharingIntent.instance.getMediaStream().listen(
+          (List<SharedFile> value) async {
+        if (value.isEmpty) {
+          return;
+        }
+
+        for (var file in value) {
+          if (file.type == SharedMediaType.TEXT && file.value != null) {
+            await FileUtils.saveBook(file.value, '');
+          }
+        }
+      }, onError: (err) {
+    print("getIntentDataStream error: $err");
+  });
+
+  // 获取应用启动时的初始共享数据
+  FlutterSharingIntent.instance
+      .getInitialSharing()
+      .then((List<SharedFile> value) async {
+    if (value.isEmpty) {
+      return;
+    }
+
+    for (var file in value) {
+      if (file.type == SharedMediaType.TEXT && file.value != null) {
+        await FileUtils.saveBook(file.value, '');
+      }
+    }
+
+    FlutterSharingIntent.instance.reset();
+  });
 }
 
 void main() async {
@@ -45,6 +81,14 @@ void main() async {
     });
   }
   // debugPaintSizeEnabled = true;
+  SyncUtils.sync();
+  switch (Platform.operatingSystem) {
+    case 'android':
+      initListenShare();
+      break;
+    default:
+      break;
+  }
   runApp(const MyApp());
 }
 
@@ -78,52 +122,11 @@ class MyApp extends StatelessWidget {
     }
   }
 
-  void initListenShare() {
-    // 监听共享数据流
-    FlutterSharingIntent.instance.getMediaStream().listen(
-            (List<SharedFile> value) async {
-          if (value.isEmpty) {
-            return;
-          }
 
-          for (var file in value) {
-            if (file.type == SharedMediaType.TEXT && file.value != null) {
-              await FileUtils.saveBook(file.value, '');
-            }
-          }
-        }, onError: (err) {
-      print("getIntentDataStream error: $err");
-    });
-
-    // 获取应用启动时的初始共享数据
-    FlutterSharingIntent.instance
-        .getInitialSharing()
-        .then((List<SharedFile> value) async {
-      if (value.isEmpty) {
-        return;
-      }
-
-      for (var file in value) {
-        if (file.type == SharedMediaType.TEXT && file.value != null) {
-          await FileUtils.saveBook(file.value, '');
-        }
-      }
-
-      FlutterSharingIntent.instance.reset();
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     UpdateUtils.updateApp();
-
-    switch (Platform.operatingSystem) {
-      case 'android':
-        initListenShare();
-        break;
-      default:
-        break;
-    }
 
     if (isDesktop()) {
       databaseFactory = databaseFactoryFfi;

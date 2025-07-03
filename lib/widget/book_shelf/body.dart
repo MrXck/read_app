@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:read_app/pojo/book.dart';
+import 'package:read_app/pojo/operation_log.dart';
 import 'package:read_app/tab/book_shelf.dart';
 import 'package:read_app/utils/book_utils.dart';
 import 'package:read_app/utils/constant.dart';
@@ -244,6 +245,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
               book.path = '';
               book.type = Constant.directoryType;
               book.cover = "";
+              book.md5 = "";
               book.currentChapter = 0;
               await DatabaseHelper.db.insert(book);
               var value = await DatabaseHelper.db.getBookByParentId(parentId);
@@ -300,6 +302,10 @@ class _BookShelfBodyState extends State<BookShelfBody> {
 
               book.title = inputValue;
               await DatabaseHelper.db.updateById(book);
+
+              OperationLog operationLog = OperationLog.setOperationLog(book, book.id, Constant.operationUpdateType);
+              DatabaseHelper.db.insertOperationLog(operationLog);
+
               var value = await DatabaseHelper.db.getBookByParentId(parentId);
               final dir = await getApplicationDocumentsDirectory();
               for (var i = 0; i < value.length; i++) {

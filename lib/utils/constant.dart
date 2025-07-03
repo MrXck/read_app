@@ -1,21 +1,39 @@
 class Constant {
-  static String baseUrl = 'https://www.yuumi.cc';
-  static String getAppVersionUrl = '$baseUrl/api/version';
+  static const String baseUrl = 'https://www.yuumi.cc';
+  static const String getAppVersionUrl = '$baseUrl/api/version';
 
-  static int bookType = 1;
-  static int comicType = 2;
-  static int directoryType = 3;
-  static int mediaType = 4;
-  static int chapterType = 5;
-  static int outSideType = 6;
-  static int pdfType = 7;
+  static const String syncUrl = 'http://192.168.31.162:9999';
 
-  static String defaultChapterTitleExp = r'^\s*?第.*?章';
+  static Map<String, String> headers = {
+    'Content-Type': 'application/json'
+  };
 
-  static int defaultChapterContentMaxLength = 50000;
-  static int defaultChapterTitleMaxLength = 30;
+  static const String loginUrl = '$syncUrl/user/login';
+  static const String registerUrl = '$syncUrl/user/register';
 
-  static String dataKeySplitStr = '~';
+  static const String getAllBookUrl = '$syncUrl/book/all';
+  static const String updateBookUrl = '$syncUrl/book/update';
+  static const String downloadBookUrl = '$syncUrl/file/download/';
+  static const String uploadBookUrl = '$syncUrl/file/upload';
+
+  static const int bookType = 1;
+  static const int comicType = 2;
+  static const int directoryType = 3;
+  static const int mediaType = 4;
+  static const int chapterType = 5;
+  static const int outSideType = 6;
+  static const int pdfType = 7;
+
+  static const int operationAddType = 1;
+  static const int operationUpdateType = 2;
+  static const int operationDeleteType = 3;
+
+  static const String defaultChapterTitleExp = r'^\s*?第.*?章';
+
+  static const int defaultChapterContentMaxLength = 50000;
+  static const int defaultChapterTitleMaxLength = 50;
+
+  static const String dataKeySplitStr = '~';
 
   static List<String> allMediaType = [
     'mp4',
@@ -31,8 +49,8 @@ class Constant {
   static List<String> allPdfType = ['pdf'];
   static List<String> allFontType = ['otf', 'ttf'];
 
-  static String readConfigKey = 'config';
-  static String appConfigKey = 'app_config';
+  static const String readConfigKey = 'config';
+  static const String appConfigKey = 'app_config';
 
   static List<String> fontFamilyList = [
     'pingfang',

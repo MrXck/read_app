@@ -80,6 +80,15 @@ class _MyPageState extends State<MyPage> {
           Obx(() {
             return TextButton(
                 onPressed: () async {
+                  settingController.updateSync();
+                },
+                child: settingController.isOpenSync.value
+                    ? const Text('关闭同步')
+                    : const Text('开启同步'));
+          }),
+          Obx(() {
+            return TextButton(
+                onPressed: () async {
                   settingController.isOpenVolumeFlip.value =
                       !settingController.isOpenVolumeFlip.value;
                 },

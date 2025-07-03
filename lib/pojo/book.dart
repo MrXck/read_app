@@ -8,6 +8,7 @@ class Book implements HasId {
   late String path;
   late String chapterTitleExp;
   late String cover;
+  late String md5;
   late int seqNo;
   late int page;
   late int type;
@@ -31,6 +32,7 @@ class Book implements HasId {
       'percent': percent,
       'parent_id': parentId,
       'page': page,
+      'md5': md5,
       'current_chapter': currentChapter,
       'id': id
     };
@@ -42,6 +44,7 @@ class Book implements HasId {
     book.path = t['path'].toString();
     book.cover = t['cover'].toString();
     book.parentId = t['parent_id'].toString();
+    book.md5 = t['md5'].toString();
     book.createTime = int.parse(t['create_time']?.toString() ?? '0');
     book.updateTime = int.parse(t['update_time']?.toString() ?? '0');
     book.id = t['id']?.toString() ?? '0';

@@ -10,12 +10,14 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:read_app/pojo/book.dart';
+import 'package:read_app/pojo/operation_log.dart';
 import 'package:read_app/utils/book_utils.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/random.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'db.dart';
+import 'hash_utils.dart';
 
 class FileUtils {
   static String getFileExtension(String filePath) {
@@ -118,6 +120,7 @@ class FileUtils {
     book.type = Constant.mediaType;
     book.cover = "";
     book.currentChapter = 0;
+    book.md5 = "";
     await DatabaseHelper.db.insert(book);
   }
 
@@ -158,7 +161,12 @@ class FileUtils {
     book.type = Constant.bookType;
     book.cover = "";
     book.currentChapter = 0;
+    book.md5 = HASH.md5Byte(fileBytes);
+
     var bookId = await DatabaseHelper.db.insert(book);
+
+    OperationLog operationLog = OperationLog.setOperationLog(book, bookId.toString(), Constant.operationAddType);
+    DatabaseHelper.db.insertOperationLog(operationLog);
 
     try {
       var content = await BookUtils.loadBook(file.path);
@@ -204,7 +212,11 @@ class FileUtils {
     book.type = Constant.pdfType;
     book.cover = "";
     book.currentChapter = 0;
-    await DatabaseHelper.db.insert(book);
+    book.md5 = HASH.md5Byte(fileBytes);
+    var bookId = await DatabaseHelper.db.insert(book);
+
+    OperationLog operationLog = OperationLog.setOperationLog(book, bookId.toString(), Constant.operationAddType);
+    DatabaseHelper.db.insertOperationLog(operationLog);
   }
 
   static Future<void> uploadFont(List<int> fileBytes, filename) async {
@@ -292,11 +304,74 @@ class FileUtils {
     book.type = Constant.bookType;
     book.path = path.join(relativeDirPath, name);
     book.currentChapter = 0;
+    book.md5 = HASH.md5Byte(await file.readAsBytes());
 
     var bookId = await DatabaseHelper.db.insert(book);
 
+    OperationLog operationLog = OperationLog.setOperationLog(book, bookId.toString(), Constant.operationAddType);
+    DatabaseHelper.db.insertOperationLog(operationLog);
+
     await BookUtils.saveChapter(relativeDirPath, absoluteDirPath,
         chapterContentList, bookId.toString());
+  }
+
+  static Future<void> saveSyncBook(var selectFile, Map syncBook) async {
+    final file = File(selectFile);
+    final dir = await getApplicationDocumentsDirectory();
+    var bookDirName = generateRandomString(32);
+
+    var relativeDirPath = '';
+
+    switch (syncBook['type']) {
+      case Constant.bookType:
+        relativeDirPath = path.join('read', 'book', bookDirName);
+        break;
+      case Constant.pdfType:
+        relativeDirPath = path.join('read', 'pdf');
+        break;
+      default:
+        return;
+    }
+
+    final assetsDir = path.join(dir.path, relativeDirPath);
+
+    final absoluteDirPath = path.join(dir.path, relativeDirPath);
+
+    if (!await Directory(assetsDir).exists()) {
+      await Directory(assetsDir).create(recursive: true);
+    }
+
+    var name = '${generateRandomString(32)}.${getFileExtension(file.path)}';
+    final filePath = path.join(assetsDir, '', name);
+    await file.copy(filePath);
+
+    Book book = Book();
+    book.percent = double.parse(syncBook['percent']);
+    book.page = syncBook['page'];
+    book.chapterTitleExp = syncBook['chapterTitleExp'];
+    book.title = syncBook['title'];
+    book.updateTime = DateTime.parse(syncBook['updateTime']).millisecondsSinceEpoch;
+    book.createTime = DateTime.now().millisecondsSinceEpoch;
+    book.seqNo = syncBook['seqNo'];
+    book.cover = "";
+    book.parentId = '';
+    book.type = syncBook['type'];
+    book.path = path.join(relativeDirPath, name);
+    book.currentChapter = syncBook['currentChapter'];
+    book.md5 = syncBook['md5'];
+
+    var bookId = await DatabaseHelper.db.insert(book);
+
+    OperationLog operationLog = OperationLog.setOperationLog(book, bookId.toString(), Constant.operationAddType);
+    DatabaseHelper.db.insertOperationLog(operationLog);
+
+    if (syncBook['type'] == Constant.bookType) {
+      var content = await BookUtils.loadBook(file.path);
+      var chapterContentList =
+      BookUtils.splitChapterContent(content, syncBook['chapterTitleExp']);
+      await BookUtils.saveChapter(relativeDirPath, absoluteDirPath,
+          chapterContentList, bookId.toString());
+    }
   }
 
   static Future<void> selectAndImportMedia(String parentId) async {
@@ -340,6 +415,7 @@ class FileUtils {
     book.type = Constant.mediaType;
     book.path = path.join(relativeDirPath, name);
     book.currentChapter = 0;
+    book.md5 = "";
     DatabaseHelper.db.insert(book);
   }
 
@@ -429,6 +505,7 @@ class FileUtils {
     book.parentId = parentId;
     book.path = path.join(relativeDirPath, path.basename(newDir.path));
     book.currentChapter = 0;
+    book.md5 = "";
     DatabaseHelper.db.insert(book);
   }
 
@@ -722,7 +799,11 @@ class FileUtils {
     book.type = Constant.pdfType;
     book.path = path.join(relativeDirPath, name);
     book.currentChapter = 0;
-    DatabaseHelper.db.insert(book);
+    book.md5 = HASH.md5Byte(await file.readAsBytes());
+    var bookId = await DatabaseHelper.db.insert(book);
+
+    OperationLog operationLog = OperationLog.setOperationLog(book, bookId.toString(), Constant.operationAddType);
+    DatabaseHelper.db.insertOperationLog(operationLog);
   }
 
   static Future<void> shareFile(String filename, var bytes, String fileExtension) async {

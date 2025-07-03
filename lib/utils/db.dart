@@ -1,12 +1,17 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/pojo/chapter.dart';
+import 'package:read_app/pojo/operation_log.dart';
+import 'package:read_app/pojo/sync_log.dart';
+import 'package:read_app/request/request.dart';
 import 'package:read_app/spider/spider.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/file_utils.dart';
+import 'package:read_app/utils/hash_utils.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -48,6 +53,7 @@ class DatabaseHelper {
           ' percent INTEGER,'
           ' chapter_title_exp TEXT,'
           ' parent_id TEXT,'
+          ' md5 TEXT,'
           ' current_chapter INTEGER,'
           ' create_time INTEGER,'
           ' update_time INTEGER);');
@@ -81,15 +87,68 @@ class DatabaseHelper {
           ' start_chapter_index INTEGER,'
           ' replace_content_list TEXT,'
           ' enable INTEGER);');
+
+      // await db.execute('DROP TABLE operation_log;');
+
+      await db.execute('CREATE TABLE IF NOT EXISTS operation_log ('
+          ' id INTEGER PRIMARY KEY AUTOINCREMENT,'
+          ' title TEXT,'
+          ' type INTEGER,'
+          ' md5 TEXT,'
+          ' chapter_title_exp TEXT,'
+          ' current_chapter INTEGER,'
+          ' seq_no INTEGER,'
+          ' page INTEGER,'
+          ' percent INTEGER,'
+          ' book_id INTEGER,'
+          ' create_time INTEGER);');
+
+      await db.execute('CREATE TABLE IF NOT EXISTS sync_log ('
+          ' id INTEGER PRIMARY KEY AUTOINCREMENT,'
+          ' create_time INTEGER);');
     });
+
+    var columns = await getTableColumns('book', db);
+    var flag = true;
+    for (var column in columns) {
+      if (column['name'] == 'md5') {
+        flag = false;
+      }
+    }
+
+    if (flag) {
+      await db.execute('ALTER TABLE book ADD COLUMN md5 TEXT;');
+    }
+
+    updateBookMd5(db);
     return db;
+  }
+
+  Future<List<Map<String, Object?>>> getTableColumns(
+      String tableName, Database db) async {
+    var query = await db.rawQuery('PRAGMA table_info($tableName)');
+    return query;
+  }
+
+  Future<void> updateBookMd5(Database db) async {
+    var query = await db.rawQuery(
+        'select * from book where type in (${Constant.bookType}, ${Constant.pdfType}) and md5 is NULL');
+
+    List<Book> books =
+        query.isNotEmpty ? query.map((t) => Book.fromMap(t)).toList() : [];
+    var dir = await getApplicationDocumentsDirectory();
+    for (Book book in books) {
+      var path = join(dir.path, book.path);
+      book.md5 = HASH.md5Byte(await File(path).readAsBytes());
+      updateById(book);
+    }
   }
 
   Future<int?> insert(Book book) async {
     final db = await database;
     try {
       var result = await db?.rawInsert(
-          'INSERT OR REPLACE INTO book (title, path, seq_no, chapter_title_exp, page, percent, type, cover, parent_id, current_chapter, create_time, update_time) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          'INSERT OR REPLACE INTO book (title, path, seq_no, chapter_title_exp, page, percent, type, cover, parent_id, current_chapter, create_time, update_time, md5) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
           [
             book.title,
             book.path,
@@ -102,7 +161,8 @@ class DatabaseHelper {
             book.parentId,
             book.currentChapter,
             book.createTime,
-            book.updateTime
+            book.updateTime,
+            book.md5
           ]);
       return result;
     } on DatabaseException {
@@ -119,6 +179,16 @@ class DatabaseHelper {
     return books;
   }
 
+  Future<List<Book>> getAllSyncBook(List<int> bookTypes) async {
+    var db = await database;
+    var query = await db?.query('book',
+        where: 'type in (${List.filled(bookTypes.length, '?').join(', ')})',
+        whereArgs: bookTypes);
+    List<Book> books =
+        query!.isNotEmpty ? query.map((t) => Book.fromMap(t)).toList() : [];
+    return books;
+  }
+
   Future<List<Book>> getBookByParentId(String parentId) async {
     var db = await database;
     var query = await db?.query('book',
@@ -127,6 +197,24 @@ class DatabaseHelper {
         orderBy: 'update_time Desc, seq_no asc');
     List<Book> books =
         query!.isNotEmpty ? query.map((t) => Book.fromMap(t)).toList() : [];
+    return books;
+  }
+
+  Future<Book?> getByMd5(String md5) async {
+    var db = await database;
+    var query = await db?.query('book', where: 'md5 = ?', whereArgs: [md5]);
+    Book? book = query!.isNotEmpty ? Book.fromMap(query[0]) : null;
+    return book;
+  }
+
+  Future<List<Book>> getBookByNotInMd5(List<String> md5s) async {
+    var db = await database;
+    var query = await db?.query('book',
+        where: 'md5 not in (${List.filled(md5s.length, '?').join(', ')})',
+        whereArgs: md5s,
+        orderBy: 'update_time Desc, seq_no asc');
+    List<Book> books =
+    query!.isNotEmpty ? query.map((t) => Book.fromMap(t)).toList() : [];
     return books;
   }
 
@@ -365,6 +453,12 @@ class DatabaseHelper {
           updateById(book);
         }
       }
+
+      var list = await getAllBook();
+      var dir = await getApplicationDocumentsDirectory();
+      for (var book in list) {
+        File file = File(join(dir.path, book.path));
+      }
     } finally {
       await newDb.close();
     }
@@ -436,4 +530,78 @@ class DatabaseHelper {
   String generateLike(String column, List<String> condition) {
     return condition.map((item) => ' $column LIKE "%$item%"').join(' OR ');
   }
+
+  Future<int?> insertOperationLog(OperationLog operationLog) async {
+    final db = await database;
+    try {
+      var result = await db?.rawInsert(
+          'INSERT OR REPLACE INTO operation_log (title, seq_no, chapter_title_exp, page, percent, type, book_id, md5, current_chapter, create_time) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [
+            operationLog.title,
+            operationLog.seqNo,
+            operationLog.chapterTitleExp,
+            operationLog.page,
+            operationLog.percent,
+            operationLog.type,
+            operationLog.bookId,
+            operationLog.md5,
+            operationLog.currentChapter,
+            operationLog.createTime,
+          ]);
+      return result;
+    } on DatabaseException {
+      return -1;
+    }
+  }
+
+  Future<List<OperationLog>> getAllNotAddOperationLog() async {
+    var db = await database;
+    var query = await db?.query('operation_log',
+        where: 'type != ?',
+        whereArgs: [Constant.operationAddType],
+        orderBy: 'create_time asc');
+    List<OperationLog> logs = query!.isNotEmpty
+        ? query.map((t) => OperationLog.fromMap(t)).toList()
+        : [];
+    return logs;
+  }
+
+  Future<List<OperationLog>> getAllAddOperationLog() async {
+    var db = await database;
+    var query = await db?.query('operation_log',
+        where: 'type = ?',
+        whereArgs: [Constant.operationAddType],
+        orderBy: 'create_time asc');
+    List<OperationLog> logs = query!.isNotEmpty
+        ? query.map((t) => OperationLog.fromMap(t)).toList()
+        : [];
+    return logs;
+  }
+
+  Future<void> deleteOperationLogById(String id) async {
+    var db = await database;
+    await db?.rawDelete('DELETE FROM operation_log WHERE id = ?', [id]);
+  }
+
+  Future<int?> insertSyncLog(SyncLog syncLog) async {
+    final db = await database;
+    try {
+      var result = await db?.rawInsert(
+          'INSERT OR REPLACE INTO sync_log (create_time) values(?)', [
+        syncLog.createTime,
+      ]);
+      return result;
+    } on DatabaseException {
+      return -1;
+    }
+  }
+
+  Future<List<SyncLog>> getAllSyncLog() async {
+    var db = await database;
+    var query = await db?.query('sync_log', orderBy: 'create_time asc');
+    List<SyncLog> logs =
+        query!.isNotEmpty ? query.map((t) => SyncLog.fromMap(t)).toList() : [];
+    return logs;
+  }
+
 }

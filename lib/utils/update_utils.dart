@@ -47,7 +47,6 @@ class UpdateUtils {
       default:
         break;
     }
-
   }
 
   static Future<UpdateData> getNewVersion() async {
@@ -100,7 +99,8 @@ class UpdateUtils {
         });
   }
 
-  static Future<void> updateWindows(UpdateData updateData, Function progressCallback) async {
+  static Future<void> updateWindows(
+      UpdateData updateData, Function progressCallback) async {
     final tempDir = await getTemporaryDirectory();
     final batFile = File(join(tempDir.path, 'updateReadApp.bat'));
     final zipPath = await downloadNewZip(updateData, progressCallback);
@@ -167,8 +167,8 @@ exit /b 1
 
     await Request.getInstance().dio.download(url, savePath,
         onReceiveProgress: (int count, int total) {
-          progressCallback(count, total);
-        });
+      progressCallback(count, total);
+    });
 
     return savePath;
   }

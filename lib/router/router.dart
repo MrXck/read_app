@@ -1,8 +1,10 @@
 import 'package:get/get.dart';
 import 'package:read_app/page/comic.dart';
+import 'package:read_app/page/login.dart';
 import 'package:read_app/page/pdf.dart';
 import 'package:read_app/page/read.dart';
 import 'package:read_app/page/read_outside.dart';
+import 'package:read_app/page/register.dart';
 import 'package:read_app/page/search.dart';
 import 'package:read_app/page/search_outside.dart';
 import 'package:read_app/page/settings.dart';
@@ -56,5 +58,15 @@ class AppPage {
       name: "/settings",
       page: () => const SettingsPage(),
     ),
+    GetPage(
+        name: "/login",
+        page: () => const LoginPage(),
+        transition: Transition.rightToLeft,
+        transitionDuration: const Duration(milliseconds: 200)),
+    GetPage(
+        name: "/register",
+        page: () => const RegisterPage(),
+        transition: Transition.rightToLeft,
+        transitionDuration: const Duration(milliseconds: 200)),
   ];
 }

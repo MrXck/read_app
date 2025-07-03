@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:read_app/controller/setting_controller.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/pojo/chapter.dart';
+import 'package:read_app/pojo/operation_log.dart';
 import 'package:read_app/pojo/settings.dart';
 import 'package:read_app/utils/book_utils.dart';
 import 'package:read_app/utils/constant.dart';
@@ -1203,6 +1204,8 @@ class _ReadPageState extends State<ReadPage> {
     book.chapterTitleExp = chapterTitleExp;
     book.currentChapter = currentSeqNo.value;
     DatabaseHelper.db.updateById(book);
+    OperationLog operationLog = OperationLog.setOperationLog(book, book.id, Constant.operationUpdateType);
+    DatabaseHelper.db.insertOperationLog(operationLog);
     SharedPreferences.getInstance().then((value) {
       value.setString(Constant.readConfigKey,
           const JsonEncoder().convert(settings.toMap()));

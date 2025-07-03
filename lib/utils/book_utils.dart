@@ -4,6 +4,7 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/pojo/chapter.dart';
+import 'package:read_app/pojo/operation_log.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/file_utils.dart';
 
@@ -180,6 +181,9 @@ class BookUtils {
           await FileUtils.deletePath(bookPath);
           await DatabaseHelper.db.deleteChapterByBookId(book.id);
           await DatabaseHelper.db.deleteById(book.id);
+
+          OperationLog operationLog = OperationLog.setOperationLog(book, book.id, Constant.operationDeleteType);
+          DatabaseHelper.db.insertOperationLog(operationLog);
         }
       } else if (book.type == Constant.directoryType) {
         await DatabaseHelper.db.deleteDirectory(book.id, dataDir.path);
@@ -189,6 +193,11 @@ class BookUtils {
         var bookPath = join(dataDir.path, book.path);
         await FileUtils.deletePath(bookPath);
         await DatabaseHelper.db.deleteById(book.id);
+
+        if (book.type == Constant.pdfType) {
+          OperationLog operationLog = OperationLog.setOperationLog(book, book.id, Constant.operationDeleteType);
+          DatabaseHelper.db.insertOperationLog(operationLog);
+        }
       }
     }
   }
