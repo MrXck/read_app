@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:get/get.dart' as Get;
+import 'package:read_app/controller/setting_controller.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -62,6 +63,8 @@ class RequestInterceptor extends Interceptor {
 
   void handlerError(DioException err) {
     if (err.response?.statusCode == 401) {
+      SettingController settingController = Get.Get.find();
+      settingController.updateSync();
       Get.Get.offNamed('/login');
     }
 
