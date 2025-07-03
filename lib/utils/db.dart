@@ -207,14 +207,14 @@ class DatabaseHelper {
     return book;
   }
 
-  Future<List<Book>> getBookByNotInMd5(List<String> md5s) async {
+  Future<List<Book>> getBookByNotInMd5AndType(List<String> md5s, List<int> types) async {
     var db = await database;
     var query = await db?.query('book',
-        where: 'md5 not in (${List.filled(md5s.length, '?').join(', ')})',
-        whereArgs: md5s,
+        where: 'md5 not in (${List.filled(md5s.length, '?').join(', ')}) and type in (${List.filled(types.length, '?').join(', ')})',
+        whereArgs: [...md5s, ...types],
         orderBy: 'update_time Desc, seq_no asc');
     List<Book> books =
-    query!.isNotEmpty ? query.map((t) => Book.fromMap(t)).toList() : [];
+        query!.isNotEmpty ? query.map((t) => Book.fromMap(t)).toList() : [];
     return books;
   }
 
@@ -454,11 +454,7 @@ class DatabaseHelper {
         }
       }
 
-      var list = await getAllBook();
-      var dir = await getApplicationDocumentsDirectory();
-      for (var book in list) {
-        File file = File(join(dir.path, book.path));
-      }
+      await deleteNotExistsData();
     } finally {
       await newDb.close();
     }
@@ -604,4 +600,28 @@ class DatabaseHelper {
     return logs;
   }
 
+  Future<void> deleteNotExistsData() async {
+    var list = await getAllBook();
+    var dataDir = await getApplicationDocumentsDirectory();
+    for (var book in list) {
+      if (book.type == Constant.bookType) {
+        var bookPath = join(dataDir.path, Directory(book.path).parent.path);
+        if (bookPath != dataDir.path && !(await Directory(bookPath).exists())) {
+          await deleteChapterByBookId(book.id);
+          await deleteById(book.id);
+        }
+      } else if (book.type == Constant.directoryType) {
+        var bookPath = join(dataDir.path, book.path);
+        if (!(await Directory(bookPath).exists())) {
+          await deleteById(book.id);
+        }
+      } else if (book.type == Constant.outSideType) {
+      } else {
+        var bookPath = join(dataDir.path, book.path);
+        if (!(await Directory(bookPath).exists())) {
+          await deleteById(book.id);
+        }
+      }
+    }
+  }
 }

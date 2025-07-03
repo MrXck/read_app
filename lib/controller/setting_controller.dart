@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:read_app/utils/constant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingController extends GetxController {
@@ -10,13 +11,13 @@ class SettingController extends GetxController {
 
   init() async {
     var shared = await SharedPreferences.getInstance();
-    isOpenSync.value = shared.getBool('sync') ?? false;
+    isOpenSync.value = shared.getBool(Constant.syncConfigKey) ?? false;
   }
 
   updateSync() async {
     var shared = await SharedPreferences.getInstance();
     isOpenSync.value = !isOpenSync.value;
-    shared.setBool('sync', isOpenSync.value);
+    shared.setBool(Constant.syncConfigKey, isOpenSync.value);
   }
 
   @override

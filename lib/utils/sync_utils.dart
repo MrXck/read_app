@@ -21,6 +21,7 @@ class SyncUtils {
 
   static Future<void> sync() async {
     Future.delayed(const Duration(seconds: 10), () async {
+      await DatabaseHelper.db.deleteNotExistsData();
       if (settingController.isOpenSync.value &&
           !settingController.isSyncing.value) {
         settingController.isSyncing.value = true;
@@ -127,7 +128,7 @@ class SyncUtils {
         }
       }
     }
-    List<Book> books = await DatabaseHelper.db.getBookByNotInMd5(md5s);
+    List<Book> books = await DatabaseHelper.db.getBookByNotInMd5AndType(md5s, [Constant.bookType, Constant.pdfType]);
     await BookUtils.deleteBooks(books.map((item) => item.id).toList());
   }
 

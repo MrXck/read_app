@@ -5,8 +5,10 @@ import 'package:get/get.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:read_app/controller/setting_controller.dart';
+import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/file_utils.dart';
 import 'package:read_app/utils/loading_utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MyPage extends StatefulWidget {
   const MyPage({super.key});
@@ -80,6 +82,12 @@ class _MyPageState extends State<MyPage> {
           Obx(() {
             return TextButton(
                 onPressed: () async {
+                  var shared = await SharedPreferences.getInstance();
+                  if (shared.getBool(Constant.syncConfigKey) ?? false) {
+                    Get.offNamed('/login');
+                    return;
+                  }
+
                   settingController.updateSync();
                 },
                 child: settingController.isOpenSync.value

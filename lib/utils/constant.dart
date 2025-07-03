@@ -51,6 +51,7 @@ class Constant {
 
   static const String readConfigKey = 'config';
   static const String appConfigKey = 'app_config';
+  static const String syncConfigKey = 'sync';
 
   static List<String> fontFamilyList = [
     'pingfang',
