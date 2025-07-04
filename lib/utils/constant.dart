@@ -2,7 +2,8 @@ class Constant {
   static const String baseUrl = 'https://www.yuumi.cc';
   static const String getAppVersionUrl = '$baseUrl/api/version';
 
-  static const String syncUrl = 'http://192.168.31.162:9999';
+  // static const String syncUrl = 'http://192.168.31.162:9999';
+  static const String syncUrl = 'https://www.yuumi.cc/api/readapp';
 
   static Map<String, String> headers = {
     'Content-Type': 'application/json'

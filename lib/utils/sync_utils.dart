@@ -51,7 +51,8 @@ class SyncUtils {
             await syncRemoteUpdate();
             SyncLog syncLog = SyncLog();
             syncLog.createTime = DateTime.now().millisecondsSinceEpoch;
-            DatabaseHelper.db.insertSyncLog(syncLog);
+            var logId = (await DatabaseHelper.db.insertSyncLog(syncLog)).toString();
+            DatabaseHelper.db.deleteSyncLogByNotEqualId(logId);
           } catch (e) {
             print(e);
           } finally {

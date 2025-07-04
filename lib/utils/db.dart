@@ -468,6 +468,8 @@ class DatabaseHelper {
         if (!(await directory.exists())) {
           tipText.value = '重新生成 ${book.title} 章节中...';
           await BookUtils.changeChapter(book, book.chapterTitleExp);
+          OperationLog operationLog = OperationLog.setOperationLog(book, book.id, Constant.operationAddType);
+          await insertOperationLog(operationLog);
         }
       }
     } finally {
@@ -634,5 +636,10 @@ class DatabaseHelper {
         }
       }
     }
+  }
+
+  Future<void> deleteSyncLogByNotEqualId(String id) async {
+    var db = await database;
+    await db?.rawDelete('DELETE FROM sync_log WHERE id != ?', [id]);
   }
 }

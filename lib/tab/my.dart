@@ -103,6 +103,12 @@ class _MyPageState extends State<MyPage> {
                 }
 
                 try {
+                  if (settingController.isSyncing.value) {
+                    Get.snackbar('提示', '正在同步文件中 请稍后进行导入操作...');
+                    return;
+                  }
+
+                  settingController.isSyncing.value = true;
                   var tipText = LoadingUtils.showLoading(tip: '导入中');
                   final dir = await getApplicationDocumentsDirectory();
                   final fromPath = join(dir.path, 'read_import');
@@ -115,6 +121,7 @@ class _MyPageState extends State<MyPage> {
                 } catch (e) {
                   Get.snackbar('错误', e.toString());
                 } finally {
+                  settingController.isSyncing.value = false;
                   LoadingUtils.hideLoading();
                 }
               },
