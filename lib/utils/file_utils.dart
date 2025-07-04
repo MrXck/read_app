@@ -362,9 +362,6 @@ class FileUtils {
 
     var bookId = await DatabaseHelper.db.insert(book);
 
-    OperationLog operationLog = OperationLog.setOperationLog(book, bookId.toString(), Constant.operationAddType);
-    DatabaseHelper.db.insertOperationLog(operationLog);
-
     if (syncBook['type'] == Constant.bookType) {
       var content = await BookUtils.loadBook(file.path);
       var chapterContentList =
