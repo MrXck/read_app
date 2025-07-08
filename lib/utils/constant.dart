@@ -2,7 +2,7 @@ class Constant {
   static const String baseUrl = 'https://www.yuumi.cc';
   static const String getAppVersionUrl = '$baseUrl/api/version';
 
-  // static const String syncUrl = 'http://192.168.31.162:9999';
+  // static const String syncUrl = 'http://127.0.0.1:9999';
   static const String syncUrl = 'https://www.yuumi.cc/api/readapp';
 
   static Map<String, String> headers = {
@@ -14,6 +14,8 @@ class Constant {
 
   static const String getAllBookUrl = '$syncUrl/book/all';
   static const String updateBookUrl = '$syncUrl/book/update';
+  static const String validBookMd5Url = '$syncUrl/book/validMd5';
+
   static const String downloadBookUrl = '$syncUrl/file/download/';
   static const String uploadBookUrl = '$syncUrl/file/upload';
 

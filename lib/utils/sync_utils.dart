@@ -51,7 +51,8 @@ class SyncUtils {
             await syncRemoteUpdate();
             SyncLog syncLog = SyncLog();
             syncLog.createTime = DateTime.now().millisecondsSinceEpoch;
-            var logId = (await DatabaseHelper.db.insertSyncLog(syncLog)).toString();
+            var logId =
+                (await DatabaseHelper.db.insertSyncLog(syncLog)).toString();
             DatabaseHelper.db.deleteSyncLogByNotEqualId(logId);
           } catch (e) {
             print(e);
@@ -70,26 +71,46 @@ class SyncUtils {
     }
     var books = await DatabaseHelper.db
         .getAllSyncBook([Constant.bookType, Constant.pdfType]);
+    var response = await RequestUtils.postJson(
+        Constant.validBookMd5Url,
+        {
+          "bookLogDTOS": books.map((item) => {'md5': item.md5}).toList()
+        },
+        Constant.headers);
+
+    var md5s = [];
+
+    if (response.data['code'] == 0) {
+      md5s = response.data['data']['md5s'];
+    }
+
     var dir = await getApplicationDocumentsDirectory();
     for (var book in books) {
+      if (md5s.contains(book.md5)) {
+        continue;
+      }
       var filePath = join(dir.path, book.path);
-      await RequestUtils.postFileJson(
-          Constant.uploadBookUrl,
-          FormData.fromMap({
-            'file': await MultipartFile.fromFile(
-              filePath,
-              filename: basename(filePath),
-            ),
-            'title': book.title,
-            'chapterTitleExp': book.chapterTitleExp,
-            'md5': book.md5,
-            'seqNo': book.seqNo,
-            'page': book.page,
-            'type': book.type,
-            'currentChapter': book.currentChapter,
-            'percent': book.percent,
-          }),
-          {});
+      try {
+        await RequestUtils.postFileJson(
+            Constant.uploadBookUrl,
+            FormData.fromMap({
+              'file': await MultipartFile.fromFile(
+                filePath,
+                filename: basename(filePath),
+              ),
+              'title': book.title,
+              'chapterTitleExp': book.chapterTitleExp,
+              'md5': book.md5,
+              'seqNo': book.seqNo,
+              'page': book.page,
+              'type': book.type,
+              'currentChapter': book.currentChapter,
+              'percent': book.percent,
+            }),
+            {});
+      } catch (e) {
+        print(e);
+      }
     }
   }
 
@@ -129,7 +150,8 @@ class SyncUtils {
         }
       }
     }
-    List<Book> books = await DatabaseHelper.db.getBookByNotInMd5AndType(md5s, [Constant.bookType, Constant.pdfType]);
+    List<Book> books = await DatabaseHelper.db
+        .getBookByNotInMd5AndType(md5s, [Constant.bookType, Constant.pdfType]);
     await BookUtils.deleteBooks(books.map((item) => item.id).toList());
   }
 
