@@ -165,7 +165,8 @@ class FileUtils {
 
     var bookId = await DatabaseHelper.db.insert(book);
 
-    OperationLog operationLog = OperationLog.setOperationLog(book, bookId.toString(), Constant.operationAddType);
+    OperationLog operationLog = OperationLog.setOperationLog(
+        book, bookId.toString(), Constant.operationAddType);
     DatabaseHelper.db.insertOperationLog(operationLog);
 
     try {
@@ -215,7 +216,8 @@ class FileUtils {
     book.md5 = HASH.md5Byte(fileBytes);
     var bookId = await DatabaseHelper.db.insert(book);
 
-    OperationLog operationLog = OperationLog.setOperationLog(book, bookId.toString(), Constant.operationAddType);
+    OperationLog operationLog = OperationLog.setOperationLog(
+        book, bookId.toString(), Constant.operationAddType);
     DatabaseHelper.db.insertOperationLog(operationLog);
   }
 
@@ -233,7 +235,8 @@ class FileUtils {
     File file = File.fromUri(Uri.file(filePath));
     await file.writeAsBytes(fileBytes);
 
-    final ByteData fontData = ByteData.sublistView(await File(file.path).readAsBytes());
+    final ByteData fontData =
+        ByteData.sublistView(await File(file.path).readAsBytes());
     final loader = FontLoader(basename(file.path).split('.')[0]);
     loader.addFont(Future.value(fontData));
     await loader.load();
@@ -258,7 +261,8 @@ class FileUtils {
 
     if (result != null) {
       for (var i = 0; i < result.files.length; i++) {
-        await uploadFile(await File(result.files[i].path!).readAsBytes(), result.files[i].name);
+        await uploadFile(await File(result.files[i].path!).readAsBytes(),
+            result.files[i].name);
         successList.add(path.basename(result.files[i].name).split('0')[0]);
       }
     }
@@ -308,7 +312,8 @@ class FileUtils {
 
     var bookId = await DatabaseHelper.db.insert(book);
 
-    OperationLog operationLog = OperationLog.setOperationLog(book, bookId.toString(), Constant.operationAddType);
+    OperationLog operationLog = OperationLog.setOperationLog(
+        book, bookId.toString(), Constant.operationAddType);
     DatabaseHelper.db.insertOperationLog(operationLog);
 
     await BookUtils.saveChapter(relativeDirPath, absoluteDirPath,
@@ -350,7 +355,8 @@ class FileUtils {
     book.page = syncBook['page'];
     book.chapterTitleExp = syncBook['chapterTitleExp'];
     book.title = syncBook['title'];
-    book.updateTime = DateTime.parse(syncBook['updateTime']).millisecondsSinceEpoch;
+    book.updateTime =
+        DateTime.parse(syncBook['updateTime']).millisecondsSinceEpoch;
     book.createTime = DateTime.now().millisecondsSinceEpoch;
     book.seqNo = syncBook['seqNo'];
     book.cover = "";
@@ -365,7 +371,7 @@ class FileUtils {
     if (syncBook['type'] == Constant.bookType) {
       var content = await BookUtils.loadBook(file.path);
       var chapterContentList =
-      BookUtils.splitChapterContent(content, syncBook['chapterTitleExp']);
+          BookUtils.splitChapterContent(content, syncBook['chapterTitleExp']);
       await BookUtils.saveChapter(relativeDirPath, absoluteDirPath,
           chapterContentList, bookId.toString());
     }
@@ -604,7 +610,8 @@ class FileUtils {
         if (file.path.endsWith('data.db')) {
           var fileBytes = await file.readAsBytes();
           var relativePath = path.relative(file.path, from: dirPath);
-          archive.addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
+          archive
+              .addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
           break;
         }
       }
@@ -620,19 +627,22 @@ class FileUtils {
           var file = File(path.join(dir.path, book.path));
           var fileBytes = await file.readAsBytes();
           var relativePath = path.relative(file.path, from: dirPath);
-          archive.addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
+          archive
+              .addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
           break;
         case Constant.pdfType:
           var file = File(path.join(dir.path, book.path));
           var fileBytes = await file.readAsBytes();
           var relativePath = path.relative(file.path, from: dirPath);
-          archive.addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
+          archive
+              .addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
           break;
         case Constant.mediaType:
           var file = File(path.join(dir.path, book.path));
           var fileBytes = await file.readAsBytes();
           var relativePath = path.relative(file.path, from: dirPath);
-          archive.addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
+          archive
+              .addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
           break;
         case Constant.comicType:
           var directory = Directory(path.join(dir.path, book.path));
@@ -640,7 +650,8 @@ class FileUtils {
             if (file is File) {
               var fileBytes = await file.readAsBytes();
               var relativePath = path.relative(file.path, from: dirPath);
-              archive.addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
+              archive.addFile(
+                  ArchiveFile(relativePath, fileBytes.length, fileBytes));
             }
           }
           break;
@@ -654,6 +665,95 @@ class FileUtils {
     // print('压缩完成，输出文件路径：$outputPath');
 
     saveFile('导出', zipData);
+  }
+
+  static Future<void> compressSpecifiedDirectoryByParentId(String parentId,
+      String dirPath, String outputPath, List<int> typeList) async {
+    // 创建一个空的 ZIP 文件
+    var archive = Archive();
+
+    var dir = await getApplicationDocumentsDirectory();
+
+    List<Book> books = [];
+
+    await getAllSyncBookByParentId(books, parentId, typeList);
+
+    for (var book in books) {
+      var type = book.type;
+      print("${book.title}  ${book.type} ");
+      switch (type) {
+        case Constant.bookType:
+          var file = File(path.join(dir.path, book.path));
+          var fileBytes = await file.readAsBytes();
+          var fileExtension = getFileExtension(file.path);
+          var relativePath = path.relative(
+              "${path.join(path.dirname(file.path), book.title)}.$fileExtension",
+              from: dirPath);
+          relativePath = relativePath.replaceFirst(
+              path.basename(file.parent.path), book.title);
+          archive
+              .addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
+          break;
+        case Constant.pdfType:
+          var file = File(path.join(dir.path, book.path));
+          var fileBytes = await file.readAsBytes();
+          var fileExtension = getFileExtension(file.path);
+          var relativePath = path.relative(
+              "${path.join(path.dirname(file.path), book.title)}.$fileExtension",
+              from: dirPath);
+          archive
+              .addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
+          break;
+        case Constant.mediaType:
+          var file = File(path.join(dir.path, book.path));
+          var fileBytes = await file.readAsBytes();
+          var fileExtension = getFileExtension(file.path);
+          var relativePath = path.relative(
+              "${path.join(path.dirname(file.path), book.title)}.$fileExtension",
+              from: dirPath);
+          archive
+              .addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
+          break;
+        case Constant.comicType:
+          var directory = Directory(path.join(dir.path, book.path));
+          await for (var file in directory.list(recursive: true)) {
+            if (file is File) {
+              var fileBytes = await file.readAsBytes();
+              var relativePath = path.relative(file.path, from: dirPath);
+              relativePath = relativePath.replaceFirst(
+                  path.basename(book.path), book.title);
+              archive.addFile(
+                  ArchiveFile(relativePath, fileBytes.length, fileBytes));
+            }
+          }
+          break;
+      }
+    }
+
+    // 将存档写入到文件
+    var zipData = await compute(encodeZip, archive);
+    // var outputFile = File(outputPath);
+    // await outputFile.writeAsBytes(zipData!);
+    // print('压缩完成，输出文件路径：$outputPath');
+
+    saveFile('导出', zipData);
+  }
+
+  static Future<void> getAllSyncBookByParentId(
+      List<Book> books, String parentId, List<int> typeList) async {
+    var syncBooks =
+        await DatabaseHelper.db.getAllSyncBookByParentId(parentId, typeList);
+
+    for (var book in syncBooks) {
+      var type = book.type;
+      switch (type) {
+        case Constant.directoryType:
+          await getAllSyncBookByParentId(books, book.id, typeList);
+          break;
+        default:
+          books.add(book);
+      }
+    }
   }
 
   static List<int> encodeZip(Archive archive) {
@@ -751,7 +851,8 @@ class FileUtils {
     print('解压完成，文件保存在：$outputDir');
   }
 
-  static Future<void> copyDirectory(String fromPath, String toPath, ValueNotifier<String> tipText) async {
+  static Future<void> copyDirectory(
+      String fromPath, String toPath, ValueNotifier<String> tipText) async {
     final destination = Directory(toPath);
     final source = Directory(fromPath);
 
@@ -868,11 +969,13 @@ class FileUtils {
     book.md5 = HASH.md5Byte(await file.readAsBytes());
     var bookId = await DatabaseHelper.db.insert(book);
 
-    OperationLog operationLog = OperationLog.setOperationLog(book, bookId.toString(), Constant.operationAddType);
+    OperationLog operationLog = OperationLog.setOperationLog(
+        book, bookId.toString(), Constant.operationAddType);
     DatabaseHelper.db.insertOperationLog(operationLog);
   }
 
-  static Future<void> shareFile(String filename, var bytes, String fileExtension) async {
+  static Future<void> shareFile(
+      String filename, var bytes, String fileExtension) async {
     final tempDir = await getTemporaryDirectory();
     var filePath = path.join(tempDir.path, "$filename.$fileExtension");
 

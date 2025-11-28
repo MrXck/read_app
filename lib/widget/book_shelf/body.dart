@@ -71,7 +71,6 @@ class _BookShelfBodyState extends State<BookShelfBody> {
 
       updateParentId(breadList.value.last.id);
       return false;
-
     };
     DatabaseHelper.db.getBookByParentId(parentId).then((value) async {
       final dir = await getApplicationDocumentsDirectory();
@@ -303,7 +302,8 @@ class _BookShelfBodyState extends State<BookShelfBody> {
               book.title = inputValue;
               await DatabaseHelper.db.updateById(book);
 
-              OperationLog operationLog = OperationLog.setOperationLog(book, book.id, Constant.operationUpdateType);
+              OperationLog operationLog = OperationLog.setOperationLog(
+                  book, book.id, Constant.operationUpdateType);
               DatabaseHelper.db.insertOperationLog(operationLog);
 
               var value = await DatabaseHelper.db.getBookByParentId(parentId);
@@ -339,8 +339,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
       widget.data.parentId = parentId;
     });
 
-    var li =
-    await DatabaseHelper.db.getBookByParentId(parentId);
+    var li = await DatabaseHelper.db.getBookByParentId(parentId);
     final dir = await getApplicationDocumentsDirectory();
     for (var i = 0; i < li.length; i++) {
       var book = li[i];
@@ -368,7 +367,8 @@ class _BookShelfBodyState extends State<BookShelfBody> {
     String id = checkedList.first;
     var book = await DatabaseHelper.db.getById(id);
 
-    var image = await FilePicker.platform.pickFiles(allowedExtensions: ['jpg', 'png', 'jpeg']);
+    var image = await FilePicker.platform
+        .pickFiles(allowedExtensions: ['jpg', 'png', 'jpeg']);
 
     if (image == null) {
       return;
@@ -378,7 +378,8 @@ class _BookShelfBodyState extends State<BookShelfBody> {
 
     final dir = await getApplicationDocumentsDirectory();
 
-    var path = join(File(book.path).parent.path, '${generateRandomString(32)}.${FileUtils.getFileExtension(image.files.single.path!)}');
+    var path = join(File(book.path).parent.path,
+        '${generateRandomString(32)}.${FileUtils.getFileExtension(image.files.single.path!)}');
 
     await file.copy(join(dir.path, path));
     book.cover = path;
@@ -584,7 +585,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
               bottom: 0,
               left: 0,
               right: 0,
-              height: 80,
+              height: 100,
               child: Container(
                 decoration: const BoxDecoration(
                   color: Colors.white,
@@ -733,14 +734,21 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                                   return InkWell(
                                     onTap: () async {
                                       String id = checkedList.first;
-                                      var book = await DatabaseHelper.db.getById(id);
+                                      var book =
+                                          await DatabaseHelper.db.getById(id);
                                       if (book.type != Constant.bookType) {
                                         Get.snackbar('提示', '只有文本才可以分享');
                                         return;
                                       }
-                                      var dir = await getApplicationDocumentsDirectory();
+                                      var dir =
+                                          await getApplicationDocumentsDirectory();
 
-                                      await FileUtils.shareFile(book.title, await File(join(dir.path, book.path)).readAsBytes(), FileUtils.getFileExtension(book.path));
+                                      await FileUtils.shareFile(
+                                          book.title,
+                                          await File(join(dir.path, book.path))
+                                              .readAsBytes(),
+                                          FileUtils.getFileExtension(
+                                              book.path));
                                     },
                                     child: const Text('分享'),
                                   );
@@ -748,7 +756,49 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                               }),
                         ],
                       ),
-                    )
+                    ),
+                    Container(
+                      margin: const EdgeInsets.only(top: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          ValueListenableBuilder(
+                              valueListenable: count,
+                              builder: (context, value, child) {
+                                if (value != 1) {
+                                  return const Text(
+                                    '导出',
+                                    style: TextStyle(color: Color(0xB2C4C4C4)),
+                                  );
+                                } else {
+                                  return InkWell(
+                                    onTap: () async {
+                                      String id = checkedList.first;
+                                      var dir =
+                                          await getApplicationDocumentsDirectory();
+
+                                      await FileUtils
+                                          .compressSpecifiedDirectoryByParentId(
+                                        id,
+                                        join(dir.path, 'read'),
+                                        join(dir.path, 'read_book.zip'),
+                                        [
+                                          Constant.bookType,
+                                          Constant.directoryType,
+                                          Constant.comicType,
+                                          Constant.mediaType,
+                                          Constant.outSideType,
+                                          Constant.pdfType,
+                                        ],
+                                      );
+                                    },
+                                    child: const Text('导出'),
+                                  );
+                                }
+                              }),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),

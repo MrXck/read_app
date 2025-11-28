@@ -189,6 +189,16 @@ class DatabaseHelper {
     return books;
   }
 
+  Future<List<Book>> getAllSyncBookByParentId(String parentId, List<int> bookTypes) async {
+    var db = await database;
+    var query = await db?.query('book',
+        where: 'parent_id = ? and type in (${List.filled(bookTypes.length, '?').join(', ')})',
+        whereArgs: [parentId, ...bookTypes]);
+    List<Book> books =
+    query!.isNotEmpty ? query.map((t) => Book.fromMap(t)).toList() : [];
+    return books;
+  }
+
   Future<List<Book>> getBookByParentId(String parentId) async {
     var db = await database;
     var query = await db?.query('book',
