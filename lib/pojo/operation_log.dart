@@ -37,7 +37,7 @@ class OperationLog {
       'createTime': createTime,
       'seqNo': seqNo,
       'type': type,
-      'percent': percent,
+      'percent': percent.isInfinite ? 0 : percent,
       'page': page,
       'md5': md5,
       'currentChapter': currentChapter,
