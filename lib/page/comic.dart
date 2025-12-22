@@ -71,7 +71,8 @@ class _ComicPageState extends State<ComicPage> {
     }
 
     var value = await SharedPreferences.getInstance();
-    var config = const JsonDecoder().convert(value.getString(Constant.readConfigKey) ?? '{}');
+    var config = const JsonDecoder()
+        .convert(value.getString(Constant.readConfigKey) ?? '{}');
     settings = Settings.fromMap(config);
   }
 
@@ -254,12 +255,19 @@ class _ComicPageState extends State<ComicPage> {
   @override
   void dispose() {
     book.page = _currentIndex.value - 1 < 0 ? 0 : _currentIndex.value - 1;
-    book.percent = (_currentIndex.value - 1 < 0 ? 0 : _currentIndex.value - 1) /
-        (imageList.length - 1) *
-        100;
+    book.percent =
+        ((_currentIndex.value - 1 < 0 ? 0 : _currentIndex.value - 1) /
+                    (imageList.length - 1) *
+                    100)
+                .isInfinite
+            ? 0
+            : (_currentIndex.value - 1 < 0 ? 0 : _currentIndex.value - 1) /
+                (imageList.length - 1) *
+                100;
     DatabaseHelper.db.updateById(book);
     SharedPreferences.getInstance().then((value) {
-      value.setString(Constant.readConfigKey, const JsonEncoder().convert(settings.toMap()));
+      value.setString(Constant.readConfigKey,
+          const JsonEncoder().convert(settings.toMap()));
     });
     if (settingController.isOpenVolumeFlip.value) {
       volumeUtils.removeListener(needRestore: true);

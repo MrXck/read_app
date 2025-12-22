@@ -61,7 +61,8 @@ class _PdfPageState extends State<PdfPage> {
     book.assetDir = dataDir.path;
 
     var value = await SharedPreferences.getInstance();
-    var config = const JsonDecoder().convert(value.getString(Constant.readConfigKey) ?? '{}');
+    var config = const JsonDecoder()
+        .convert(value.getString(Constant.readConfigKey) ?? '{}');
     settings = Settings.fromMap(config);
   }
 
@@ -172,10 +173,16 @@ class _PdfPageState extends State<PdfPage> {
   void dispose() {
     book.page = _pdfViewerController.pageNumber;
     book.percent =
-        _pdfViewerController.pageNumber / _pdfViewerController.pageCount * 100;
+        (_pdfViewerController.pageNumber / _pdfViewerController.pageCount * 100)
+                .isInfinite
+            ? 0
+            : _pdfViewerController.pageNumber /
+                _pdfViewerController.pageCount *
+                100;
     DatabaseHelper.db.updateById(book);
     SharedPreferences.getInstance().then((value) {
-      value.setString(Constant.readConfigKey, const JsonEncoder().convert(settings.toMap()));
+      value.setString(Constant.readConfigKey,
+          const JsonEncoder().convert(settings.toMap()));
     });
     if (settingController.isOpenVolumeFlip.value) {
       volumeUtils.removeListener(needRestore: true);

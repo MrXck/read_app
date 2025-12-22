@@ -189,8 +189,8 @@ class _ReadPageState extends State<ReadPage> {
       chapterContent = chapterContent.replaceAll('\r', '');
 
       chapterContent = chapterContent.replaceAllMapped(
-          RegExp(RegExp.escape(chapter.title) + r'(\n){2,}',
-              multiLine: true), (Match match) {
+          RegExp(RegExp.escape(chapter.title) + r'(\n){2,}', multiLine: true),
+          (Match match) {
         return '${chapter.title}\n';
       });
 
@@ -243,10 +243,10 @@ class _ReadPageState extends State<ReadPage> {
     try {
       currentChapter = chapterList[seqNo];
       if (chapterTitlePageNumMap.containsKey(currentChapter.title)) {
-
         if (chapterTitlePageNumMap[currentChapter.title] == currentPage) {
           switchChapter(seqNo + 1, true, currentPage);
-        } else if (chapterTitlePageNumMap[currentChapter.title] == startHasContentPage) {
+        } else if (chapterTitlePageNumMap[currentChapter.title] ==
+            startHasContentPage) {
           switchChapter(seqNo - 1, true, currentPage);
         }
 
@@ -283,13 +283,13 @@ class _ReadPageState extends State<ReadPage> {
     chapterContent = chapterContent.replaceAll('\r', '');
 
     chapterContent = chapterContent.replaceAllMapped(
-        RegExp(RegExp.escape(chapter.title) + r'(\n){2,}',
-            multiLine: true), (Match match) {
+        RegExp(RegExp.escape(chapter.title) + r'(\n){2,}', multiLine: true),
+        (Match match) {
       return '${match.group(0)!.replaceAll(match.group(1)!, '')}\n';
     });
 
-    chapterContent = chapterContent.replaceAllMapped(
-        RegExp(r'(\n){2,}', multiLine: true), (Match match) {
+    chapterContent = chapterContent
+        .replaceAllMapped(RegExp(r'(\n){2,}', multiLine: true), (Match match) {
       return '\n';
     });
 
@@ -523,7 +523,9 @@ class _ReadPageState extends State<ReadPage> {
         int end;
 
         if (hasChapterTitle) {
-          end = text.length > Constant.defaultChapterTitleMaxLength ? Constant.defaultChapterTitleMaxLength : text.length;
+          end = text.length > Constant.defaultChapterTitleMaxLength
+              ? Constant.defaultChapterTitleMaxLength
+              : text.length;
         } else {
           end = num + everyLineFontNum > text.length
               ? text.length
@@ -705,7 +707,8 @@ class _ReadPageState extends State<ReadPage> {
                       }
                     },
                     child: Container(
-                      margin: EdgeInsets.fromLTRB(0, settings.pageTopPadding, 0, settings.showBottom ? settings.pageBottomPadding : 0),
+                      margin: EdgeInsets.fromLTRB(0, settings.pageTopPadding, 0,
+                          settings.showBottom ? settings.pageBottomPadding : 0),
                       height: height,
                       width: width,
                       child: PageView.builder(
@@ -736,7 +739,8 @@ class _ReadPageState extends State<ReadPage> {
                               if (isLoading) {
                                 return;
                               }
-                              switchChapter(currentSeqNo.value - 1, false, _currentPage.value);
+                              switchChapter(currentSeqNo.value - 1, false,
+                                  _currentPage.value);
                             }
                           }
 
@@ -745,7 +749,8 @@ class _ReadPageState extends State<ReadPage> {
                               if (isLoading) {
                                 return;
                               }
-                              switchChapter(currentSeqNo.value + 1, true, _currentPage.value);
+                              switchChapter(currentSeqNo.value + 1, true,
+                                  _currentPage.value);
                             }
                           }
 
@@ -1200,11 +1205,15 @@ class _ReadPageState extends State<ReadPage> {
     _timeTimer?.cancel();
     _dataTimer?.cancel();
     book.page = nowChapterPage;
-    book.percent = ((currentSeqNo.value + 1) / chapterList.length) * 100;
+    book.percent =
+        (((currentSeqNo.value + 1) / chapterList.length) * 100).isInfinite
+            ? 0
+            : ((currentSeqNo.value + 1) / chapterList.length) * 100;
     book.chapterTitleExp = chapterTitleExp;
     book.currentChapter = currentSeqNo.value;
     DatabaseHelper.db.updateById(book);
-    OperationLog operationLog = OperationLog.setOperationLog(book, book.id, Constant.operationUpdateType);
+    OperationLog operationLog = OperationLog.setOperationLog(
+        book, book.id, Constant.operationUpdateType);
     DatabaseHelper.db.insertOperationLog(operationLog);
     SharedPreferences.getInstance().then((value) {
       value.setString(Constant.readConfigKey,

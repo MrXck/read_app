@@ -83,7 +83,7 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
   Timer? _timeTimer;
 
   Future<void> init(Book? book, OutSideBook? outSideBook1) async {
-  if (settingController.isOpenVolumeFlip.value) {
+    if (settingController.isOpenVolumeFlip.value) {
       volumeUtils.init((double beforeVolume, double nowVolume) {
         if (beforeVolume < nowVolume) {
           _pageController.nextPage(
@@ -134,7 +134,8 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
     });
 
     var value = await SharedPreferences.getInstance();
-    var config = const JsonDecoder().convert(value.getString(Constant.readConfigKey) ?? '{}');
+    var config = const JsonDecoder()
+        .convert(value.getString(Constant.readConfigKey) ?? '{}');
     settings = Settings.fromMap(config);
 
     switchChapter1(currentSeqNo.value);
@@ -245,9 +246,9 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
 
       chapterContent = chapterContent.replaceAllMapped(
           RegExp(RegExp.escape(chapter.title) + r'(\n){2,}', multiLine: true),
-              (Match match) {
-            return '${match.group(0)!.replaceAll(match.group(1)!, '')}\n';
-          });
+          (Match match) {
+        return '${match.group(0)!.replaceAll(match.group(1)!, '')}\n';
+      });
 
       chapterContent = chapterContent.replaceAllMapped(
           RegExp(r'(\n){2,}', multiLine: true), (Match match) {
@@ -327,12 +328,12 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
 
     chapterContent = chapterContent.replaceAllMapped(
         RegExp(RegExp.escape(chapter.title) + r'(\n){2,}', multiLine: true),
-            (Match match) {
-          return '${match.group(0)!.replaceAll(match.group(1)!, '')}\n';
-        });
+        (Match match) {
+      return '${match.group(0)!.replaceAll(match.group(1)!, '')}\n';
+    });
 
-    chapterContent = chapterContent.replaceAllMapped(
-        RegExp(r'(\n){2,}', multiLine: true), (Match match) {
+    chapterContent = chapterContent
+        .replaceAllMapped(RegExp(r'(\n){2,}', multiLine: true), (Match match) {
       return '\n';
     });
 
@@ -367,7 +368,8 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
     });
   }
 
-  Widget addPage(List<Map> textList, int totalPageNum, int everyLineFontNum, double everyLineHeight) {
+  Widget addPage(List<Map> textList, int totalPageNum, int everyLineFontNum,
+      double everyLineHeight) {
     List<Widget> widgetList = [];
 
     for (var i = 0; i < textList.length; i++) {
@@ -417,9 +419,9 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
             }
             tt.add(Expanded(
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: rowChildren,
-                )));
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: rowChildren,
+            )));
 
             widgetList.add(Row(
               children: tt,
@@ -508,7 +510,6 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
 
   List<Widget> calcPage(String data, double height, double width,
       double fontSize, double lineHeight) {
-
     if (settings.showBottom) {
       height = height - 30;
     }
@@ -566,7 +567,9 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
         int end;
 
         if (hasChapterTitle) {
-          end = text.length > Constant.defaultChapterTitleMaxLength ? Constant.defaultChapterTitleMaxLength : text.length;
+          end = text.length > Constant.defaultChapterTitleMaxLength
+              ? Constant.defaultChapterTitleMaxLength
+              : text.length;
         } else {
           end = num + everyLineFontNum > text.length
               ? text.length
@@ -601,13 +604,15 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
 
       var hasChapterTitle = item['hasChapterTitle'];
       if (hasChapterTitle && xxx.isNotEmpty) {
-        pageList.add(addPage(xxx, pageList.length, everyLineFontNum, everyLineHeight));
+        pageList.add(
+            addPage(xxx, pageList.length, everyLineFontNum, everyLineHeight));
         xxx = [];
         currentLine = 0;
       }
 
       if (currentLine >= lineNum) {
-        pageList.add(addPage(xxx, pageList.length, everyLineFontNum, everyLineHeight));
+        pageList.add(
+            addPage(xxx, pageList.length, everyLineFontNum, everyLineHeight));
         currentLine = 0;
         xxx = [];
       }
@@ -645,7 +650,8 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
     }
 
     if (xxx.isNotEmpty) {
-      pageList.add(addPage(xxx, pageList.length, everyLineFontNum, everyLineHeight));
+      pageList.add(
+          addPage(xxx, pageList.length, everyLineFontNum, everyLineHeight));
     }
 
     return pageList;
@@ -705,9 +711,13 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
 
                         if (settings.isVer) {
                           if (dy < height / 5) {
-                            _pageController.previousPage(duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+                            _pageController.previousPage(
+                                duration: const Duration(milliseconds: 200),
+                                curve: Curves.easeIn);
                           } else if (dy > height / 5 * 4) {
-                            _pageController.nextPage(duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+                            _pageController.nextPage(
+                                duration: const Duration(milliseconds: 200),
+                                curve: Curves.easeIn);
                           } else {
                             showOption.value = !(showOption.value);
                             showSettings.value = false;
@@ -717,9 +727,13 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                           }
                         } else {
                           if (dx < width / 5) {
-                            _pageController.previousPage(duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+                            _pageController.previousPage(
+                                duration: const Duration(milliseconds: 200),
+                                curve: Curves.easeIn);
                           } else if (dx > width / 5 * 4) {
-                            _pageController.nextPage(duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+                            _pageController.nextPage(
+                                duration: const Duration(milliseconds: 200),
+                                curve: Curves.easeIn);
                           } else {
                             showOption.value = !(showOption.value);
                             showSettings.value = false;
@@ -739,12 +753,12 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                     child: Container(
                       height: height,
                       width: width,
-                      margin: EdgeInsets.fromLTRB(0, settings.pageTopPadding, 0, settings.showBottom ? settings.pageBottomPadding : 0),
+                      margin: EdgeInsets.fromLTRB(0, settings.pageTopPadding, 0,
+                          settings.showBottom ? settings.pageBottomPadding : 0),
                       child: PageView.builder(
                         controller: _pageController,
-                        scrollDirection: settings.isVer
-                            ? Axis.vertical
-                            : Axis.horizontal,
+                        scrollDirection:
+                            settings.isVer ? Axis.vertical : Axis.horizontal,
                         pageSnapping: settings.isVer ? false : true,
                         itemCount: widgetList.length,
                         physics: const ClampingScrollPhysics(),
@@ -761,7 +775,8 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                           }
 
                           var beforePage = _currentPage.value;
-                          _currentPage.value = _pageController.page!.round() + 1;
+                          _currentPage.value =
+                              _pageController.page!.round() + 1;
 
                           if (beforePage > _currentPage.value) {
                             if (beforePage - startHasContentPage < 4) {
@@ -785,7 +800,7 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                             _throttleTimer?.cancel();
                             book.page = nowChapterPage;
                             book.percent = ((currentSeqNo.value + 1) /
-                                chapterList.length) *
+                                    chapterList.length) *
                                 100;
                             book.chapterTitleExp = chapterTitleExp;
                             book.currentChapter = currentSeqNo.value;
@@ -794,16 +809,15 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
 
                           _throttleTimer = Timer(
                               const Duration(milliseconds: 100), () async {
-
                             if (page < chapterPageNumList[0]) {
                               _nowChapter.value = '开始';
                             } else {
                               var chapterPage =
-                              chapterPageNumList[getChapterTitle(page)];
+                                  chapterPageNumList[getChapterTitle(page)];
                               nowChapterPage = page - chapterPage;
 
                               var chapter =
-                              chapterPageNumTitleMap[chapterPage]!;
+                                  chapterPageNumTitleMap[chapterPage]!;
                               currentSeqNo.value = chapter.seqNo;
                               var title = chapter.title;
                               if (_nowChapter.value != title) {
@@ -839,54 +853,62 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                           })
                     ],
                   )),
-              settings.showBottom ? Positioned(
-                  left: 0,
-                  bottom: 0,
-                  child: Container(
-                    height: 30,
-                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                    color: Color(settings.backgroundColor),
-                    width: width,
-                    child: Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          ValueListenableBuilder(
-                              valueListenable: _now,
-                              builder: (context, value, child) {
-                                return Text(
-                                  value,
-                                  style: TextStyle(
-                                    fontFamily: settings.fontFamily,
-                                  ),
-                                );
-                              }),
-                          ValueListenableBuilder(
-                              valueListenable: _currentPage,
-                              builder: (context, value, child) {
-                                return Text(
-                                  '${(((currentSeqNo.value + 1) / chapterList.length) * 100).toStringAsFixed(2)}%',
-                                  style: TextStyle(
-                                    fontFamily: settings.fontFamily,
-                                  ),
-                                );
-                              })
-                        ],
-                      ),
-                    ),
-                  )) : const SizedBox.shrink(),
-              ValueListenableBuilder(valueListenable: showMask, builder: (context, value, child) {
-                return value ? Positioned.fill(
-                  child: ModalBarrier(
-                      color: Colors.black54, dismissible: true, onDismiss: () {
-                    showChapter.value = false;
-                    showFont.value = false;
-                    showBrightness.value = false;
-                    showSettings.value = false;
-                    showMask.value = false;
+              settings.showBottom
+                  ? Positioned(
+                      left: 0,
+                      bottom: 0,
+                      child: Container(
+                        height: 30,
+                        padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                        color: Color(settings.backgroundColor),
+                        width: width,
+                        child: Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              ValueListenableBuilder(
+                                  valueListenable: _now,
+                                  builder: (context, value, child) {
+                                    return Text(
+                                      value,
+                                      style: TextStyle(
+                                        fontFamily: settings.fontFamily,
+                                      ),
+                                    );
+                                  }),
+                              ValueListenableBuilder(
+                                  valueListenable: _currentPage,
+                                  builder: (context, value, child) {
+                                    return Text(
+                                      '${(((currentSeqNo.value + 1) / chapterList.length) * 100).toStringAsFixed(2)}%',
+                                      style: TextStyle(
+                                        fontFamily: settings.fontFamily,
+                                      ),
+                                    );
+                                  })
+                            ],
+                          ),
+                        ),
+                      ))
+                  : const SizedBox.shrink(),
+              ValueListenableBuilder(
+                  valueListenable: showMask,
+                  builder: (context, value, child) {
+                    return value
+                        ? Positioned.fill(
+                            child: ModalBarrier(
+                                color: Colors.black54,
+                                dismissible: true,
+                                onDismiss: () {
+                                  showChapter.value = false;
+                                  showFont.value = false;
+                                  showBrightness.value = false;
+                                  showSettings.value = false;
+                                  showMask.value = false;
+                                }),
+                          )
+                        : const SizedBox.shrink();
                   }),
-                ) : const SizedBox.shrink();
-              }),
               ValueListenableBuilder(
                   valueListenable: showOption,
                   builder: (context, value, child) {
@@ -1027,7 +1049,10 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                                             showFont.value = false;
                                             showBrightness.value = false;
 
-                                            if (showChapter.value || showSettings.value || showFont.value || showBrightness.value) {
+                                            if (showChapter.value ||
+                                                showSettings.value ||
+                                                showFont.value ||
+                                                showBrightness.value) {
                                               showMask.value = true;
                                             } else {
                                               showMask.value = false;
@@ -1058,7 +1083,10 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                                             showSettings.value = false;
                                             showBrightness.value = false;
 
-                                            if (showChapter.value || showSettings.value || showFont.value || showBrightness.value) {
+                                            if (showChapter.value ||
+                                                showSettings.value ||
+                                                showFont.value ||
+                                                showBrightness.value) {
                                               showMask.value = true;
                                             } else {
                                               showMask.value = false;
@@ -1087,7 +1115,10 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                                                 !(showBrightness.value);
                                             showFont.value = false;
 
-                                            if (showChapter.value || showSettings.value || showFont.value || showBrightness.value) {
+                                            if (showChapter.value ||
+                                                showSettings.value ||
+                                                showFont.value ||
+                                                showBrightness.value) {
                                               showMask.value = true;
                                             } else {
                                               showMask.value = false;
@@ -1134,7 +1165,10 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                                             showFont.value = false;
                                             showBrightness.value = false;
 
-                                            if (showChapter.value || showSettings.value || showFont.value || showBrightness.value) {
+                                            if (showChapter.value ||
+                                                showSettings.value ||
+                                                showFont.value ||
+                                                showBrightness.value) {
                                               showMask.value = true;
                                             } else {
                                               showMask.value = false;
@@ -1243,7 +1277,9 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                   valueListenable: showBrightness,
                   builder: (context, value, child) {
                     return value
-                        ? BrightnessSetting(settings: settings,)
+                        ? BrightnessSetting(
+                            settings: settings,
+                          )
                         : const SizedBox.shrink();
                   }),
             ],
@@ -1255,14 +1291,18 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
   void dispose() {
     _timeTimer?.cancel();
     book.page = nowChapterPage;
-    book.percent = ((currentSeqNo.value + 1) / chapterList.length) * 100;
+    book.percent =
+        (((currentSeqNo.value + 1) / chapterList.length) * 100).isInfinite
+            ? 0
+            : ((currentSeqNo.value + 1) / chapterList.length) * 100;
     book.chapterTitleExp = chapterTitleExp;
     book.currentChapter = currentSeqNo.value;
     if (book.id != '-1') {
       DatabaseHelper.db.updateById(book);
     }
     SharedPreferences.getInstance().then((value) {
-      value.setString(Constant.readConfigKey, const JsonEncoder().convert(settings.toMap()));
+      value.setString(Constant.readConfigKey,
+          const JsonEncoder().convert(settings.toMap()));
     });
     if (settingController.isOpenVolumeFlip.value) {
       volumeUtils.removeListener(needRestore: true);
