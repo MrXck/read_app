@@ -246,6 +246,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
               book.cover = "";
               book.md5 = "";
               book.currentChapter = 0;
+              book.isSecret = 0;
               await DatabaseHelper.db.insert(book);
               var value = await DatabaseHelper.db.getBookByParentId(parentId);
               final dir = await getApplicationDocumentsDirectory();

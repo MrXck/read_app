@@ -103,6 +103,7 @@ class DatabaseHelper {
           ' page INTEGER,'
           ' percent INTEGER,'
           ' book_id INTEGER,'
+          ' is_secret INTEGER,'
           ' create_time INTEGER);');
 
       await db.execute('CREATE TABLE IF NOT EXISTS sync_log ('
@@ -118,31 +119,38 @@ class DatabaseHelper {
           ' create_time INTEGER);');
     });
 
-    var columns = await getTableColumns('book', db);
-    var flag = true;
-    for (var column in columns) {
-      if (column['name'] == 'md5') {
-        flag = false;
-      }
-    }
+    var flag = await isExistTableColumn('book', 'md5', db);
 
-    if (flag) {
+    if (!flag) {
       await db.execute('ALTER TABLE book ADD COLUMN md5 TEXT;');
     }
 
-    flag = true;
-    for (var column in columns) {
-      if (column['name'] == 'is_secret') {
-        flag = false;
-      }
-    }
+    flag = await isExistTableColumn('book', 'is_secret', db);
 
-    if (flag) {
+    if (!flag) {
       await db.execute('ALTER TABLE book ADD COLUMN is_secret INTEGER;');
     }
 
+    flag = await isExistTableColumn('operation_log', 'is_secret', db);
+
+    if (!flag) {
+      await db.execute('ALTER TABLE operation_log ADD COLUMN is_secret INTEGER;');
+    }
+
     updateBookMd5(db);
+    updateBookIsSecret(db);
     return db;
+  }
+
+  Future<bool> isExistTableColumn(String table, String column, Database db) async {
+    var columns = await getTableColumns(table, db);
+    var flag = false;
+    for (var column in columns) {
+      if (column['name'] == column) {
+        flag = true;
+      }
+    }
+    return flag;
   }
 
   Future<List<Map<String, Object?>>> getTableColumns(
@@ -161,6 +169,18 @@ class DatabaseHelper {
     for (Book book in books) {
       var path = join(dir.path, book.path);
       book.md5 = HASH.md5Byte(await File(path).readAsBytes());
+      updateById(book);
+    }
+  }
+
+  Future<void> updateBookIsSecret(Database db) async {
+    var query = await db.rawQuery(
+        'select * from book where is_secret is NULL');
+
+    List<Book> books =
+    query.isNotEmpty ? query.map((t) => Book.fromMap(t)).toList() : [];
+    for (Book book in books) {
+      book.isSecret = 0;
       updateById(book);
     }
   }

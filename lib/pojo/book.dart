@@ -13,6 +13,7 @@ class Book implements HasId {
   late int page;
   late int type;
   late int currentChapter;
+  late int isSecret;
   late String parentId;
   late double percent;
   late int createTime;
@@ -31,6 +32,7 @@ class Book implements HasId {
       'cover': cover,
       'percent': percent,
       'parent_id': parentId,
+      'is_secret': isSecret,
       'page': page,
       'md5': md5,
       'current_chapter': currentChapter,
@@ -52,6 +54,7 @@ class Book implements HasId {
     book.page = int.parse(t['page']?.toString() ?? '1');
     book.type = int.parse(t['type']?.toString() ?? '1');
     book.currentChapter = int.parse(t['current_chapter']?.toString() ?? '0');
+    book.isSecret = int.parse(t['is_secret']?.toString() ?? '0');
     book.percent = double.parse(t['percent']?.toString() ?? '0');
     book.chapterTitleExp = t['chapter_title_exp']?.toString() ?? Constant.defaultChapterTitleExp;
     book.assetDir = '';

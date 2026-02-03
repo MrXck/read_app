@@ -10,6 +10,7 @@ class OperationLog {
   late int currentChapter;
   late int seqNo;
   late int page;
+  late int isSecret;
   late double percent;
   late String bookId;
   late int createTime;
@@ -26,6 +27,7 @@ class OperationLog {
       'md5': md5,
       'current_chapter': currentChapter,
       'book_id': bookId,
+      'is_secret': isSecret,
       'id': id
     };
   }
@@ -42,6 +44,7 @@ class OperationLog {
       'md5': md5,
       'currentChapter': currentChapter,
       'bookId': bookId,
+      'isSecret': isSecret,
       'id': id
     };
   }
@@ -57,6 +60,7 @@ class OperationLog {
     operationLog.page = int.parse(t['page']?.toString() ?? '1');
     operationLog.type = int.parse(t['type']?.toString() ?? '1');
     operationLog.percent = double.parse(t['percent']?.toString() ?? '0');
+    operationLog.isSecret = int.parse(t['is_secret']?.toString() ?? '0');
     operationLog.currentChapter =
         int.parse(t['current_chapter']?.toString() ?? '0');
     operationLog.chapterTitleExp =
@@ -76,6 +80,7 @@ class OperationLog {
     operationLog.chapterTitleExp = book.chapterTitleExp;
     operationLog.seqNo = book.seqNo;
     operationLog.page = book.page;
+    operationLog.isSecret = book.isSecret;
     return operationLog;
   }
 
@@ -91,6 +96,7 @@ class OperationLog {
     operationLog.chapterTitleExp = chapterTitleExp;
     operationLog.seqNo = 0;
     operationLog.page = 0;
+    operationLog.isSecret = 0;
     return operationLog;
   }
 

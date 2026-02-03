@@ -146,6 +146,7 @@ class SyncUtils {
           oldBook.title = book['title'];
           oldBook.page = book['page'];
           oldBook.chapterTitleExp = book['chapterTitleExp'];
+          oldBook.isSecret = book['isSecret'];
           await DatabaseHelper.db.updateById(oldBook);
         }
       }
@@ -181,6 +182,7 @@ class SyncUtils {
                 'type': book.type,
                 'currentChapter': book.currentChapter,
                 'percent': book.percent,
+                'isSecret': book.isSecret,
               }),
               {});
         } finally {
