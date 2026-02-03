@@ -55,6 +55,7 @@ class DatabaseHelper {
           ' chapter_title_exp TEXT,'
           ' parent_id TEXT,'
           ' md5 TEXT,'
+          ' is_secret INTEGER,'
           ' current_chapter INTEGER,'
           ' create_time INTEGER,'
           ' update_time INTEGER);');
@@ -127,6 +128,17 @@ class DatabaseHelper {
 
     if (flag) {
       await db.execute('ALTER TABLE book ADD COLUMN md5 TEXT;');
+    }
+
+    flag = true;
+    for (var column in columns) {
+      if (column['name'] == 'is_secret') {
+        flag = false;
+      }
+    }
+
+    if (flag) {
+      await db.execute('ALTER TABLE book ADD COLUMN is_secret INTEGER;');
     }
 
     updateBookMd5(db);
