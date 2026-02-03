@@ -142,11 +142,11 @@ class DatabaseHelper {
     return db;
   }
 
-  Future<bool> isExistTableColumn(String table, String column, Database db) async {
-    var columns = await getTableColumns(table, db);
+  Future<bool> isExistTableColumn(String tableName, String columnName, Database db) async {
+    var columns = await getTableColumns(tableName, db);
     var flag = false;
     for (var column in columns) {
-      if (column['name'] == column) {
+      if (column['name'] == columnName) {
         flag = true;
       }
     }
