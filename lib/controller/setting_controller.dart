@@ -8,6 +8,7 @@ class SettingController extends GetxController {
   var isOpenVolumeFlip = false.obs;
   var isOpenSync = false.obs;
   var isSyncing = false.obs;
+  var isSecretMode = false.obs;
 
   init() async {
     var shared = await SharedPreferences.getInstance();

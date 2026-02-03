@@ -37,16 +37,16 @@ class _MyPageState extends State<MyPage> {
                 try {
                   LoadingUtils.showLoading(tip: '导出中');
                   await FileUtils.compressSpecifiedDirectory(
-                      join(dir.path, 'read'),
-                      join(dir.path, 'read.zip'),
-                      [
-                        Constant.bookType,
-                        Constant.directoryType,
-                        Constant.comicType,
-                        Constant.mediaType,
-                        Constant.outSideType,
-                        Constant.pdfType,
-                      ],
+                    join(dir.path, 'read'),
+                    join(dir.path, 'read.zip'),
+                    [
+                      Constant.bookType,
+                      Constant.directoryType,
+                      Constant.comicType,
+                      Constant.mediaType,
+                      Constant.outSideType,
+                      Constant.pdfType,
+                    ],
                   );
                 } catch (e) {
                   Get.snackbar('错误', e.toString());
@@ -61,12 +61,9 @@ class _MyPageState extends State<MyPage> {
                 try {
                   LoadingUtils.showLoading(tip: '导出中');
                   await FileUtils.compressSpecifiedDirectory(
-                      join(dir.path, 'read'),
-                      join(dir.path, 'read_book.zip'),
-                      [
-                        Constant.bookType,
-                        Constant.directoryType
-                      ],
+                    join(dir.path, 'read'),
+                    join(dir.path, 'read_book.zip'),
+                    [Constant.bookType, Constant.directoryType],
                   );
                 } catch (e) {
                   Get.snackbar('错误', e.toString());
@@ -81,12 +78,9 @@ class _MyPageState extends State<MyPage> {
                 try {
                   LoadingUtils.showLoading(tip: '导出中');
                   await FileUtils.compressSpecifiedDirectory(
-                      join(dir.path, 'read'),
-                      join(dir.path, 'read_comic.zip'),
-                      [
-                        Constant.comicType,
-                        Constant.directoryType
-                      ],
+                    join(dir.path, 'read'),
+                    join(dir.path, 'read_comic.zip'),
+                    [Constant.comicType, Constant.directoryType],
                   );
                 } catch (e) {
                   Get.snackbar('错误', e.toString());
@@ -161,6 +155,224 @@ class _MyPageState extends State<MyPage> {
                 child: settingController.isOpenVolumeFlip.value
                     ? const Text('关闭音量翻页')
                     : const Text('开启音量翻页'));
+          }),
+          Obx(() {
+            return TextButton(
+                onPressed: () async {
+                  TextEditingController controller = TextEditingController();
+                  TextEditingController repeatController =
+                      TextEditingController();
+                  ValueNotifier<String> tips = ValueNotifier<String>('');
+                  if (!settingController.isSecretMode.value) {
+                    var value = await SharedPreferences.getInstance();
+                    var secret = value.getString(Constant.secretKey) ?? '';
+                    if (secret.isEmpty) {
+                      await Get.dialog(
+                        AlertDialog(
+                          title: const Text('设置私密密码'),
+                          content: SizedBox(
+                            height: 120,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                TextField(
+                                  controller: controller,
+                                  obscureText: true,
+                                  decoration:
+                                      const InputDecoration(hintText: '请输入密码'),
+                                ),
+                                TextField(
+                                  controller: repeatController,
+                                  obscureText: true,
+                                  decoration: const InputDecoration(
+                                      hintText: '请再次输入密码'),
+                                ),
+                                ValueListenableBuilder(
+                                    valueListenable: tips,
+                                    builder: (BuildContext context, value,
+                                        Widget? child) {
+                                      return Text(
+                                        value,
+                                        style:
+                                            const TextStyle(color: Colors.red),
+                                      );
+                                    })
+                              ],
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () async {
+                                if (controller.text.isEmpty ||
+                                    repeatController.text.isEmpty) {
+                                  tips.value = '请输入密码';
+                                  return;
+                                }
+                                if (controller.text != repeatController.text) {
+                                  tips.value = "两次密码不一致";
+                                  return;
+                                }
+
+                                value.setString(
+                                    Constant.secretKey, controller.text);
+
+                                Get.back(); // 关闭对话框
+                              },
+                              child: const Text('确定'),
+                            ),
+                            TextButton(
+                              onPressed: () => Get.back(), // 关闭对话框
+                              child: const Text('取消'),
+                            ),
+                          ],
+                        ),
+                      );
+                    } else {
+                      await Get.dialog(
+                        AlertDialog(
+                          title: const Text('输入私密密码'),
+                          content: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('请输入密码'),
+                              TextField(
+                                controller: controller,
+                                obscureText: true,
+                                decoration:
+                                    const InputDecoration(hintText: '请输入密码'),
+                              ),
+                              ValueListenableBuilder(
+                                  valueListenable: tips,
+                                  builder: (BuildContext context, value,
+                                      Widget? child) {
+                                    return Text(
+                                      value,
+                                      style: const TextStyle(color: Colors.red),
+                                    );
+                                  })
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () async {
+                                if (controller.text.isEmpty) {
+                                  tips.value = "密码不能为空";
+                                  return;
+                                }
+                                if (controller.text != secret) {
+                                  tips.value = "密码错误";
+                                  return;
+                                }
+                                settingController.isSecretMode.value = true;
+                                Get.back(); // 关闭对话框
+                              },
+                              child: const Text('确定'),
+                            ),
+                            TextButton(
+                              onPressed: () => Get.back(), // 关闭对话框
+                              child: const Text('取消'),
+                            ),
+                          ],
+                        ),
+                      );
+                      tips.dispose();
+                      controller.dispose();
+                      repeatController.dispose();
+                    }
+                  } else {
+                    settingController.isSecretMode.value =
+                        !settingController.isSecretMode.value;
+                  }
+                },
+                child: settingController.isSecretMode.value
+                    ? const Text('退出私密模式')
+                    : const Text('进入私密模式'));
+          }),
+          Obx(() {
+            if (!settingController.isSecretMode.value) {
+              return const SizedBox.shrink();
+            }
+            return TextButton(
+                onPressed: () async {
+                  TextEditingController controller = TextEditingController();
+                  TextEditingController repeatController =
+                      TextEditingController();
+                  TextEditingController newController = TextEditingController();
+                  ValueNotifier<String> tips = ValueNotifier<String>('');
+                  var value = await SharedPreferences.getInstance();
+                  var secret = value.getString(Constant.secretKey) ?? '';
+                  await Get.dialog(
+                    AlertDialog(
+                      title: const Text('修改私密密码'),
+                      content: SizedBox(
+                        height: 164,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            TextField(
+                              controller: controller,
+                              obscureText: true,
+                              decoration:
+                              const InputDecoration(hintText: '请输入当前密码'),
+                            ),
+                            TextField(
+                              controller: newController,
+                              obscureText: true,
+                              decoration:
+                              const InputDecoration(hintText: '请输入新密码'),
+                            ),
+                            TextField(
+                              controller: repeatController,
+                              obscureText: true,
+                              decoration:
+                              const InputDecoration(hintText: '请再次输入新密码'),
+                            ),
+                            ValueListenableBuilder(
+                                valueListenable: tips,
+                                builder: (BuildContext context, value,
+                                    Widget? child) {
+                                  return Text(
+                                    value,
+                                    style: const TextStyle(color: Colors.red),
+                                  );
+                                })
+                          ],
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () async {
+                            if (controller.text.isEmpty || newController.text.isEmpty || repeatController.text.isEmpty) {
+                              tips.value = "密码不能为空";
+                              return;
+                            }
+                            if (controller.text != secret) {
+                              tips.value = "当前密码错误";
+                              return;
+                            }
+                            if (newController.text != repeatController.text) {
+                              tips.value = "新密码两次输入不一致";
+                              return;
+                            }
+                            value.setString(
+                                Constant.secretKey, newController.text);
+                            Get.back(); // 关闭对话框
+                          },
+                          child: const Text('确定'),
+                        ),
+                        TextButton(
+                          onPressed: () => Get.back(), // 关闭对话框
+                          child: const Text('取消'),
+                        ),
+                      ],
+                    ),
+                  );
+                  tips.dispose();
+                  controller.dispose();
+                  newController.dispose();
+                  repeatController.dispose();
+                },
+                child: const Text('修改私密密码'));
           }),
           TextButton(
               onPressed: () async {

@@ -52,12 +52,12 @@ class _BookShelfBookState extends State<BookShelfBook>
         Stack(
           children: [
             Container(
-              padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
+              padding: const EdgeInsets.fromLTRB(2, 2, 2, 2),
               width: double.infinity,
               height: widget.itemHeight,
               decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.black45, width: 1),
+                  color: widget.book.isSecret == 1 ? const Color(0xCBB3B3FF) : Colors.white,
+                  border: Border.all(color: Colors.grey, width: 1),
                   borderRadius: BorderRadius.circular(8)),
               child: GestureDetector(
                 onTap: () async {

@@ -797,6 +797,82 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                                   );
                                 }
                               }),
+                          ValueListenableBuilder(
+                              valueListenable: count,
+                              builder: (context, value, child) {
+                                if (value == 0) {
+                                  return const Text(
+                                    '设为私密',
+                                    style: TextStyle(color: Color(0xB2C4C4C4)),
+                                  );
+                                } else {
+                                  return InkWell(
+                                    onTap: () async {
+                                      var bookList = await DatabaseHelper.db.getBooksByIds(checkedList);
+                                      for (var book in bookList) {
+                                        book.isSecret = 1;
+                                        await DatabaseHelper.db.updateById(book);
+                                      }
+                                      var value = await DatabaseHelper.db.getBookByParentId(parentId);
+                                      final dir = await getApplicationDocumentsDirectory();
+                                      for (var i = 0; i < value.length; i++) {
+                                        var book = value[i];
+                                        book.assetDir = dir.path;
+                                      }
+                                      count.value = 0;
+                                      setState(() {
+                                        checkedList = [];
+                                        books.clear();
+                                      });
+
+                                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                                        setState(() {
+                                          books.addAll(value);
+                                        });
+                                      });
+                                    },
+                                    child: const Text('设为私密'),
+                                  );
+                                }
+                              }),
+                          ValueListenableBuilder(
+                              valueListenable: count,
+                              builder: (context, value, child) {
+                                if (value == 0) {
+                                  return const Text(
+                                    '设为公开',
+                                    style: TextStyle(color: Color(0xB2C4C4C4)),
+                                  );
+                                } else {
+                                  return InkWell(
+                                    onTap: () async {
+                                      var bookList = await DatabaseHelper.db.getBooksByIds(checkedList);
+                                      for (var book in bookList) {
+                                        book.isSecret = 0;
+                                        await DatabaseHelper.db.updateById(book);
+                                      }
+                                      var value = await DatabaseHelper.db.getBookByParentId(parentId);
+                                      final dir = await getApplicationDocumentsDirectory();
+                                      for (var i = 0; i < value.length; i++) {
+                                        var book = value[i];
+                                        book.assetDir = dir.path;
+                                      }
+                                      count.value = 0;
+                                      setState(() {
+                                        checkedList = [];
+                                        books.clear();
+                                      });
+
+                                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                                        setState(() {
+                                          books.addAll(value);
+                                        });
+                                      });
+                                    },
+                                    child: const Text('设为公开'),
+                                  );
+                                }
+                              }),
                         ],
                       ),
                     ),

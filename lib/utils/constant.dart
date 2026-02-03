@@ -32,7 +32,6 @@ class Constant {
   static const int operationDeleteType = 3;
   static const int operationAddRegexpType = 4;
   static const int operationDeleteRegexpType = 5;
-  static const int operationUpdateIsSecretType = 6;
 
   static const String defaultChapterTitleExp = r'^\s*?第.*?章';
 
@@ -59,6 +58,7 @@ class Constant {
   static const String appConfigKey = 'app_config';
   static const String syncConfigKey = 'sync';
   static const String tokenKey = 'token';
+  static const String secretKey = 'secret';
 
   static List<String> fontFamilyList = [
     'pingfang',

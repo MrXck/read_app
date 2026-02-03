@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:read_app/controller/setting_controller.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/pojo/chapter.dart';
 import 'package:read_app/pojo/operation_log.dart';
@@ -22,6 +24,8 @@ class DatabaseHelper {
   static final DatabaseHelper db = DatabaseHelper._();
 
   static Database? _database;
+
+  final SettingController settingController = Get.find();
 
   Future<Database?> get database async {
     _database ??= await initDb();
@@ -142,6 +146,18 @@ class DatabaseHelper {
     return db;
   }
 
+  String generateSecretSql(bool isQuestion) {
+    if (settingController.isSecretMode.value) {
+      return '';
+    }
+
+    if (isQuestion) {
+      return 'and is_secret = ?';
+    }
+
+    return 'and is_secret = 0';
+  }
+
   Future<bool> isExistTableColumn(String tableName, String columnName, Database db) async {
     var columns = await getTableColumns(tableName, db);
     var flag = false;
@@ -189,7 +205,7 @@ class DatabaseHelper {
     final db = await database;
     try {
       var result = await db?.rawInsert(
-          'INSERT OR REPLACE INTO book (title, path, seq_no, chapter_title_exp, page, percent, type, cover, parent_id, current_chapter, create_time, update_time, md5) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          'INSERT OR REPLACE INTO book (title, path, seq_no, chapter_title_exp, page, percent, type, cover, parent_id, current_chapter, create_time, update_time, md5, is_secret) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
           [
             book.title,
             book.path,
@@ -203,7 +219,8 @@ class DatabaseHelper {
             book.currentChapter,
             book.createTime,
             book.updateTime,
-            book.md5
+            book.md5,
+            book.isSecret
           ]);
       return result;
     } on DatabaseException {
@@ -213,8 +230,13 @@ class DatabaseHelper {
 
   Future<List<Book>> getAllBook() async {
     var db = await database;
-    var query =
-        await db?.query('book', orderBy: 'update_time Desc, seq_no asc');
+    List<Map<String, Object?>>? query;
+
+    if (settingController.isSecretMode.value) {
+      query = await db?.query('book', orderBy: 'update_time Desc, seq_no asc');
+    } else {
+      query = await db?.query('book', where: 'is_secret = 0', orderBy: 'update_time Desc, seq_no asc');
+    }
     List<Book> books =
         query!.isNotEmpty ? query.map((t) => Book.fromMap(t)).toList() : [];
     return books;
@@ -243,7 +265,7 @@ class DatabaseHelper {
   Future<List<Book>> getBookByParentId(String parentId) async {
     var db = await database;
     var query = await db?.query('book',
-        where: 'parent_id = ?',
+        where: 'parent_id = ? ${generateSecretSql(false)}',
         whereArgs: [parentId],
         orderBy: 'update_time Desc, seq_no asc');
     List<Book> books =
@@ -253,7 +275,7 @@ class DatabaseHelper {
 
   Future<Book?> getByMd5(String md5) async {
     var db = await database;
-    var query = await db?.query('book', where: 'md5 = ?', whereArgs: [md5]);
+    var query = await db?.query('book', where: 'md5 = ? ${generateSecretSql(false)}', whereArgs: [md5]);
     Book? book = query!.isNotEmpty ? Book.fromMap(query[0]) : null;
     return book;
   }
@@ -261,7 +283,7 @@ class DatabaseHelper {
   Future<List<Book>> getBookByNotInMd5AndType(List<String> md5s, List<int> types) async {
     var db = await database;
     var query = await db?.query('book',
-        where: 'md5 not in (${List.filled(md5s.length, '?').join(', ')}) and type in (${List.filled(types.length, '?').join(', ')})',
+        where: 'md5 not in (${List.filled(md5s.length, '?').join(', ')}) and type in (${List.filled(types.length, '?').join(', ')}) ${generateSecretSql(false)}',
         whereArgs: [...md5s, ...types],
         orderBy: 'update_time Desc, seq_no asc');
     List<Book> books =
@@ -272,7 +294,7 @@ class DatabaseHelper {
   Future<List<Book>> getByTitle(String title) async {
     var db = await database;
     var query = await db?.query('book',
-        where: 'title like ? and type != ?',
+        where: 'title like ? and type != ? ${generateSecretSql(false)}',
         whereArgs: ['%$title%', Constant.directoryType],
         orderBy: 'update_time Desc');
     List<Book> books =
@@ -290,7 +312,7 @@ class DatabaseHelper {
   Future<List<Book>> getDirectoryByTitle(String title) async {
     var db = await database;
     var query = await db?.query('book',
-        where: 'title = ? and type = ?',
+        where: 'title = ? and type = ? ${generateSecretSql(false)}',
         whereArgs: [title, Constant.directoryType],
         orderBy: 'update_time Desc');
     List<Book> books =
@@ -323,7 +345,7 @@ class DatabaseHelper {
   Future<List<Book>> getDirectoryByPatentId(parentId) async {
     var db = await database;
     var query = await db?.query('book',
-        where: 'parent_id = ? and type = ?',
+        where: 'parent_id = ? and type = ? ${generateSecretSql(false)}',
         whereArgs: [parentId, Constant.directoryType],
         orderBy: 'update_time Desc');
     List<Book> books =
@@ -334,7 +356,7 @@ class DatabaseHelper {
   Future<List<Book>> getBooksByPath(List<String> paths) async {
     var db = await database;
     var query = await db
-        ?.rawQuery('select * from book where ${generateLike('path', paths)}');
+        ?.rawQuery('select * from book where ${generateLike('path', paths)} ${generateSecretSql(false)}');
     List<Book> books =
         query!.isNotEmpty ? query.map((t) => Book.fromMap(t)).toList() : [];
     return books;
@@ -599,7 +621,7 @@ class DatabaseHelper {
     final db = await database;
     try {
       var result = await db?.rawInsert(
-          'INSERT OR REPLACE INTO operation_log (title, seq_no, chapter_title_exp, page, percent, type, book_id, md5, current_chapter, create_time) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          'INSERT OR REPLACE INTO operation_log (title, seq_no, chapter_title_exp, page, percent, type, book_id, md5, current_chapter, create_time, is_secret) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
           [
             operationLog.title,
             operationLog.seqNo,
@@ -611,6 +633,7 @@ class DatabaseHelper {
             operationLog.md5,
             operationLog.currentChapter,
             operationLog.createTime,
+            operationLog.isSecret,
           ]);
       return result;
     } on DatabaseException {
