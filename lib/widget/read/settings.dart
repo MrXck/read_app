@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:get/get.dart';
+import 'package:read_app/pojo/operation_log.dart';
+import 'package:read_app/pojo/regexp_history.dart';
 import 'package:read_app/pojo/settings.dart';
+import 'package:read_app/utils/constant.dart';
+import 'package:read_app/utils/db.dart';
 
 typedef UpdateFunc = void Function(Settings setting);
 typedef UpdateExpFunc = void Function(String text);
@@ -758,32 +762,185 @@ class _ReadSettingsState extends State<ReadSettings> {
                         '章节正则：',
                       ),
                       SizedBox(
-                        width: width - 180,
-                        child: TextField(
-                          controller: widget.chapterTitleExpController,
-                          decoration: const InputDecoration(
-                            hintText: "输入正则匹配章节名",
-                            hintStyle: TextStyle(color: Colors.black26),
-                            contentPadding: EdgeInsets.all(0),
-                            border: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            errorBorder: InputBorder.none,
-                            disabledBorder: InputBorder.none,
-                          ),
-                        ),
+                        width: width - 100,
+                        child: TextButton(
+                            onPressed: () async {
+                              List<RegexpHistory> regexpHistories =
+                                  await DatabaseHelper.db.getAllRegexpHistory();
+                              var regexpOptions =
+                                  regexpHistories.map((toElement) {
+                                return toElement.regexp;
+                              }).toList();
+                              ScrollController controller = ScrollController();
+                              await Get.defaultDialog(
+                                  title: '章节正则',
+                                  content: Autocomplete<String>(
+                                    optionsBuilder:
+                                        (TextEditingValue textEditingValue) {
+                                      if (textEditingValue.text.isEmpty) {
+                                        return regexpOptions;
+                                      }
+
+                                      // 过滤匹配的选项
+                                      final filtered =
+                                          regexpOptions.where((option) {
+                                        return option.toLowerCase().contains(
+                                            textEditingValue.text
+                                                .toLowerCase());
+                                      }).toList();
+
+                                      // 如果用户输入的内容不在选项中，添加到列表末尾
+                                      final userInput = textEditingValue.text;
+                                      if (!filtered.contains(userInput) &&
+                                          !regexpOptions.contains(userInput)) {
+                                        filtered.add(userInput);
+                                      }
+                                      return filtered;
+                                    },
+                                    fieldViewBuilder: (
+                                      BuildContext context,
+                                      TextEditingController fieldController,
+                                      FocusNode fieldFocusNode,
+                                      VoidCallback onFieldSubmitted,
+                                    ) {
+                                      fieldController.text =
+                                          widget.chapterTitleExpController.text;
+                                      return TextFormField(
+                                        controller: fieldController,
+                                        focusNode: fieldFocusNode,
+                                        decoration: const InputDecoration(
+                                          labelText: '搜索或输入',
+                                          hintText: '输入章节名正则',
+                                          border: OutlineInputBorder(),
+                                          suffixIcon:
+                                              Icon(Icons.arrow_drop_down),
+                                        ),
+                                      );
+                                    },
+                                    optionsViewBuilder:
+                                        (context, onSelected, options) {
+                                      return Align(
+                                        alignment: Alignment.topLeft,
+                                        child: Material(
+                                          elevation: 4.0,
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          child: SizedBox(
+                                            height: MediaQuery.of(context)
+                                                    .size
+                                                    .height *
+                                                0.3, // 固定高度
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                0.8, // 设置宽度
+                                            child: Scrollbar(
+                                              thumbVisibility: true, // 始终显示滚动条
+                                              controller: controller,
+                                              child: ListView.builder(
+                                                padding: EdgeInsets.zero,
+                                                itemCount: options.length,
+                                                controller: controller,
+                                                itemBuilder: (context, index) {
+                                                  final option =
+                                                      options.elementAt(index);
+                                                  return InkWell(
+                                                    onTap: () =>
+                                                        onSelected(option),
+                                                    child: Container(
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          vertical: 12,
+                                                          horizontal: 16),
+                                                      decoration: BoxDecoration(
+                                                        border: index <
+                                                                options.length -
+                                                                    1
+                                                            ? Border(
+                                                                bottom: BorderSide(
+                                                                    color: Colors
+                                                                        .grey
+                                                                        .shade200),
+                                                              )
+                                                            : null,
+                                                      ),
+                                                      child: ListTile(
+                                                        leading: Text(
+                                                            index.toString()),
+                                                        title: Text(option),
+                                                        trailing: IconButton(
+                                                            onPressed:
+                                                                () async {
+                                                              await DatabaseHelper
+                                                                  .db
+                                                                  .deleteRegexpHistoryByRegexp(
+                                                                      option);
+                                                              regexpOptions
+                                                                  .remove(
+                                                                      option);
+                                                              // OperationLog
+                                                              //     operationLog =
+                                                              //     OperationLog.setRegexpOperationLog(
+                                                              //         Constant
+                                                              //             .operationDeleteRegexpType,
+                                                              //         widget
+                                                              //             .chapterTitleExpController
+                                                              //             .text);
+                                                              // DatabaseHelper.db
+                                                              //     .insertOperationLog(
+                                                              //         operationLog);
+                                                            },
+                                                            icon: const Icon(Icons
+                                                                .delete_forever)),
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    onSelected: (String selected) {
+                                      widget.chapterTitleExpController.text =
+                                          selected;
+                                    },
+                                  ),
+                                  onConfirm: () async {
+                                    widget.updateExpFunc(
+                                        widget.chapterTitleExpController.text);
+
+                                    var regexpHistories = await DatabaseHelper
+                                        .db
+                                        .getRegexpHistoryByRegexp(widget
+                                            .chapterTitleExpController.text);
+                                    if (regexpHistories.isEmpty) {
+                                      RegexpHistory regexpHistory =
+                                          RegexpHistory();
+                                      regexpHistory.regexp =
+                                          widget.chapterTitleExpController.text;
+                                      regexpHistory.createTime =
+                                          DateTime.now().millisecondsSinceEpoch;
+                                      await DatabaseHelper.db
+                                          .insertRegexpHistory(regexpHistory);
+                                      // OperationLog operationLog =
+                                      //     OperationLog.setRegexpOperationLog(
+                                      //         Constant.operationAddRegexpType,
+                                      //         widget.chapterTitleExpController
+                                      //             .text);
+                                      // DatabaseHelper.db
+                                      //     .insertOperationLog(operationLog);
+                                    }
+
+                                    Get.back();
+                                  },
+                                  textConfirm: '确定',
+                                  textCancel: '取消');
+                              controller.dispose();
+                            },
+                            child: Text(widget.chapterTitleExpController.text)),
                       ),
-                      TextButton(
-                          onPressed: () async {
-                            widget.updateExpFunc(
-                                widget.chapterTitleExpController.text);
-                          },
-                          child: Text(
-                            '确定',
-                            style: TextStyle(
-                              fontFamily: widget.settings.fontFamily,
-                            ),
-                          ))
                     ],
                   ),
                 ),

@@ -30,6 +30,8 @@ class Constant {
   static const int operationAddType = 1;
   static const int operationUpdateType = 2;
   static const int operationDeleteType = 3;
+  static const int operationAddRegexpType = 4;
+  static const int operationDeleteRegexpType = 5;
 
   static const String defaultChapterTitleExp = r'^\s*?第.*?章';
 

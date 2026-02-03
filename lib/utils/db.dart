@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/pojo/chapter.dart';
 import 'package:read_app/pojo/operation_log.dart';
+import 'package:read_app/pojo/regexp_history.dart';
 import 'package:read_app/pojo/sync_log.dart';
 import 'package:read_app/spider/spider.dart';
 import 'package:read_app/utils/book_utils.dart';
@@ -105,6 +106,14 @@ class DatabaseHelper {
 
       await db.execute('CREATE TABLE IF NOT EXISTS sync_log ('
           ' id INTEGER PRIMARY KEY AUTOINCREMENT,'
+          ' create_time INTEGER);');
+
+
+      await db.execute('CREATE TABLE IF NOT EXISTS regexp_history ('
+          ' id INTEGER PRIMARY KEY AUTOINCREMENT,'
+          ' regexp TEXT,'
+          ' source TEXT,'
+          ' example TEXT,'
           ' create_time INTEGER);');
     });
 
@@ -651,5 +660,42 @@ class DatabaseHelper {
   Future<void> deleteSyncLogByNotEqualId(String id) async {
     var db = await database;
     await db?.rawDelete('DELETE FROM sync_log WHERE id != ?', [id]);
+  }
+
+  Future<List<RegexpHistory>> getAllRegexpHistory() async {
+    var db = await database;
+    var query = await db?.query('regexp_history');
+    List<RegexpHistory> regexpHistories = query!.isNotEmpty
+        ? query.map((t) => RegexpHistory.fromMap(t)).toList()
+        : [];
+    return regexpHistories;
+  }
+
+  Future<List<RegexpHistory>> getRegexpHistoryByRegexp(String regexp) async {
+    var db = await database;
+    var query = await db?.query('regexp_history', where: 'regexp = ?', whereArgs: [regexp]);
+    List<RegexpHistory> regexpHistories = query!.isNotEmpty
+        ? query.map((t) => RegexpHistory.fromMap(t)).toList()
+        : [];
+    return regexpHistories;
+  }
+
+  Future<int?> insertRegexpHistory(RegexpHistory regexpHistory) async {
+    final db = await database;
+    try {
+      var result = await db?.rawInsert(
+          'INSERT OR REPLACE INTO regexp_history (regexp, create_time) values(?, ?)', [
+            regexpHistory.regexp,
+            regexpHistory.createTime,
+      ]);
+      return result;
+    } on DatabaseException {
+      return -1;
+    }
+  }
+
+  Future<void> deleteRegexpHistoryByRegexp(String regexp) async {
+    var db = await database;
+    await db?.rawDelete('DELETE FROM regexp_history WHERE regexp = ?', [regexp]);
   }
 }

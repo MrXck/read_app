@@ -79,6 +79,21 @@ class OperationLog {
     return operationLog;
   }
 
+  static OperationLog setRegexpOperationLog(type, chapterTitleExp) {
+    OperationLog operationLog = OperationLog();
+    operationLog.md5 = '';
+    operationLog.type = type;
+    operationLog.title = '';
+    operationLog.currentChapter = 0;
+    operationLog.bookId = '';
+    operationLog.createTime = DateTime.now().millisecondsSinceEpoch;
+    operationLog.percent = 0;
+    operationLog.chapterTitleExp = chapterTitleExp;
+    operationLog.seqNo = 0;
+    operationLog.page = 0;
+    return operationLog;
+  }
+
   @override
   String toString() {
     return title.toString();
