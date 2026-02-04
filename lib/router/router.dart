@@ -8,6 +8,7 @@ import 'package:read_app/page/register.dart';
 import 'package:read_app/page/search.dart';
 import 'package:read_app/page/search_outside.dart';
 import 'package:read_app/page/settings.dart';
+import 'package:read_app/page/sync.dart';
 import 'package:read_app/page/upload_file.dart';
 import 'package:read_app/page/video.dart';
 import 'package:read_app/tab/tab.dart';
@@ -57,6 +58,10 @@ class AppPage {
     GetPage(
       name: "/settings",
       page: () => const SettingsPage(),
+    ),
+    GetPage(
+      name: "/sync",
+      page: () => const SyncPage(),
     ),
     GetPage(
         name: "/login",

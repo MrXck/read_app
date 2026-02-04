@@ -384,6 +384,11 @@ class _MyPageState extends State<MyPage> {
               child: const Text('退出登录')),
           TextButton(
               onPressed: () {
+                Get.toNamed('/sync');
+              },
+              child: const Text('同步相关')),
+          TextButton(
+              onPressed: () {
                 Get.toNamed('/settings');
               },
               child: const Text('更多设置')),
