@@ -196,7 +196,7 @@ class DatabaseHelper {
     List<Book> books =
     query.isNotEmpty ? query.map((t) => Book.fromMap(t)).toList() : [];
     for (Book book in books) {
-      book.isSecret = 0;
+      book.isSecret = Constant.publicType;
       updateById(book);
     }
   }
@@ -464,6 +464,16 @@ class DatabaseHelper {
     }
 
     await deleteById(id);
+  }
+
+  Future<void> getBooksByDirectoryId(List<Book> books, String id) async {
+    var bookList = await getBookByParentId(id);
+    for (var book in bookList) {
+      books.add(book);
+      if (book.type == Constant.directoryType) {
+        getBooksByDirectoryId(books, book.id);
+      }
+    }
   }
 
   Future<void> mergeDB(String dbPath, ValueNotifier<String> tipText) async {

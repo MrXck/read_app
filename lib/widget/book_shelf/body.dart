@@ -246,7 +246,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
               book.cover = "";
               book.md5 = "";
               book.currentChapter = 0;
-              book.isSecret = 0;
+              book.isSecret = Constant.publicType;
               await DatabaseHelper.db.insert(book);
               var value = await DatabaseHelper.db.getBookByParentId(parentId);
               final dir = await getApplicationDocumentsDirectory();
@@ -808,14 +808,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                                 } else {
                                   return InkWell(
                                     onTap: () async {
-                                      var bookList = await DatabaseHelper.db.getBooksByIds(checkedList);
-                                      for (var book in bookList) {
-                                        book.isSecret = 1;
-                                        await DatabaseHelper.db.updateById(book);
-                                        OperationLog operationLog = OperationLog.setOperationLog(
-                                            book, book.id, Constant.operationUpdateType);
-                                        DatabaseHelper.db.insertOperationLog(operationLog);
-                                      }
+                                      await BookUtils.updateBooksSecret(checkedList, Constant.secretType);
                                       var value = await DatabaseHelper.db.getBookByParentId(parentId);
                                       final dir = await getApplicationDocumentsDirectory();
                                       for (var i = 0; i < value.length; i++) {
@@ -849,14 +842,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                                 } else {
                                   return InkWell(
                                     onTap: () async {
-                                      var bookList = await DatabaseHelper.db.getBooksByIds(checkedList);
-                                      for (var book in bookList) {
-                                        book.isSecret = 0;
-                                        await DatabaseHelper.db.updateById(book);
-                                        OperationLog operationLog = OperationLog.setOperationLog(
-                                            book, book.id, Constant.operationUpdateType);
-                                        DatabaseHelper.db.insertOperationLog(operationLog);
-                                      }
+                                      await BookUtils.updateBooksSecret(checkedList, Constant.publicType);
                                       var value = await DatabaseHelper.db.getBookByParentId(parentId);
                                       final dir = await getApplicationDocumentsDirectory();
                                       for (var i = 0; i < value.length; i++) {

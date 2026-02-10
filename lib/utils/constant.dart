@@ -33,6 +33,9 @@ class Constant {
   static const int operationAddRegexpType = 4;
   static const int operationDeleteRegexpType = 5;
 
+  static const int secretType = 1;
+  static const int publicType = 0;
+
   static const String defaultChapterTitleExp = r'^\s*?第.*?章';
 
   static const int defaultChapterContentMaxLength = 50000;

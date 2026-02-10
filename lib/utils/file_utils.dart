@@ -121,7 +121,7 @@ class FileUtils {
     book.cover = "";
     book.currentChapter = 0;
     book.md5 = "";
-    book.isSecret = 0;
+    book.isSecret = Constant.publicType;
     await DatabaseHelper.db.insert(book);
   }
 
@@ -163,7 +163,7 @@ class FileUtils {
     book.cover = "";
     book.currentChapter = 0;
     book.md5 = HASH.md5Byte(fileBytes);
-    book.isSecret = 0;
+    book.isSecret = Constant.publicType;
 
     var bookId = await DatabaseHelper.db.insert(book);
 
@@ -216,7 +216,7 @@ class FileUtils {
     book.cover = "";
     book.currentChapter = 0;
     book.md5 = HASH.md5Byte(fileBytes);
-    book.isSecret = 0;
+    book.isSecret = Constant.publicType;
     var bookId = await DatabaseHelper.db.insert(book);
 
     OperationLog operationLog = OperationLog.setOperationLog(
@@ -312,7 +312,7 @@ class FileUtils {
     book.path = path.join(relativeDirPath, name);
     book.currentChapter = 0;
     book.md5 = HASH.md5Byte(await file.readAsBytes());
-    book.isSecret = 0;
+    book.isSecret = Constant.publicType;
 
     var bookId = await DatabaseHelper.db.insert(book);
 
@@ -369,7 +369,7 @@ class FileUtils {
     book.path = path.join(relativeDirPath, name);
     book.currentChapter = syncBook['currentChapter'];
     book.md5 = syncBook['md5'];
-    book.isSecret = 0;
+    book.isSecret = Constant.publicType;
 
     var bookId = await DatabaseHelper.db.insert(book);
 
@@ -424,7 +424,7 @@ class FileUtils {
     book.path = path.join(relativeDirPath, name);
     book.currentChapter = 0;
     book.md5 = "";
-    book.isSecret = 0;
+    book.isSecret = Constant.publicType;
     DatabaseHelper.db.insert(book);
   }
 
@@ -515,7 +515,7 @@ class FileUtils {
     book.path = path.join(relativeDirPath, path.basename(newDir.path));
     book.currentChapter = 0;
     book.md5 = "";
-    book.isSecret = 0;
+    book.isSecret = Constant.publicType;
     DatabaseHelper.db.insert(book);
   }
 
@@ -974,7 +974,7 @@ class FileUtils {
     book.path = path.join(relativeDirPath, name);
     book.currentChapter = 0;
     book.md5 = HASH.md5Byte(await file.readAsBytes());
-    book.isSecret = 0;
+    book.isSecret = Constant.publicType;
     var bookId = await DatabaseHelper.db.insert(book);
 
     OperationLog operationLog = OperationLog.setOperationLog(

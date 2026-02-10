@@ -234,4 +234,26 @@ class BookUtils {
       }
     }
   }
+
+  static Future<void> updateBooksSecret(List<String> checkedList, int isSecret) async {
+    var books = await DatabaseHelper.db.getBooksByIds(checkedList);
+    List<Book> bookList = [];
+    for (var i = 0; i < books.length; i++) {
+      var book = books[i];
+      bookList.add(book);
+      if (book.type == Constant.directoryType) {
+        await DatabaseHelper.db.getBooksByDirectoryId(bookList, book.id);
+      }
+    }
+
+    for (var i = 0; i <bookList.length; i++) {
+      var book = bookList[i];
+      book.isSecret = isSecret;
+      await DatabaseHelper.db.updateById(book);
+      if (book.type == Constant.bookType || book.type == Constant.pdfType) {
+        OperationLog operationLog = OperationLog.setOperationLog(book, book.id, Constant.operationUpdateType);
+        await DatabaseHelper.db.insertOperationLog(operationLog);
+      }
+    }
+  }
 }

@@ -56,7 +56,7 @@ class _BookShelfBookState extends State<BookShelfBook>
               width: double.infinity,
               height: widget.itemHeight,
               decoration: BoxDecoration(
-                  color: widget.book.isSecret == 1 ? const Color(0xCBB3B3FF) : Colors.white,
+                  color: widget.book.isSecret == Constant.secretType ? const Color(0xCBB3B3FF) : Colors.white,
                   border: Border.all(color: Colors.grey, width: 1),
                   borderRadius: BorderRadius.circular(8)),
               child: GestureDetector(

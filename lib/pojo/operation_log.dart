@@ -96,7 +96,7 @@ class OperationLog {
     operationLog.chapterTitleExp = chapterTitleExp;
     operationLog.seqNo = 0;
     operationLog.page = 0;
-    operationLog.isSecret = 0;
+    operationLog.isSecret = Constant.publicType;
     return operationLog;
   }
 
