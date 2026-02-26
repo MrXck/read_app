@@ -713,9 +713,14 @@ class DatabaseHelper {
         }
       } else if (book.type == Constant.directoryType) {
       } else if (book.type == Constant.outSideType) {
-      } else {
+      } else if (book.type == Constant.pdfType) {
         var bookPath = join(dataDir.path, book.path);
         if (!(await File(bookPath).exists())) {
+          await deleteById(book.id);
+        }
+      } else {
+        var bookPath = join(dataDir.path, book.path);
+        if (!(await Directory(bookPath).exists())) {
           await deleteById(book.id);
         }
       }
