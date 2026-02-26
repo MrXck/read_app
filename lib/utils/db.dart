@@ -715,7 +715,7 @@ class DatabaseHelper {
       } else if (book.type == Constant.outSideType) {
       } else {
         var bookPath = join(dataDir.path, book.path);
-        if (!(await Directory(bookPath).exists())) {
+        if (!(await File(bookPath).exists())) {
           await deleteById(book.id);
         }
       }

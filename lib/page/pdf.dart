@@ -7,6 +7,7 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:read_app/controller/setting_controller.dart';
 import 'package:read_app/pojo/book.dart';
+import 'package:read_app/pojo/operation_log.dart';
 import 'package:read_app/pojo/settings.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/db.dart';
@@ -26,8 +27,6 @@ class _PdfPageState extends State<PdfPage> {
 
   final PdfViewerController _pdfViewerController = PdfViewerController();
 
-  bool showOption = false;
-
   final VolumeUtils volumeUtils = VolumeUtils();
   final SettingController settingController = Get.find();
   Settings settings = Settings();
@@ -36,6 +35,7 @@ class _PdfPageState extends State<PdfPage> {
   double pageBottomPadding = 30;
   double pageLeftPadding = 10;
   double pageRightPadding = 10;
+  ValueNotifier<bool> showOption = ValueNotifier(false);
 
   @override
   void initState() {
@@ -71,102 +71,138 @@ class _PdfPageState extends State<PdfPage> {
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     return Scaffold(
-      appBar: null,
-      body: SafeArea(
-          child: Stack(
-        children: [
-          SizedBox(
-            width: width,
-            height: height,
-            child: SfPdfViewer.file(
-              File(join(book.assetDir, book.path)),
-              controller: _pdfViewerController,
-              pageLayoutMode: PdfPageLayoutMode.single,
-              scrollDirection: settings.isVer
-                  ? PdfScrollDirection.vertical
-                  : PdfScrollDirection.horizontal,
-              onDocumentLoaded: (PdfDocumentLoadedDetails details) {
-                _pdfViewerController.jumpToPage(book.page);
-              },
-              onPageChanged: (PdfPageChangedDetails details) {
-                book.page = _pdfViewerController.pageNumber;
-                book.percent = _pdfViewerController.pageNumber /
-                    _pdfViewerController.pageCount *
-                    100;
-                DatabaseHelper.db.updateById(book);
-              },
-              onTap: (PdfGestureDetails details) {
-                setState(() {
-                  showOption = !showOption;
-                });
-              },
-            ),
-          ),
-          Visibility(
-            visible: showOption,
-            child: Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                height: 40,
-                decoration: const BoxDecoration(color: Colors.white),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        Get.back();
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(10),
-                        child: const Icon(Icons.arrow_back_ios),
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Visibility(
-            visible: showOption,
-            child: Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                height: 42,
-                color: Colors.white,
-                padding: const EdgeInsets.all(6),
-                child: Column(children: [
-                  Row(
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          setState(() {
-                            settings.isVer = !settings.isVer;
-                          });
-                        },
-                        child: Container(
-                          decoration: const BoxDecoration(
-                              color: Color(0xFFEAEAEA),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
-                          padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                          child: settings.isVer
-                              ? const Text('上下翻页')
-                              : const Text('左右翻页'),
+        appBar: null,
+        body: FutureBuilder(
+            future: init(book),
+            builder: (BuildContext context, AsyncSnapshot snapshot) {
+              switch (snapshot.connectionState) {
+                case ConnectionState.none:
+                  return const Text("未连接");
+                case ConnectionState.waiting:
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                case ConnectionState.active:
+                  return const Text("");
+                case ConnectionState.done:
+                  if (snapshot.hasError) {
+                    return Text(
+                      "请求失败 , 报错信息 : ${snapshot.error}",
+                      style: const TextStyle(color: Colors.red),
+                    );
+                  } else {
+                    return Stack(
+                      children: [
+                        SizedBox(
+                          width: width,
+                          height: height,
+                          child: SfPdfViewer.file(
+                            File(join(book.assetDir, book.path)),
+                            controller: _pdfViewerController,
+                            pageLayoutMode: PdfPageLayoutMode.continuous,
+                            scrollDirection: settings.isVer
+                                ? PdfScrollDirection.vertical
+                                : PdfScrollDirection.horizontal,
+                            onDocumentLoaded:
+                                (PdfDocumentLoadedDetails details) {
+                              _pdfViewerController.jumpToPage(book.page);
+                            },
+                            onPageChanged: (PdfPageChangedDetails details) {
+                              book.page = _pdfViewerController.pageNumber;
+                              book.percent = _pdfViewerController.pageNumber /
+                                  _pdfViewerController.pageCount *
+                                  100;
+                              DatabaseHelper.db.updateById(book);
+                            },
+                            onTap: (PdfGestureDetails details) {
+                              showOption.value = !showOption.value;
+                            },
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ]),
-              ),
-            ),
-          )
-        ],
-      )),
-    );
+
+                        ValueListenableBuilder(
+                            valueListenable: showOption,
+                            builder: (context, value, child) {
+                              if (!value) {
+                                return const SizedBox.shrink();
+                              }
+                              return Positioned(
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                child: Container(
+                                  height: 40,
+                                  decoration:
+                                  const BoxDecoration(color: Colors.white),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      InkWell(
+                                        onTap: () {
+                                          Get.back();
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.all(10),
+                                          child: const Icon(Icons.arrow_back_ios),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }),
+                        ValueListenableBuilder(
+                            valueListenable: showOption,
+                            builder: (context, value, child) {
+                              if (!value) {
+                                return const SizedBox.shrink();
+                              }
+                              return Positioned(
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                child: Container(
+                                  height: 42,
+                                  color: Colors.white,
+                                  padding: const EdgeInsets.all(6),
+                                  child: Column(children: [
+                                    Row(
+                                      children: [
+                                        InkWell(
+                                          onTap: () {
+                                            settings.isVer = !settings.isVer;
+                                            SharedPreferences.getInstance().then((value) {
+                                              value.setString(Constant.readConfigKey,
+                                                  const JsonEncoder().convert(settings.toMap()));
+                                            });
+                                            setState(() {
+
+                                            });
+                                          },
+                                          child: Container(
+                                            decoration: const BoxDecoration(
+                                                color: Color(0xFFEAEAEA),
+                                                borderRadius: BorderRadius.all(
+                                                    Radius.circular(40))),
+                                            padding: const EdgeInsets.fromLTRB(
+                                                10, 5, 10, 5),
+                                            child: settings.isVer
+                                                ? const Text('上下翻页')
+                                                : const Text('左右翻页'),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ]),
+                                ),
+                              );
+                            })
+                      ],
+                    );
+                  }
+              }
+            }));
   }
 
   @override
@@ -180,6 +216,9 @@ class _PdfPageState extends State<PdfPage> {
                 _pdfViewerController.pageCount *
                 100;
     DatabaseHelper.db.updateById(book);
+    OperationLog operationLog = OperationLog.setOperationLog(
+        book, book.id, Constant.operationUpdateType);
+    DatabaseHelper.db.insertOperationLog(operationLog);
     SharedPreferences.getInstance().then((value) {
       value.setString(Constant.readConfigKey,
           const JsonEncoder().convert(settings.toMap()));

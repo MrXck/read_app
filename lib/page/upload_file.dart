@@ -5,6 +5,7 @@ import 'package:mime/mime.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:read_app/controller/setting_controller.dart';
 import 'package:read_app/utils/file_utils.dart';
 
 class HttpServiceLogic {
@@ -198,9 +199,11 @@ class _UploadFilePageState extends State<UploadFilePage> {
   late HttpServiceLogic logic;
   String address = '';
   List<String> addressList = [];
+  final SettingController settingController = Get.find();
 
   @override
   void initState() {
+    settingController.isSyncing.value = true;
     logic = HttpServiceLogic();
     logic.getIpv4AndIpV6Addresses().then((value) async {
       List<String> ips = await logic.startListen();
@@ -216,7 +219,9 @@ class _UploadFilePageState extends State<UploadFilePage> {
   void dispose() {
     try {
       logic.closeService();
-    } finally {}
+    } finally {
+      settingController.isSyncing.value = false;
+    }
     super.dispose();
   }
 

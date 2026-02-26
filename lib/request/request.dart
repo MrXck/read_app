@@ -17,8 +17,8 @@ class Request {
   Request._internal() {
     BaseOptions options = BaseOptions(
         baseUrl: '',
-        connectTimeout: const Duration(seconds: 60),
-        receiveTimeout: const Duration(seconds: 60),
+        connectTimeout: const Duration(seconds: 120),
+        receiveTimeout: const Duration(seconds: 120),
         contentType: 'application/json;Charset=UTF-8',
         responseType: ResponseType.json);
     dio = Dio(options);
