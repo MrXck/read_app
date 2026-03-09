@@ -281,6 +281,11 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
       var pageNum = chapterTitlePageNumMap[_nowChapter.value];
       pageNum ??= startHasContentPage;
 
+      var nextChapterFirstPage = chapterPageNumList[currentSeqNo.value + 1];
+      if (nowChapterPage > 0 && startHasContentPage + nowChapterPage > nextChapterFirstPage) {
+        nowChapterPage = nextChapterFirstPage - pageNum - 1;
+      }
+
       _pageController.jumpToPage(pageNum + nowChapterPage);
       _currentPage.value = pageNum + nowChapterPage;
       isLoading = false;
