@@ -12,6 +12,7 @@ class SettingController extends GetxController {
   var isSyncing = false.obs;
   var isSecretMode = false.obs;
   var needSyncTypeList = [].obs;
+  var syncTip = ''.obs;
 
   init() async {
     var shared = await SharedPreferences.getInstance();
@@ -20,7 +21,6 @@ class SettingController extends GetxController {
     var needSyncTypeListString = shared.getString(Constant.needSyncTypeKey) ?? "[]";
 
     needSyncTypeList.value = const JsonDecoder().convert(needSyncTypeListString) ?? [];
-    print(needSyncTypeListString);
   }
 
   updateSync() async {
@@ -38,6 +38,11 @@ class SettingController extends GetxController {
     }
 
     shared.setString(Constant.needSyncTypeKey, const JsonEncoder().convert(needSyncTypeList));
+  }
+
+  updateSyncTip(value) {
+    syncTip.value = value;
+    update();
   }
 
   @override

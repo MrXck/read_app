@@ -94,6 +94,9 @@ class _SyncPageState extends State<SyncPage> {
                     );
                   }),
               Obx(() {
+                return Text(settingController.syncTip.value);
+              }),
+              Obx(() {
                   return Row(
                     children: [
                       Checkbox(value: settingController.needSyncTypeList.contains(Constant.pdfType), onChanged: (value) {

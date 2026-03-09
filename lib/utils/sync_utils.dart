@@ -84,8 +84,13 @@ class SyncUtils {
       md5s = response.data['data']['md5s'];
     }
 
+    var index = 0;
+
     var dir = await getApplicationDocumentsDirectory();
     for (var book in books) {
+      index += 1;
+      settingController.syncTip.value = '上传中进度 $index / ${books.length}';
+
       if (md5s.contains(book.md5)) {
         continue;
       }
@@ -128,7 +133,10 @@ class SyncUtils {
     var list = response.data['data']['list'];
     var tempDir = await getTemporaryDirectory();
     List<String> md5s = [];
+    var index = 0;
     for (var book in list) {
+      index += 1;
+      settingController.syncTip.value = '下载服务器存储文件记录中进度 $index / ${list.length}';
       var timestamp = DateTime.parse(book['updateTime']).millisecondsSinceEpoch;
       var md5 = book['md5'];
       md5s.add(md5);
@@ -174,7 +182,10 @@ class SyncUtils {
 
     if (addLogs.isNotEmpty) {
       var dir = await getApplicationDocumentsDirectory();
+      var index = 0;
       for (var log in addLogs) {
+        index += 1;
+        settingController.syncTip.value = '上传新增日志中进度 $index / ${addLogs.length}';
         var bookId = log.bookId;
         var book = await DatabaseHelper.db.getById(bookId);
 
@@ -210,9 +221,12 @@ class SyncUtils {
 
     List<OperationLog> logs =
         await DatabaseHelper.db.getAllNotAddOperationLog();
+    var index = 0;
     if (logs.isEmpty) {
       return;
     }
+
+    settingController.syncTip.value = '上传操作日志中进度 $index / ${logs.length}';
     var response = await RequestUtils.postJson(
         Constant.updateBookUrl,
         {'bookLogDTOS': logs.map((item) => item.toJsonMap()).toList()},
