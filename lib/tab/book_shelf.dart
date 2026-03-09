@@ -42,4 +42,5 @@ class Data {
   late Function refresh;
   late Function addDirectory;
   late Function routeBack;
+  late Function updateSort;
 }

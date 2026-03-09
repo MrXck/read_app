@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:read_app/tab/book_shelf.dart';
+import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/file_utils.dart';
 import 'package:read_app/utils/loading_utils.dart';
 import 'package:read_app/utils/permission_utils.dart';
@@ -27,6 +28,9 @@ class BookShelfHeader extends StatelessWidget {
           ),
           Row(
             children: [
+              IconButton(onPressed: () {
+                data.updateSort();
+              }, icon: const Icon(Icons.sort)),
               IconButton(
                   onPressed: () {
                     Get.toNamed('/search');

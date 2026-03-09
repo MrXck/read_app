@@ -273,6 +273,17 @@ class DatabaseHelper {
     return books;
   }
 
+  Future<List<Book>> getBookByParentIdAndSort(String parentId, String sortString) async {
+    var db = await database;
+    var query = await db?.query('book',
+        where: 'parent_id = ? ${generateSecretSql(false)}',
+        whereArgs: [parentId],
+        orderBy: '${sortString.isNotEmpty ? '$sortString,' : ''} update_time Desc, seq_no asc');
+    List<Book> books =
+    query!.isNotEmpty ? query.map((t) => Book.fromMap(t)).toList() : [];
+    return books;
+  }
+
   Future<Book?> getByMd5(String md5) async {
     var db = await database;
     var query = await db?.query('book', where: 'md5 = ? ${generateSecretSql(false)}', whereArgs: [md5]);

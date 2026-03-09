@@ -64,6 +64,12 @@ class Constant {
   static const String tokenKey = 'token';
   static const String secretKey = 'secret';
 
+  static List<String> sortList = [
+    'title asc',
+    'title desc',
+    '',
+  ];
+
   static List<String> fontFamilyList = [
     'pingfang',
     'hanchanbanyuanti',

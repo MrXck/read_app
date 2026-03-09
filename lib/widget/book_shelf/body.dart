@@ -36,27 +36,39 @@ class _BookShelfBodyState extends State<BookShelfBody> {
     Book.fromMap({'id': '', 'title': '根目录'})
   ]);
   ValueNotifier<int> count = ValueNotifier<int>(0);
+  String sortString = '';
+
+  void refresh() async {
+    var value = await DatabaseHelper.db.getBookByParentIdAndSort(parentId, sortString);
+
+    final dir = await getApplicationDocumentsDirectory();
+    for (var i = 0; i < value.length; i++) {
+      var book = value[i];
+      book.assetDir = dir.path;
+    }
+
+    setState(() {
+      books = [];
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        books.addAll(value);
+      });
+    });
+  }
 
   @override
   void initState() {
-    widget.data.refresh = () async {
-      var value = await DatabaseHelper.db.getBookByParentId(parentId);
-
-      final dir = await getApplicationDocumentsDirectory();
-      for (var i = 0; i < value.length; i++) {
-        var book = value[i];
-        book.assetDir = dir.path;
+    widget.data.refresh = refresh;
+    widget.data.updateSort = () {
+      if (Constant.sortList.contains(sortString)) {
+        var index = Constant.sortList.indexOf(sortString) + 1;
+        sortString = Constant.sortList[index + 1 >= Constant.sortList.length ? 0 : index + 1];
+      } else {
+        sortString = Constant.sortList[0];
       }
-
-      setState(() {
-        books = [];
-      });
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        setState(() {
-          books.addAll(value);
-        });
-      });
+      refresh();
     };
     widget.data.addDirectory = () async {
       newDialog();
@@ -72,7 +84,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
       updateParentId(breadList.value.last.id);
       return false;
     };
-    DatabaseHelper.db.getBookByParentId(parentId).then((value) async {
+    DatabaseHelper.db.getBookByParentIdAndSort(parentId, sortString).then((value) async {
       final dir = await getApplicationDocumentsDirectory();
       for (var i = 0; i < value.length; i++) {
         var book = value[i];
@@ -179,7 +191,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                     .updateParentIdById(checkedList[i], nowClick);
               }
 
-              var value = await DatabaseHelper.db.getBookByParentId(parentId);
+              var value = await DatabaseHelper.db.getBookByParentIdAndSort(parentId, sortString);
               final dir = await getApplicationDocumentsDirectory();
               for (var i = 0; i < value.length; i++) {
                 var book = value[i];
@@ -248,7 +260,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
               book.currentChapter = 0;
               book.isSecret = Constant.publicType;
               await DatabaseHelper.db.insert(book);
-              var value = await DatabaseHelper.db.getBookByParentId(parentId);
+              var value = await DatabaseHelper.db.getBookByParentIdAndSort(parentId, sortString);
               final dir = await getApplicationDocumentsDirectory();
               for (var i = 0; i < value.length; i++) {
                 var book = value[i];
@@ -307,7 +319,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                   book, book.id, Constant.operationUpdateType);
               DatabaseHelper.db.insertOperationLog(operationLog);
 
-              var value = await DatabaseHelper.db.getBookByParentId(parentId);
+              var value = await DatabaseHelper.db.getBookByParentIdAndSort(parentId, sortString);
               final dir = await getApplicationDocumentsDirectory();
               for (var i = 0; i < value.length; i++) {
                 var book = value[i];
@@ -340,7 +352,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
       widget.data.parentId = parentId;
     });
 
-    var li = await DatabaseHelper.db.getBookByParentId(parentId);
+    var li = await DatabaseHelper.db.getBookByParentIdAndSort(parentId, sortString);
     final dir = await getApplicationDocumentsDirectory();
     for (var i = 0; i < li.length; i++) {
       var book = li[i];
@@ -454,7 +466,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                     }, () async {
                       Timer(const Duration(milliseconds: 100), () async {
                         var value =
-                            await DatabaseHelper.db.getBookByParentId(parentId);
+                            await DatabaseHelper.db.getBookByParentIdAndSort(parentId, sortString);
 
                         final dir = await getApplicationDocumentsDirectory();
                         for (var i = 0; i < value.length; i++) {
@@ -479,7 +491,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                         widget.data.parentId = parentId;
                       });
                       var value =
-                          await DatabaseHelper.db.getBookByParentId(parentId);
+                          await DatabaseHelper.db.getBookByParentIdAndSort(parentId, sortString);
 
                       final dir = await getApplicationDocumentsDirectory();
                       for (var i = 0; i < value.length; i++) {
@@ -634,7 +646,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                                           }
 
                                           var value = await DatabaseHelper.db
-                                              .getBookByParentId(parentId);
+                                              .getBookByParentIdAndSort(parentId, sortString);
 
                                           for (var i = 0;
                                               i < value.length;
@@ -809,7 +821,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                                   return InkWell(
                                     onTap: () async {
                                       await BookUtils.updateBooksSecret(checkedList, Constant.secretType);
-                                      var value = await DatabaseHelper.db.getBookByParentId(parentId);
+                                      var value = await DatabaseHelper.db.getBookByParentIdAndSort(parentId, sortString);
                                       final dir = await getApplicationDocumentsDirectory();
                                       for (var i = 0; i < value.length; i++) {
                                         var book = value[i];
@@ -843,7 +855,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                                   return InkWell(
                                     onTap: () async {
                                       await BookUtils.updateBooksSecret(checkedList, Constant.publicType);
-                                      var value = await DatabaseHelper.db.getBookByParentId(parentId);
+                                      var value = await DatabaseHelper.db.getBookByParentIdAndSort(parentId, sortString);
                                       final dir = await getApplicationDocumentsDirectory();
                                       for (var i = 0; i < value.length; i++) {
                                         var book = value[i];
