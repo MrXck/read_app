@@ -81,7 +81,6 @@ void main() async {
     });
   }
   // debugPaintSizeEnabled = true;
-  SyncUtils.sync();
   switch (Platform.operatingSystem) {
     case 'android':
       initListenShare();
@@ -126,6 +125,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SyncUtils.sync();
     UpdateUtils.updateApp();
 
     if (isDesktop()) {
