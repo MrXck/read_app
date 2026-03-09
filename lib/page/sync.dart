@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:read_app/controller/setting_controller.dart';
 import 'package:read_app/pojo/sync_log.dart';
+import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/db.dart';
 import 'package:read_app/utils/sync_utils.dart';
 
@@ -91,7 +92,27 @@ class _SyncPageState extends State<SyncPage> {
                       value,
                       style: const TextStyle(color: Colors.red),
                     );
-                  })
+                  }),
+              Obx(() {
+                  return Row(
+                    children: [
+                      Checkbox(value: settingController.needSyncTypeList.contains(Constant.pdfType), onChanged: (value) {
+                        settingController.updateSyncTypeList(Constant.pdfType);
+                      }),
+                      const Text('pdf类型')
+                    ],
+                  );
+              }),
+              Obx(() {
+                return Row(
+                  children: [
+                    Checkbox(value: settingController.needSyncTypeList.contains(Constant.bookType), onChanged: (value) {
+                      settingController.updateSyncTypeList(Constant.bookType);
+                    }),
+                    const Text('txt类型')
+                  ],
+                );
+              }),
             ],
           )
       ),

@@ -89,6 +89,11 @@ class SyncUtils {
       if (md5s.contains(book.md5)) {
         continue;
       }
+
+      if (!settingController.needSyncTypeList.contains(book.type)) {
+        continue;
+      }
+
       var filePath = join(dir.path, book.path);
       try {
         await RequestUtils.postFileJson(
@@ -153,7 +158,14 @@ class SyncUtils {
     }
     List<Book> books = await DatabaseHelper.db
         .getBookByNotInMd5AndType(md5s, [Constant.bookType, Constant.pdfType]);
-    await BookUtils.deleteBooks(books.map((item) => item.id).toList());
+    await BookUtils.deleteBooks(books.map((item) {
+
+      if (!settingController.needSyncTypeList.contains(item.type)) {
+        return '';
+      }
+
+      return item.id;
+    }).toList());
   }
 
   static Future<void> uploadOperationLogs() async {
@@ -165,6 +177,11 @@ class SyncUtils {
       for (var log in addLogs) {
         var bookId = log.bookId;
         var book = await DatabaseHelper.db.getById(bookId);
+
+        if (!settingController.needSyncTypeList.contains(book.type)) {
+          continue;
+        }
+
         try {
           var filePath = join(dir.path, book.path);
           await RequestUtils.postFileJson(

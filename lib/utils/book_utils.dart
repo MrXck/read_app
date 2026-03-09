@@ -215,6 +215,8 @@ class BookUtils {
           await DatabaseHelper.db.deleteChapterByBookId(book.id);
           await DatabaseHelper.db.deleteById(book.id);
 
+          await DatabaseHelper.db.deleteOperationLogByBookId(book.id);
+
           OperationLog operationLog = OperationLog.setOperationLog(book, book.id, Constant.operationDeleteType);
           DatabaseHelper.db.insertOperationLog(operationLog);
         }
@@ -228,6 +230,7 @@ class BookUtils {
         await DatabaseHelper.db.deleteById(book.id);
 
         if (book.type == Constant.pdfType) {
+          await DatabaseHelper.db.deleteOperationLogByBookId(book.id);
           OperationLog operationLog = OperationLog.setOperationLog(book, book.id, Constant.operationDeleteType);
           DatabaseHelper.db.insertOperationLog(operationLog);
         }

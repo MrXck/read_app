@@ -60,6 +60,7 @@ class Constant {
   static const String readConfigKey = 'config';
   static const String appConfigKey = 'app_config';
   static const String syncConfigKey = 'sync';
+  static const String needSyncTypeKey = 'need_sync_type_list';
   static const String tokenKey = 'token';
   static const String secretKey = 'secret';
 

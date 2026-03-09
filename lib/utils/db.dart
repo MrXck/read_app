@@ -680,6 +680,11 @@ class DatabaseHelper {
     await db?.rawDelete('DELETE FROM operation_log WHERE id = ?', [id]);
   }
 
+  Future<void> deleteOperationLogByBookId(String bookId) async {
+    var db = await database;
+    await db?.rawDelete('DELETE FROM operation_log WHERE book_id = ?', [bookId]);
+  }
+
   Future<int?> insertSyncLog(SyncLog syncLog) async {
     final db = await database;
     try {
