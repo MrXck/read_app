@@ -224,7 +224,7 @@ class _ReadPageState extends State<ReadPage> {
       var pageNum = chapterTitlePageNumMap[_nowChapter.value];
       pageNum ??= startHasContentPage;
 
-      var nextChapterFirstPage = chapterPageNumList[currentSeqNo.value + 1];
+      var nextChapterFirstPage = chapterPageNumList[(chapterPageNumList.length / 2).ceil()];
       if (nowChapterPage > 0 && startHasContentPage + nowChapterPage > nextChapterFirstPage) {
         nowChapterPage = nextChapterFirstPage - pageNum - 1;
       }
