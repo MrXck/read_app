@@ -402,71 +402,96 @@ class _BookShelfBodyState extends State<BookShelfBody> {
 
   @override
   Widget build(BuildContext context) {
-    var height = MediaQuery.of(context).size.height;
-    var width = MediaQuery.of(context).size.width;
-    var defaultItemWidth = 110.0;
-    var defaultItemHeight = 230.0;
-    var defaultItemLeftRightPadding = 10.0;
-    var defaultItemTopBottomPadding = 3.5;
+    return LayoutBuilder(builder: (context, constraints) {
+      var height = MediaQuery.of(context).size.height;
+      var width = constraints.maxWidth;
+      var defaultItemWidth = 110.0;
+      var defaultItemHeight = 230.0;
+      var defaultItemLeftRightPadding = 10.0;
+      var defaultItemTopBottomPadding = 3.5;
 
-    var calcWidth = (width - 6 * defaultItemLeftRightPadding) / 3 - (20 / 3);
+      var calcWidth = (width - 6 * defaultItemLeftRightPadding) / 3 - (20 / 3);
 
-    var itemWidth = calcWidth > defaultItemWidth ? defaultItemWidth : calcWidth;
-    var itemHeight = itemWidth * (defaultItemHeight / defaultItemWidth);
-
-    return SizedBox(
-      height: height - 60,
-      width: double.infinity,
-      child: Stack(children: [
-        ValueListenableBuilder(
-            valueListenable: breadList,
-            builder: (context, value, child) {
-              List<Widget> widgetList = [];
-              for (var i = 0; i < value.length; i++) {
-                if (i != 0) {
-                  widgetList.add(const Text(' / '));
-                }
-                widgetList.add(InkWell(
-                  onTap: () async {
-                    updateParentId(value[i].id);
-                  },
-                  child: Text(value[i].title),
-                ));
-              }
-              return Positioned(
-                  top: 50,
-                  child: Container(
-                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: widgetList,
-                    ),
+      var itemWidth = calcWidth > defaultItemWidth ? defaultItemWidth : calcWidth;
+      var itemHeight = itemWidth * (defaultItemHeight / defaultItemWidth);
+      return SizedBox(
+        height: height - 60,
+        width: double.infinity,
+        child: Stack(children: [
+          ValueListenableBuilder(
+              valueListenable: breadList,
+              builder: (context, value, child) {
+                List<Widget> widgetList = [];
+                for (var i = 0; i < value.length; i++) {
+                  if (i != 0) {
+                    widgetList.add(const Text(' / '));
+                  }
+                  widgetList.add(InkWell(
+                    onTap: () async {
+                      updateParentId(value[i].id);
+                    },
+                    child: Text(value[i].title),
                   ));
-            }),
-        books.isEmpty
-            ? Container()
-            : Positioned(
-                top: 70,
-                left: 10,
-                right: 10,
-                bottom: isChange ? 50 : 0,
-                child: SortableGridView<Book>(
-                  books,
-                  itemBuilder: (context, data) {
-                    return BookShelfBook(data, isChange, checkedList,
-                        (Book book, bool isChecked) {
-                      if (isChecked) {
-                        if (!checkedList.contains(book.id)) {
-                          checkedList.add(book.id);
+                }
+                return Positioned(
+                    top: 50,
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: widgetList,
+                      ),
+                    ));
+              }),
+          books.isEmpty
+              ? Container()
+              : Positioned(
+              top: 70,
+              left: 10,
+              right: 10,
+              bottom: isChange ? 50 : 0,
+              child: SortableGridView<Book>(
+                books,
+                itemBuilder: (context, data) {
+                  return BookShelfBook(data, isChange, checkedList,
+                          (Book book, bool isChecked) {
+                        if (isChecked) {
+                          if (!checkedList.contains(book.id)) {
+                            checkedList.add(book.id);
+                          }
+                        } else {
+                          checkedList.remove(book.id);
                         }
-                      } else {
-                        checkedList.remove(book.id);
-                      }
-                      count.value = checkedList.length;
-                    }, () async {
-                      Timer(const Duration(milliseconds: 100), () async {
+                        count.value = checkedList.length;
+                      }, () async {
+                        Timer(const Duration(milliseconds: 100), () async {
+                          var value =
+                          await DatabaseHelper.db.getBookByParentIdAndSort(parentId, sortString);
+
+                          final dir = await getApplicationDocumentsDirectory();
+                          for (var i = 0; i < value.length; i++) {
+                            var book = value[i];
+                            book.assetDir = dir.path;
+                          }
+
+                          setState(() {
+                            books = [];
+                          });
+
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            setState(() {
+                              books.addAll(value);
+                            });
+                          });
+                        });
+                      }, (String id) async {
+                        var book = await DatabaseHelper.db.getById(id);
+                        setState(() {
+                          parentId = id;
+                          widget.data.parentId = parentId;
+                        });
                         var value =
-                            await DatabaseHelper.db.getBookByParentIdAndSort(parentId, sortString);
+                        await DatabaseHelper.db.getBookByParentIdAndSort(parentId, sortString);
 
                         final dir = await getApplicationDocumentsDirectory();
                         for (var i = 0; i < value.length; i++) {
@@ -477,335 +502,178 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                         setState(() {
                           books = [];
                         });
-
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           setState(() {
                             books.addAll(value);
                           });
                         });
-                      });
-                    }, (String id) async {
-                      var book = await DatabaseHelper.db.getById(id);
-                      setState(() {
-                        parentId = id;
-                        widget.data.parentId = parentId;
-                      });
-                      var value =
-                          await DatabaseHelper.db.getBookByParentIdAndSort(parentId, sortString);
 
-                      final dir = await getApplicationDocumentsDirectory();
-                      for (var i = 0; i < value.length; i++) {
-                        var book = value[i];
-                        book.assetDir = dir.path;
-                      }
-
-                      setState(() {
-                        books = [];
-                      });
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        setState(() {
-                          books.addAll(value);
-                        });
-                      });
-
-                      var checkedBreadList = <Book>[];
-                      for (var i = 0; i < breadList.value.length; i++) {
-                        checkedBreadList.add(breadList.value[i]);
-                      }
-                      checkedBreadList.add(book);
-                      breadList.value = checkedBreadList;
-                    }, itemHeight - 86);
-                  },
-                  canAccept: (oldIndex, newIndex) {
-                    var accept = oldIndex != newIndex;
-                    return accept;
-                  },
-                  itemWidth: itemWidth,
-                  itemHeight: itemHeight,
-                  itemMargin: const [0, 0, 0, 0],
-                  itemPadding: [
-                    defaultItemLeftRightPadding,
-                    defaultItemTopBottomPadding,
-                    defaultItemLeftRightPadding,
-                    defaultItemTopBottomPadding
-                  ],
-                  dragEnd: (List dataList) async {
-                    var bookList = dataList.cast<Book>();
-                    var updateTime = DateTime.now().millisecondsSinceEpoch;
-                    for (var i = 0; i < bookList.length; i++) {
-                      bookList[i].seqNo = i;
-                      bookList[i].updateTime = updateTime - i;
-                    }
-                    DatabaseHelper.db.updateAll(bookList);
-                    bookList.sort((Book a, Book b) {
-                      return a.seqNo.compareTo(b.seqNo);
-                    });
-                  },
-                  dragStart: () {
-                    setState(() {
-                      isChange = true;
-                    });
-                  },
-                )),
-        Visibility(
-            visible: isChange,
-            child: Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 50,
-              child: Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
+                        var checkedBreadList = <Book>[];
+                        for (var i = 0; i < breadList.value.length; i++) {
+                          checkedBreadList.add(breadList.value[i]);
+                        }
+                        checkedBreadList.add(book);
+                        breadList.value = checkedBreadList;
+                      }, itemHeight - 86);
+                },
+                canAccept: (oldIndex, newIndex) {
+                  var accept = oldIndex != newIndex;
+                  return accept;
+                },
+                itemWidth: itemWidth,
+                itemHeight: itemHeight,
+                itemMargin: const [0, 0, 0, 0],
+                itemPadding: [
+                  defaultItemLeftRightPadding,
+                  defaultItemTopBottomPadding,
+                  defaultItemLeftRightPadding,
+                  defaultItemTopBottomPadding
+                ],
+                dragEnd: (List dataList) async {
+                  var bookList = dataList.cast<Book>();
+                  var updateTime = DateTime.now().millisecondsSinceEpoch;
+                  for (var i = 0; i < bookList.length; i++) {
+                    bookList[i].seqNo = i;
+                    bookList[i].updateTime = updateTime - i;
+                  }
+                  DatabaseHelper.db.updateAll(bookList);
+                  bookList.sort((Book a, Book b) {
+                    return a.seqNo.compareTo(b.seqNo);
+                  });
+                },
+                dragStart: () {
+                  setState(() {
+                    isChange = true;
+                  });
+                },
+              )),
+          Visibility(
+              visible: isChange,
+              child: Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 50,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          var checked = books.map((item) {
+                            return item.id;
+                          }).toList();
+                          setState(() {
+                            checkedList = checked;
+                            count.value = checkedList.length;
+                          });
+                        },
+                        child: const Text('全选'),
+                      ),
+                      ValueListenableBuilder(
+                          valueListenable: count,
+                          builder: (context, value, child) {
+                            return Text('已选择 $value 本');
+                          }),
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            isChange = false;
+                          });
+                          checkedList = [];
+                          count.value = 0;
+                        },
+                        child: const Text('完成'),
+                      ),
+                    ],
+                  ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        var checked = books.map((item) {
-                          return item.id;
-                        }).toList();
-                        setState(() {
-                          checkedList = checked;
-                          count.value = checkedList.length;
-                        });
-                      },
-                      child: const Text('全选'),
-                    ),
-                    ValueListenableBuilder(
-                        valueListenable: count,
-                        builder: (context, value, child) {
-                          return Text('已选择 $value 本');
-                        }),
-                    InkWell(
-                      onTap: () {
-                        setState(() {
-                          isChange = false;
-                        });
-                        checkedList = [];
-                        count.value = 0;
-                      },
-                      child: const Text('完成'),
-                    ),
-                  ],
-                ),
-              ),
-            )),
-        Visibility(
-            visible: isChange,
-            child: Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: 100,
-              child: Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        InkWell(
-                          onTap: () async {
-                            await newDialog();
-                          },
-                          child: const Text('新增分组'),
-                        ),
-                        ValueListenableBuilder(
-                            valueListenable: count,
-                            builder: (context, value, child) {
-                              if (value == 0) {
-                                return const Text(
-                                  '删除',
-                                  style: TextStyle(color: Color(0xB2C4C4C4)),
-                                );
-                              } else {
-                                return InkWell(
-                                  onTap: () async {
-                                    Get.defaultDialog(
-                                        title: '提示',
-                                        textConfirm: '确认',
-                                        textCancel: '取消',
-                                        content: const Text('确认要删除吗？'),
-                                        onConfirm: () async {
-                                          Get.back();
-                                          LoadingUtils.showLoading(tip: '删除中');
-                                          var dataDir =
-                                              await getApplicationDocumentsDirectory();
-                                          try {
-                                            await BookUtils.deleteBooks(
-                                                checkedList);
-                                          } catch (e) {
-                                            Get.snackbar('错误', e.toString());
-                                          } finally {
-                                            LoadingUtils.hideLoading();
-                                          }
+              )),
+          Visibility(
+              visible: isChange,
+              child: Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: 100,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          InkWell(
+                            onTap: () async {
+                              await newDialog();
+                            },
+                            child: const Text('新增分组'),
+                          ),
+                          ValueListenableBuilder(
+                              valueListenable: count,
+                              builder: (context, value, child) {
+                                if (value == 0) {
+                                  return const Text(
+                                    '删除',
+                                    style: TextStyle(color: Color(0xB2C4C4C4)),
+                                  );
+                                } else {
+                                  return InkWell(
+                                    onTap: () async {
+                                      Get.defaultDialog(
+                                          title: '提示',
+                                          textConfirm: '确认',
+                                          textCancel: '取消',
+                                          content: const Text('确认要删除吗？'),
+                                          onConfirm: () async {
+                                            Get.back();
+                                            LoadingUtils.showLoading(tip: '删除中');
+                                            var dataDir =
+                                            await getApplicationDocumentsDirectory();
+                                            try {
+                                              await BookUtils.deleteBooks(
+                                                  checkedList);
+                                            } catch (e) {
+                                              Get.snackbar('错误', e.toString());
+                                            } finally {
+                                              LoadingUtils.hideLoading();
+                                            }
 
-                                          var value = await DatabaseHelper.db
-                                              .getBookByParentIdAndSort(parentId, sortString);
+                                            var value = await DatabaseHelper.db
+                                                .getBookByParentIdAndSort(parentId, sortString);
 
-                                          for (var i = 0;
-                                              i < value.length;
-                                              i++) {
-                                            var book = value[i];
-                                            book.assetDir = dataDir.path;
-                                          }
+                                            for (var i = 0;
+                                            i < value.length;
+                                            i++) {
+                                              var book = value[i];
+                                              book.assetDir = dataDir.path;
+                                            }
 
-                                          setState(() {
-                                            books = [];
-                                          });
-
-                                          WidgetsBinding.instance
-                                              .addPostFrameCallback((_) {
                                             setState(() {
-                                              isChange = false;
-                                              checkedList = [];
-                                              count.value = 0;
-                                              books.addAll(value);
+                                              books = [];
+                                            });
+
+                                            WidgetsBinding.instance
+                                                .addPostFrameCallback((_) {
+                                              setState(() {
+                                                isChange = false;
+                                                checkedList = [];
+                                                count.value = 0;
+                                                books.addAll(value);
+                                              });
                                             });
                                           });
-                                        });
-                                  },
-                                  child: const Text(
-                                    '删除',
-                                    style: TextStyle(color: Colors.red),
-                                  ),
-                                );
-                              }
-                            }),
-                        ValueListenableBuilder(
-                            valueListenable: count,
-                            builder: (context, value, child) {
-                              if (value == 0) {
-                                return const Text(
-                                  '移动至',
-                                  style: TextStyle(color: Color(0xB2C4C4C4)),
-                                );
-                              } else {
-                                return InkWell(
-                                  onTap: () async {
-                                    await moveDialog(width, height);
-                                  },
-                                  child: const Text('移动至'),
-                                );
-                              }
-                            })
-                      ],
-                    ),
-                    Container(
-                      margin: const EdgeInsets.only(top: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          ValueListenableBuilder(
-                              valueListenable: count,
-                              builder: (context, value, child) {
-                                if (value != 1) {
-                                  return const Text(
-                                    '编辑名称',
-                                    style: TextStyle(color: Color(0xB2C4C4C4)),
-                                  );
-                                } else {
-                                  return InkWell(
-                                    onTap: () async {
-                                      await updateDialog();
                                     },
-                                    child: const Text('编辑名称'),
-                                  );
-                                }
-                              }),
-                          ValueListenableBuilder(
-                              valueListenable: count,
-                              builder: (context, value, child) {
-                                if (value != 1) {
-                                  return const Text(
-                                    '编辑封面',
-                                    style: TextStyle(color: Color(0xB2C4C4C4)),
-                                  );
-                                } else {
-                                  return InkWell(
-                                    onTap: () async {
-                                      await updateCover();
-                                    },
-                                    child: const Text('编辑封面'),
-                                  );
-                                }
-                              }),
-                          ValueListenableBuilder(
-                              valueListenable: count,
-                              builder: (context, value, child) {
-                                if (value != 1) {
-                                  return const Text(
-                                    '分享',
-                                    style: TextStyle(color: Color(0xB2C4C4C4)),
-                                  );
-                                } else {
-                                  return InkWell(
-                                    onTap: () async {
-                                      String id = checkedList.first;
-                                      var book =
-                                          await DatabaseHelper.db.getById(id);
-                                      if (book.type != Constant.bookType) {
-                                        Get.snackbar('提示', '只有文本才可以分享');
-                                        return;
-                                      }
-                                      var dir =
-                                          await getApplicationDocumentsDirectory();
-
-                                      await FileUtils.shareFile(
-                                          book.title,
-                                          await File(join(dir.path, book.path))
-                                              .readAsBytes(),
-                                          FileUtils.getFileExtension(
-                                              book.path));
-                                    },
-                                    child: const Text('分享'),
-                                  );
-                                }
-                              }),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.only(top: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          ValueListenableBuilder(
-                              valueListenable: count,
-                              builder: (context, value, child) {
-                                if (value != 1) {
-                                  return const Text(
-                                    '导出',
-                                    style: TextStyle(color: Color(0xB2C4C4C4)),
-                                  );
-                                } else {
-                                  return InkWell(
-                                    onTap: () async {
-                                      String id = checkedList.first;
-                                      var dir =
-                                          await getApplicationDocumentsDirectory();
-
-                                      await FileUtils
-                                          .compressSpecifiedDirectoryByParentId(
-                                        id,
-                                        join(dir.path, 'read'),
-                                        join(dir.path, 'read_book.zip'),
-                                        [
-                                          Constant.bookType,
-                                          Constant.directoryType,
-                                          Constant.comicType,
-                                          Constant.mediaType,
-                                          Constant.outSideType,
-                                          Constant.pdfType,
-                                        ],
-                                      );
-                                    },
-                                    child: const Text('导出'),
+                                    child: const Text(
+                                      '删除',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
                                   );
                                 }
                               }),
@@ -814,77 +682,210 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                               builder: (context, value, child) {
                                 if (value == 0) {
                                   return const Text(
-                                    '设为私密',
+                                    '移动至',
                                     style: TextStyle(color: Color(0xB2C4C4C4)),
                                   );
                                 } else {
                                   return InkWell(
                                     onTap: () async {
-                                      await BookUtils.updateBooksSecret(checkedList, Constant.secretType);
-                                      var value = await DatabaseHelper.db.getBookByParentIdAndSort(parentId, sortString);
-                                      final dir = await getApplicationDocumentsDirectory();
-                                      for (var i = 0; i < value.length; i++) {
-                                        var book = value[i];
-                                        book.assetDir = dir.path;
-                                      }
-                                      count.value = 0;
-                                      setState(() {
-                                        checkedList = [];
-                                        books.clear();
-                                      });
-
-                                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                                        setState(() {
-                                          books.addAll(value);
-                                        });
-                                      });
+                                      await moveDialog(width, height);
                                     },
-                                    child: const Text('设为私密'),
+                                    child: const Text('移动至'),
                                   );
                                 }
-                              }),
-                          ValueListenableBuilder(
-                              valueListenable: count,
-                              builder: (context, value, child) {
-                                if (value == 0) {
-                                  return const Text(
-                                    '设为公开',
-                                    style: TextStyle(color: Color(0xB2C4C4C4)),
-                                  );
-                                } else {
-                                  return InkWell(
-                                    onTap: () async {
-                                      await BookUtils.updateBooksSecret(checkedList, Constant.publicType);
-                                      var value = await DatabaseHelper.db.getBookByParentIdAndSort(parentId, sortString);
-                                      final dir = await getApplicationDocumentsDirectory();
-                                      for (var i = 0; i < value.length; i++) {
-                                        var book = value[i];
-                                        book.assetDir = dir.path;
-                                      }
-                                      count.value = 0;
-                                      setState(() {
-                                        checkedList = [];
-                                        books.clear();
-                                      });
-
-                                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                                        setState(() {
-                                          books.addAll(value);
-                                        });
-                                      });
-                                    },
-                                    child: const Text('设为公开'),
-                                  );
-                                }
-                              }),
+                              })
                         ],
                       ),
-                    ),
-                  ],
+                      Container(
+                        margin: const EdgeInsets.only(top: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            ValueListenableBuilder(
+                                valueListenable: count,
+                                builder: (context, value, child) {
+                                  if (value != 1) {
+                                    return const Text(
+                                      '编辑名称',
+                                      style: TextStyle(color: Color(0xB2C4C4C4)),
+                                    );
+                                  } else {
+                                    return InkWell(
+                                      onTap: () async {
+                                        await updateDialog();
+                                      },
+                                      child: const Text('编辑名称'),
+                                    );
+                                  }
+                                }),
+                            ValueListenableBuilder(
+                                valueListenable: count,
+                                builder: (context, value, child) {
+                                  if (value != 1) {
+                                    return const Text(
+                                      '编辑封面',
+                                      style: TextStyle(color: Color(0xB2C4C4C4)),
+                                    );
+                                  } else {
+                                    return InkWell(
+                                      onTap: () async {
+                                        await updateCover();
+                                      },
+                                      child: const Text('编辑封面'),
+                                    );
+                                  }
+                                }),
+                            ValueListenableBuilder(
+                                valueListenable: count,
+                                builder: (context, value, child) {
+                                  if (value != 1) {
+                                    return const Text(
+                                      '分享',
+                                      style: TextStyle(color: Color(0xB2C4C4C4)),
+                                    );
+                                  } else {
+                                    return InkWell(
+                                      onTap: () async {
+                                        String id = checkedList.first;
+                                        var book =
+                                        await DatabaseHelper.db.getById(id);
+                                        if (book.type != Constant.bookType) {
+                                          Get.snackbar('提示', '只有文本才可以分享');
+                                          return;
+                                        }
+                                        var dir =
+                                        await getApplicationDocumentsDirectory();
+
+                                        await FileUtils.shareFile(
+                                            book.title,
+                                            await File(join(dir.path, book.path))
+                                                .readAsBytes(),
+                                            FileUtils.getFileExtension(
+                                                book.path));
+                                      },
+                                      child: const Text('分享'),
+                                    );
+                                  }
+                                }),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(top: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            ValueListenableBuilder(
+                                valueListenable: count,
+                                builder: (context, value, child) {
+                                  if (value != 1) {
+                                    return const Text(
+                                      '导出',
+                                      style: TextStyle(color: Color(0xB2C4C4C4)),
+                                    );
+                                  } else {
+                                    return InkWell(
+                                      onTap: () async {
+                                        String id = checkedList.first;
+                                        var dir =
+                                        await getApplicationDocumentsDirectory();
+
+                                        await FileUtils
+                                            .compressSpecifiedDirectoryByParentId(
+                                          id,
+                                          join(dir.path, 'read'),
+                                          join(dir.path, 'read_book.zip'),
+                                          [
+                                            Constant.bookType,
+                                            Constant.directoryType,
+                                            Constant.comicType,
+                                            Constant.mediaType,
+                                            Constant.outSideType,
+                                            Constant.pdfType,
+                                          ],
+                                        );
+                                      },
+                                      child: const Text('导出'),
+                                    );
+                                  }
+                                }),
+                            ValueListenableBuilder(
+                                valueListenable: count,
+                                builder: (context, value, child) {
+                                  if (value == 0) {
+                                    return const Text(
+                                      '设为私密',
+                                      style: TextStyle(color: Color(0xB2C4C4C4)),
+                                    );
+                                  } else {
+                                    return InkWell(
+                                      onTap: () async {
+                                        await BookUtils.updateBooksSecret(checkedList, Constant.secretType);
+                                        var value = await DatabaseHelper.db.getBookByParentIdAndSort(parentId, sortString);
+                                        final dir = await getApplicationDocumentsDirectory();
+                                        for (var i = 0; i < value.length; i++) {
+                                          var book = value[i];
+                                          book.assetDir = dir.path;
+                                        }
+                                        count.value = 0;
+                                        setState(() {
+                                          checkedList = [];
+                                          books.clear();
+                                        });
+
+                                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                                          setState(() {
+                                            books.addAll(value);
+                                          });
+                                        });
+                                      },
+                                      child: const Text('设为私密'),
+                                    );
+                                  }
+                                }),
+                            ValueListenableBuilder(
+                                valueListenable: count,
+                                builder: (context, value, child) {
+                                  if (value == 0) {
+                                    return const Text(
+                                      '设为公开',
+                                      style: TextStyle(color: Color(0xB2C4C4C4)),
+                                    );
+                                  } else {
+                                    return InkWell(
+                                      onTap: () async {
+                                        await BookUtils.updateBooksSecret(checkedList, Constant.publicType);
+                                        var value = await DatabaseHelper.db.getBookByParentIdAndSort(parentId, sortString);
+                                        final dir = await getApplicationDocumentsDirectory();
+                                        for (var i = 0; i < value.length; i++) {
+                                          var book = value[i];
+                                          book.assetDir = dir.path;
+                                        }
+                                        count.value = 0;
+                                        setState(() {
+                                          checkedList = [];
+                                          books.clear();
+                                        });
+
+                                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                                          setState(() {
+                                            books.addAll(value);
+                                          });
+                                        });
+                                      },
+                                      child: const Text('设为公开'),
+                                    );
+                                  }
+                                }),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            )),
-      ]),
-    );
+              )),
+        ]),
+      );
+    });
   }
 }
