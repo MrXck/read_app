@@ -57,6 +57,8 @@ class Constant {
   static List<String> allPdfType = ['pdf'];
   static List<String> allFontType = ['otf', 'ttf'];
   static int defaultBackgroundColor = 0xFFE6DBC5;
+  static double defaultWindowHeight = 300;
+  static double defaultWindowWidth = 300;
 
   static const String readConfigKey = 'config';
   static const String appConfigKey = 'app_config';

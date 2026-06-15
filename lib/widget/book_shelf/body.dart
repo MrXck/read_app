@@ -14,6 +14,7 @@ import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/db.dart';
 import 'package:read_app/utils/file_utils.dart';
 import 'package:read_app/utils/loading_utils.dart';
+import 'package:read_app/utils/platform_utils.dart';
 import 'package:read_app/utils/random.dart';
 import 'package:read_app/utils/sortable_grid_view.dart';
 import 'package:read_app/widget/book_shelf/book.dart';
@@ -404,7 +405,10 @@ class _BookShelfBodyState extends State<BookShelfBody> {
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
       var height = MediaQuery.of(context).size.height;
-      var width = constraints.maxWidth;
+      var width = MediaQuery.of(context).size.width;
+      if (PlatFormUtils.isDesktop()) {
+        width = Constant.defaultWindowWidth;
+      }
       var defaultItemWidth = 110.0;
       var defaultItemHeight = 230.0;
       var defaultItemLeftRightPadding = 10.0;
