@@ -6,6 +6,7 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:read_app/pojo/settings.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:read_app/utils/color_utils.dart';
 import 'package:read_app/utils/constant.dart';
 
 typedef UpdateFunc = void Function(Settings setting);
@@ -64,7 +65,7 @@ class _ReadFontSettingState extends State<ReadFontSetting> {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Color(widget.settings.backgroundColor),
+        color: ColorUtils.returnDefaultColor(widget.settings.backgroundColor),
         borderRadius: const BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
       ),
       height: size.height,

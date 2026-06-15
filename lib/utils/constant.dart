@@ -56,6 +56,7 @@ class Constant {
   static List<String> allTextType = ['txt'];
   static List<String> allPdfType = ['pdf'];
   static List<String> allFontType = ['otf', 'ttf'];
+  static int defaultBackgroundColor = 0xFFE6DBC5;
 
   static const String readConfigKey = 'config';
   static const String appConfigKey = 'app_config';

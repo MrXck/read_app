@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/pojo/chapter.dart';
 import 'package:read_app/pojo/settings.dart';
+import 'package:read_app/utils/color_utils.dart';
 
 typedef ClickFunc = void Function(String chapterTitle, int pageNum);
 
@@ -33,7 +34,7 @@ class ReadChapterList extends StatelessWidget {
     return Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          color: Color(settings.backgroundColor),
+          color: ColorUtils.returnDefaultColor(settings.backgroundColor),
           borderRadius: const BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
         ),
         height: MediaQuery.of(context).size.height,

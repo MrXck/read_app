@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -182,5 +184,10 @@ class PlatFormUtils {
     } catch (e) {
       return 0;
     }
+  }
+
+  static bool isDesktop() {
+    return !kIsWeb &&
+        (Platform.isWindows || Platform.isLinux || Platform.isMacOS);
   }
 }

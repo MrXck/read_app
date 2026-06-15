@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:read_app/pojo/operation_log.dart';
 import 'package:read_app/pojo/regexp_history.dart';
 import 'package:read_app/pojo/settings.dart';
+import 'package:read_app/utils/color_utils.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/db.dart';
 
@@ -41,7 +42,7 @@ class _ReadSettingsState extends State<ReadSettings> {
             height: 272,
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Color(widget.settings.backgroundColor),
+              color: ColorUtils.returnDefaultColor(widget.settings.backgroundColor),
               borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(10), topRight: Radius.circular(10)),
             ),

@@ -15,6 +15,7 @@ import 'package:get/get.dart';
 import 'package:read_app/tab/tab.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/file_utils.dart';
+import 'package:read_app/utils/platform_utils.dart';
 import 'package:read_app/utils/sync_utils.dart';
 import 'package:read_app/utils/update_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -25,25 +26,21 @@ import 'package:flutter_sharing_intent/model/sharing_file.dart';
 
 import 'bindings/bind_controller.dart';
 
-bool isDesktop() {
-  return !kIsWeb &&
-      (Platform.isWindows || Platform.isLinux || Platform.isMacOS);
-}
 
 void initListenShare() {
   // 监听共享数据流
   FlutterSharingIntent.instance.getMediaStream().listen(
-          (List<SharedFile> value) async {
-        if (value.isEmpty) {
-          return;
-        }
+      (List<SharedFile> value) async {
+    if (value.isEmpty) {
+      return;
+    }
 
-        for (var file in value) {
-          if (file.type == SharedMediaType.TEXT && file.value != null) {
-            await FileUtils.saveBook(file.value, '');
-          }
-        }
-      }, onError: (err) {
+    for (var file in value) {
+      if (file.type == SharedMediaType.TEXT && file.value != null) {
+        await FileUtils.saveBook(file.value, '');
+      }
+    }
+  }, onError: (err) {
     print("getIntentDataStream error: $err");
   });
 
@@ -67,16 +64,18 @@ void initListenShare() {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if (isDesktop()) {
+  if (PlatFormUtils.isDesktop()) {
     await windowManager.ensureInitialized();
 
     WindowOptions windowOptions = const WindowOptions(
       size: Size(300, 300),
       center: true,
       skipTaskbar: false,
-      // titleBarStyle: TitleBarStyle.hidden,
+      backgroundColor: Colors.transparent,
+      titleBarStyle: TitleBarStyle.hidden,
     );
     windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.setAsFrameless();
       await windowManager.show();
     });
   }
@@ -121,14 +120,13 @@ class MyApp extends StatelessWidget {
     }
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     SyncUtils.sync();
     UpdateUtils.updateApp();
+    double num = 4;
 
-    if (isDesktop()) {
+    if (PlatFormUtils.isDesktop()) {
       databaseFactory = databaseFactoryFfi;
     }
     return FutureBuilder(
@@ -166,6 +164,162 @@ class MyApp extends StatelessWidget {
                   ),
                 );
               } else {
+                Widget app = GetMaterialApp(
+                  theme: ThemeData(
+                      fontFamily: snapshot.data?.appFont),
+                  debugShowCheckedModeBanner: false,
+                  initialRoute: "/",
+                  getPages: AppPage.routes,
+                  home: const TabPage(),
+                  initialBinding: BindController(),
+                  // localizationsDelegates: const [
+                  //   GlobalMaterialLocalizations.delegate,
+                  //   GlobalWidgetsLocalizations.delegate,
+                  // ],
+                  // supportedLocales: const [
+                  //   Locale('zh', 'CN'), // 中国大陆的中文
+                  // ]
+                );
+                if (PlatFormUtils.isDesktop()) {
+                  app = GestureDetector(
+                      onPanStart: (d) {
+                        windowManager.startDragging();
+                        // windowManager.startResizing(ResizeEdge.bottomRight);
+                      },
+                      child: Stack(
+                        alignment: Alignment.topLeft,
+                        children: [
+                          Positioned(
+                              left: 0,
+                              right: 0,
+                              top: 0,
+                              bottom: 0,
+                              child: GetMaterialApp(
+                                theme: ThemeData(
+                                    fontFamily: snapshot.data?.appFont),
+                                debugShowCheckedModeBanner: false,
+                                initialRoute: "/",
+                                getPages: AppPage.routes,
+                                home: const TabPage(),
+                                initialBinding: BindController(),
+                                // localizationsDelegates: const [
+                                //   GlobalMaterialLocalizations.delegate,
+                                //   GlobalWidgetsLocalizations.delegate,
+                                // ],
+                                // supportedLocales: const [
+                                //   Locale('zh', 'CN'), // 中国大陆的中文
+                                // ]
+                              )),
+                          Positioned(
+                              right: 0,
+                              bottom: num,
+                              top: num,
+                              width: num,
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.resizeRight,
+                                child: GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onPanStart: (_) => windowManager
+                                        .startResizing(ResizeEdge.right),
+                                    child: const SizedBox.shrink()),
+                              )),
+                          Positioned(
+                              left: 0,
+                              bottom: num,
+                              top: num,
+                              width: num,
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.resizeLeft,
+                                child: GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onPanStart: (_) => windowManager
+                                        .startResizing(ResizeEdge.left),
+                                    child: const SizedBox.shrink()),
+                              )),
+                          Positioned(
+                              right: num,
+                              left: num,
+                              top: 0,
+                              height: num,
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.resizeUp,
+                                child: GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onPanStart: (_) => windowManager
+                                        .startResizing(ResizeEdge.top),
+                                    child: const SizedBox.shrink()),
+                              )),
+                          Positioned(
+                              right: num,
+                              bottom: 0,
+                              left: num,
+                              height: num,
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.resizeDown,
+                                child: GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onPanStart: (_) => windowManager
+                                        .startResizing(ResizeEdge.bottom),
+                                    child: const SizedBox.shrink()),
+                              )),
+
+                          Positioned(
+                              top: 0,
+                              width: num,
+                              left: 0,
+                              height: num,
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.resizeUpLeft,
+                                child: GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onPanStart: (_) => windowManager
+                                        .startResizing(ResizeEdge.topLeft),
+                                    child: const SizedBox.shrink()),
+                              )),
+                          Positioned(
+                              top: 0,
+                              width: num,
+                              right: 0,
+                              height: num,
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.resizeUpRight,
+                                child: GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onPanStart: (_) => windowManager
+                                        .startResizing(ResizeEdge.topRight),
+                                    child: const SizedBox.shrink()),
+                              )),
+                          Positioned(
+                              bottom: 0,
+                              width: num,
+                              left: 0,
+                              height: num,
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.resizeDownLeft,
+                                child: GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onPanStart: (_) => windowManager
+                                        .startResizing(ResizeEdge.bottomLeft),
+                                    child: const SizedBox.shrink()),
+                              )),
+                          Positioned(
+                              bottom: 0,
+                              width: num,
+                              right: 0,
+                              height: num,
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.resizeDownRight,
+                                child: GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onPanStart: (_) => windowManager
+                                        .startResizing(ResizeEdge.bottomRight),
+                                    child: const SizedBox.shrink()),
+                              )),
+                        ],
+                      ));
+                }
+
+
                 return MouseRegion(
                   onEnter: (_) {
                     windowManager.setOpacity(1.0);
@@ -188,21 +342,7 @@ class MyApp extends StatelessWidget {
                       }
                     },
                     focusNode: FocusNode()..requestFocus(),
-                    child: GetMaterialApp(
-                      theme: ThemeData(fontFamily: snapshot.data?.appFont),
-                      debugShowCheckedModeBanner: false,
-                      initialRoute: "/",
-                      getPages: AppPage.routes,
-                      home: const TabPage(),
-                      initialBinding: BindController(),
-                      // localizationsDelegates: const [
-                      //   GlobalMaterialLocalizations.delegate,
-                      //   GlobalWidgetsLocalizations.delegate,
-                      // ],
-                      // supportedLocales: const [
-                      //   Locale('zh', 'CN'), // 中国大陆的中文
-                      // ]
-                    ),
+                    child: app,
                   ),
                 );
               }

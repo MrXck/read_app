@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:read_app/pojo/settings.dart';
+import 'package:read_app/utils/color_utils.dart';
 
 class BrightnessSetting extends StatefulWidget {
   final Settings settings;
@@ -22,7 +23,7 @@ class _BrightnessSettingState extends State<BrightnessSetting> {
         right: 0,
         child: Container(
           decoration: BoxDecoration(
-            color: Color(widget.settings.backgroundColor),
+            color: ColorUtils.returnDefaultColor(widget.settings.backgroundColor),
             borderRadius: const BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
           ),
           height: 100,

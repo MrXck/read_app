@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:read_app/controller/setting_controller.dart';
+import 'package:read_app/listener/window_listener.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/pojo/chapter.dart';
 import 'package:read_app/pojo/operation_log.dart';
@@ -13,6 +14,7 @@ import 'package:read_app/pojo/settings.dart';
 import 'package:read_app/utils/book_utils.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/db.dart';
+import 'package:read_app/utils/platform_utils.dart';
 import 'package:read_app/utils/regex_utils.dart';
 import 'package:read_app/utils/volume_utils.dart';
 import 'package:read_app/widget/read/brightness_setting.dart';
@@ -20,6 +22,9 @@ import 'package:read_app/widget/read/chapter_list.dart';
 import 'package:read_app/widget/read/font_setting.dart';
 import 'package:read_app/widget/read/settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:window_manager/window_manager.dart';
+
+import '../utils/color_utils.dart';
 
 class ReadPage extends StatefulWidget {
   const ReadPage({super.key});
@@ -80,6 +85,7 @@ class _ReadPageState extends State<ReadPage> {
   Timer? _throttleTimer;
   Timer? _timeTimer;
   Timer? _dataTimer;
+  late final WindowListener _listener;
 
   Future<void> init(Book book) async {
     if (settingController.isOpenVolumeFlip.value) {
@@ -128,6 +134,14 @@ class _ReadPageState extends State<ReadPage> {
   @override
   void initState() {
     super.initState();
+    if (PlatFormUtils.isDesktop()) {
+      _listener = MyWindowListener((){
+        switchChapter1(
+            currentSeqNo.value);
+      });
+
+      windowManager.addListener(_listener);
+    }
     book = Get.arguments as Book;
     init(book);
   }
@@ -650,6 +664,7 @@ class _ReadPageState extends State<ReadPage> {
     height = conte.size.height - conte.padding.top - conte.padding.bottom;
     width = conte.size.width - conte.padding.left - conte.padding.right;
     return Scaffold(
+        backgroundColor: Colors.transparent,
         resizeToAvoidBottomInset: false,
         appBar: null,
         body: SafeArea(
@@ -881,7 +896,7 @@ class _ReadPageState extends State<ReadPage> {
                             child: Container(
                               height: 40,
                               decoration: BoxDecoration(
-                                  color: Color(settings.backgroundColor)),
+                                  color: ColorUtils.returnDefaultColor(settings.backgroundColor)),
                               child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -911,7 +926,7 @@ class _ReadPageState extends State<ReadPage> {
                             child: Container(
                               height: 110,
                               decoration: BoxDecoration(
-                                  color: Color(settings.backgroundColor)),
+                                  color: ColorUtils.returnDefaultColor(settings.backgroundColor)),
                               child: Column(
                                 children: [
                                   Row(
@@ -1231,6 +1246,9 @@ class _ReadPageState extends State<ReadPage> {
     _pageController.dispose();
     _bookTitleController.dispose();
     _chapterTitleExpController.dispose();
+    if (PlatFormUtils.isDesktop()) {
+      windowManager.removeListener(_listener);
+    }
     super.dispose();
   }
 }
