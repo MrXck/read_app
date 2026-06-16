@@ -55,7 +55,7 @@ class _SortableGridViewState<T extends HasId> extends State<SortableGridView>
     // 添加监听器以获取滚动位置
     _scrollController.addListener(() {
       var temp = (_scrollController.offset / widget.itemHeight).ceil() * columnNum;
-      if ((temp - _renderIndex.value).abs() > 10) {
+      if ((temp - _renderIndex.value).abs() > columnNum * 2) {
         _renderIndex.value = temp;
       }
     });
@@ -157,8 +157,8 @@ class _SortableGridViewState<T extends HasId> extends State<SortableGridView>
     return ValueListenableBuilder(
         valueListenable: _renderIndex,
         builder: (context, value, child) {
-          if (_renderIndex.value - 40 > index ||
-              _renderIndex.value + 30 < index) {
+          if (_renderIndex.value - columnNum * 5 > index ||
+              _renderIndex.value + columnNum * 5 < index) {
             return const Offstage(
               offstage: true,
               child: SizedBox.shrink(),
