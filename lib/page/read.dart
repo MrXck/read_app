@@ -1047,7 +1047,7 @@ class _ReadPageState extends State<ReadPage> {
     height = conte.size.height - conte.padding.top - conte.padding.bottom;
     width = conte.size.width - conte.padding.left - conte.padding.right;
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: PlatFormUtils.isDesktop() ? Colors.transparent : Color(settings.backgroundColor),
       resizeToAvoidBottomInset: false,
       appBar: null,
       body: SafeArea(

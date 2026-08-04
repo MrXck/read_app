@@ -70,12 +70,12 @@ void main() async {
     WindowOptions windowOptions = WindowOptions(
       size: Size(Constant.defaultWindowWidth, Constant.defaultWindowHeight),
       center: true,
-      // skipTaskbar: false,
+      skipTaskbar: false,
       backgroundColor: Colors.transparent,
-      // titleBarStyle: TitleBarStyle.hidden,
+      titleBarStyle: TitleBarStyle.hidden,
     );
     windowManager.waitUntilReadyToShow(windowOptions, () async {
-      // await windowManager.setAsFrameless();
+      await windowManager.setAsFrameless();
       await windowManager.show();
     });
   }
@@ -182,10 +182,14 @@ class MyApp extends StatelessWidget {
                 );
                 if (PlatFormUtils.isDesktop()) {
                   app = GestureDetector(
-                      // onPanStart: (d) {
-                      //   windowManager.startDragging();
-                      //   // windowManager.startResizing(ResizeEdge.bottomRight);
-                      // },
+                      onPanStart: (d) {
+                        var position = d.localPosition;
+                        var size = MediaQuery.of(context).size;
+                        if (position.dy <= size.height * 0.05) {
+                          windowManager.startDragging();
+                        }
+                        // windowManager.startResizing(ResizeEdge.bottomRight);
+                      },
                       child: Stack(
                         alignment: Alignment.topLeft,
                         children: [
