@@ -993,10 +993,10 @@ class _ReadPageState extends State<ReadPage> {
           var dx = details.globalPosition.dx;
           var dy = details.globalPosition.dy;
 
-          if (settings.isVer) {
-            if (dy < height / 5) {
+          if (settings.isFlip || !settings.isVer) {
+            if (dx < width / 5) {
               previousPage();
-            } else if (dy > height / 5 * 4) {
+            } else if (dx > width / 5 * 4) {
               nextPage();
             } else {
               showOption.value = !(showOption.value);
@@ -1006,9 +1006,9 @@ class _ReadPageState extends State<ReadPage> {
               showBrightness.value = false;
             }
           } else {
-            if (dx < width / 5) {
+            if (dy < height / 5) {
               previousPage();
-            } else if (dx > width / 5 * 4) {
+            } else if (dy > height / 5 * 4) {
               nextPage();
             } else {
               showOption.value = !(showOption.value);
