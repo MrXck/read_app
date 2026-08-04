@@ -15,6 +15,10 @@ class BookUtils {
     return await File(path).readAsString();
   }
 
+  static String loadBookSync(String path) {
+    return File(path).readAsStringSync();
+  }
+
   static List<String> splitChapterContent(String text, String exp) {
     List<String> textList = [];
 

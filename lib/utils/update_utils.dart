@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:open_filex/open_filex.dart';
+import 'package:open_file/open_file.dart';
 import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:read_app/pojo/update_data.dart';
@@ -185,6 +185,6 @@ exit /b 1
       progressCallback(count, total);
     });
 
-    OpenFilex.open(savePath);
+    OpenFile.open(savePath);
   }
 }

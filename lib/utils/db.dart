@@ -505,9 +505,11 @@ class DatabaseHelper {
       Map<String, String> bookIdMap = {};
       List<Book> bookList = [];
 
-      for (var book in books) {
+
+      for (var i = 0; i < books.length; i++) {
+        var book = books[i];
         Book newBook = Book.fromMap(book);
-        tipText.value = '处理 ${newBook.title} 中...';
+        tipText.value = '处理中 ${((i + 1) / books.length * 100).toStringAsFixed(2)}%\n${newBook.title}';
         newBook.updateTime = DateTime.now().millisecondsSinceEpoch;
         newBook.createTime = DateTime.now().millisecondsSinceEpoch;
 
@@ -554,7 +556,6 @@ class DatabaseHelper {
       }
 
       tipText.value = '删除多余数据中...';
-      await deleteNotExistsData();
 
       var list = await getAllSyncBook([Constant.bookType]);
       for (var book in list) {
@@ -635,7 +636,7 @@ class DatabaseHelper {
   }
 
   String generateLike(String column, List<String> condition) {
-    return condition.map((item) => ' $column LIKE "%$item%"').join(' OR ');
+    return condition.map((item) =>  "$column LIKE '%$item%'").join(' OR ');
   }
 
   Future<int?> insertOperationLog(OperationLog operationLog) async {

@@ -8,6 +8,7 @@ import 'package:read_app/controller/setting_controller.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/file_utils.dart';
 import 'package:read_app/utils/loading_utils.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MyPage extends StatefulWidget {
@@ -35,7 +36,7 @@ class _MyPageState extends State<MyPage> {
               onPressed: () async {
                 final dir = await getApplicationDocumentsDirectory();
                 try {
-                  LoadingUtils.showLoading(tip: '导出中');
+                  var tip = LoadingUtils.showLoading(tip: '导出中');
                   await FileUtils.compressSpecifiedDirectory(
                     join(dir.path, 'read'),
                     join(dir.path, 'read.zip'),
@@ -47,6 +48,25 @@ class _MyPageState extends State<MyPage> {
                       Constant.outSideType,
                       Constant.pdfType,
                     ],
+                    onProgress: (progress) {
+                      tip.value = '导出中: ${(progress * 100).toStringAsFixed(2)}%';
+                    },
+                    onDone: (outputPath) async {
+                      final file = File(outputPath);
+                      if (await file.exists()) {
+                        await Share.shareXFiles(
+                          [XFile(outputPath)],
+                          text: '导出.zip',
+                        );
+                        // 延迟清理
+                        // Future.delayed(const Duration(seconds: 5), () {
+                        //   if (File(outputPath).existsSync()) {
+                        //     File(outputPath).deleteSync();
+                        //   }
+                        // });
+                      }
+                    },
+                    onError: (String error) {}
                   );
                 } catch (e) {
                   Get.snackbar('错误', e.toString());
@@ -59,11 +79,30 @@ class _MyPageState extends State<MyPage> {
               onPressed: () async {
                 final dir = await getApplicationDocumentsDirectory();
                 try {
-                  LoadingUtils.showLoading(tip: '导出中');
+                  var tip = LoadingUtils.showLoading(tip: '导出中');
                   await FileUtils.compressSpecifiedDirectory(
                     join(dir.path, 'read'),
                     join(dir.path, 'read_book.zip'),
                     [Constant.bookType, Constant.directoryType],
+                      onProgress: (progress) {
+                        tip.value = '导出中: ${(progress * 100).toStringAsFixed(2)}%';
+                      },
+                      onDone: (outputPath) async {
+                        final file = File(outputPath);
+                        if (await file.exists()) {
+                          await Share.shareXFiles(
+                            [XFile(outputPath)],
+                            text: '导出.zip',
+                          );
+                          // 延迟清理
+                          // Future.delayed(const Duration(seconds: 5), () {
+                          //   if (File(outputPath).existsSync()) {
+                          //     File(outputPath).deleteSync();
+                          //   }
+                          // });
+                        }
+                      },
+                      onError: (String error) {}
                   );
                 } catch (e) {
                   Get.snackbar('错误', e.toString());
@@ -76,11 +115,30 @@ class _MyPageState extends State<MyPage> {
               onPressed: () async {
                 final dir = await getApplicationDocumentsDirectory();
                 try {
-                  LoadingUtils.showLoading(tip: '导出中');
+                  var tip = LoadingUtils.showLoading(tip: '导出中');
                   await FileUtils.compressSpecifiedDirectory(
                     join(dir.path, 'read'),
                     join(dir.path, 'read_comic.zip'),
                     [Constant.comicType, Constant.directoryType],
+                      onProgress: (progress) {
+                        tip.value = '导出中: ${(progress * 100).toStringAsFixed(2)}%';
+                      },
+                      onDone: (outputPath) async {
+                        final file = File(outputPath);
+                        if (await file.exists()) {
+                          await Share.shareXFiles(
+                            [XFile(outputPath)],
+                            text: '导出.zip',
+                          );
+                          // 延迟清理
+                          // Future.delayed(const Duration(seconds: 5), () {
+                          //   if (File(outputPath).existsSync()) {
+                          //     File(outputPath).deleteSync();
+                          //   }
+                          // });
+                        }
+                      },
+                      onError: (String error) {}
                   );
                 } catch (e) {
                   Get.snackbar('错误', e.toString());

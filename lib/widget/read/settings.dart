@@ -31,6 +31,183 @@ class ReadSettings extends StatefulWidget {
 }
 
 class _ReadSettingsState extends State<ReadSettings> {
+
+  void _regexOnPressed() async {
+    List<RegexpHistory> regexpHistories =
+    await DatabaseHelper.db.getAllRegexpHistory();
+    var regexpOptions =
+    regexpHistories.map((toElement) {
+      return toElement.regexp;
+    }).toList();
+    ScrollController controller = ScrollController();
+    await Get.defaultDialog(
+        title: '章节正则',
+        content: Autocomplete<String>(
+          optionsBuilder:
+              (TextEditingValue textEditingValue) {
+            if (textEditingValue.text.isEmpty) {
+              return regexpOptions;
+            }
+
+            // 过滤匹配的选项
+            final filtered =
+            regexpOptions.where((option) {
+              return option.toLowerCase().contains(
+                  textEditingValue.text
+                      .toLowerCase());
+            }).toList();
+
+            // 如果用户输入的内容不在选项中，添加到列表末尾
+            final userInput = textEditingValue.text;
+            if (!filtered.contains(userInput) &&
+                !regexpOptions.contains(userInput)) {
+              filtered.add(userInput);
+            }
+            return filtered;
+          },
+          fieldViewBuilder: (
+              BuildContext context,
+              TextEditingController fieldController,
+              FocusNode fieldFocusNode,
+              VoidCallback onFieldSubmitted,
+              ) {
+            fieldController.text =
+                widget.chapterTitleExpController.text;
+            return TextFormField(
+              controller: fieldController,
+              focusNode: fieldFocusNode,
+              decoration: const InputDecoration(
+                labelText: '搜索或输入',
+                hintText: '输入章节名正则',
+                border: OutlineInputBorder(),
+                suffixIcon:
+                Icon(Icons.arrow_drop_down),
+              ),
+            );
+          },
+          optionsViewBuilder:
+              (context, onSelected, options) {
+            return Align(
+              alignment: Alignment.topLeft,
+              child: Material(
+                elevation: 4.0,
+                borderRadius:
+                BorderRadius.circular(8),
+                child: SizedBox(
+                  height: MediaQuery.of(context)
+                      .size
+                      .height *
+                      0.3, // 固定高度
+                  width: MediaQuery.of(context)
+                      .size
+                      .width *
+                      0.8, // 设置宽度
+                  child: Scrollbar(
+                    thumbVisibility: true, // 始终显示滚动条
+                    controller: controller,
+                    child: ListView.builder(
+                      padding: EdgeInsets.zero,
+                      itemCount: options.length,
+                      controller: controller,
+                      itemBuilder: (context, index) {
+                        final option =
+                        options.elementAt(index);
+                        return InkWell(
+                          onTap: () =>
+                              onSelected(option),
+                          child: Container(
+                            padding: const EdgeInsets
+                                .symmetric(
+                                vertical: 12,
+                                horizontal: 16),
+                            decoration: BoxDecoration(
+                              border: index <
+                                  options.length -
+                                      1
+                                  ? Border(
+                                bottom: BorderSide(
+                                    color: Colors
+                                        .grey
+                                        .shade200),
+                              )
+                                  : null,
+                            ),
+                            child: ListTile(
+                              leading: Text(
+                                  index.toString()),
+                              title: Text(option),
+                              trailing: IconButton(
+                                  onPressed:
+                                      () async {
+                                    await DatabaseHelper
+                                        .db
+                                        .deleteRegexpHistoryByRegexp(
+                                        option);
+                                    regexpOptions
+                                        .remove(
+                                        option);
+                                    // OperationLog
+                                    //     operationLog =
+                                    //     OperationLog.setRegexpOperationLog(
+                                    //         Constant
+                                    //             .operationDeleteRegexpType,
+                                    //         widget
+                                    //             .chapterTitleExpController
+                                    //             .text);
+                                    // DatabaseHelper.db
+                                    //     .insertOperationLog(
+                                    //         operationLog);
+                                  },
+                                  icon: const Icon(Icons
+                                      .delete_forever)),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+          onSelected: (String selected) {
+            widget.chapterTitleExpController.text =
+                selected;
+          },
+        ),
+        onConfirm: () async {
+          widget.updateExpFunc(
+              widget.chapterTitleExpController.text);
+
+          var regexpHistories = await DatabaseHelper
+              .db
+              .getRegexpHistoryByRegexp(widget
+              .chapterTitleExpController.text);
+          if (regexpHistories.isEmpty) {
+            RegexpHistory regexpHistory =
+            RegexpHistory();
+            regexpHistory.regexp =
+                widget.chapterTitleExpController.text;
+            regexpHistory.createTime =
+                DateTime.now().millisecondsSinceEpoch;
+            await DatabaseHelper.db
+                .insertRegexpHistory(regexpHistory);
+            // OperationLog operationLog =
+            //     OperationLog.setRegexpOperationLog(
+            //         Constant.operationAddRegexpType,
+            //         widget.chapterTitleExpController
+            //             .text);
+            // DatabaseHelper.db
+            //     .insertOperationLog(operationLog);
+          }
+
+          Get.back();
+        },
+        textConfirm: '确定',
+        textCancel: '取消');
+    controller.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
@@ -59,6 +236,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                       InkWell(
                           onTap: () {
                             widget.settings.isVer = false;
+                            widget.settings.isFlip = false;
                             widget.updateFunc(widget.settings);
                           },
                           child: Container(
@@ -66,7 +244,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                             decoration: BoxDecoration(
                                 borderRadius:
                                     const BorderRadius.all(Radius.circular(40)),
-                                border: widget.settings.isVer == false
+                                border: widget.settings.isVer == false && widget.settings.isFlip == false
                                     ? Border.all(
                                         color: Colors.black,
                                         style: BorderStyle.solid,
@@ -76,7 +254,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                                         style: BorderStyle.solid,
                                         width: 2)),
                             child: Text(
-                              '左右滚动',
+                              '左右',
                               style: TextStyle(
                                 fontFamily: widget.settings.fontFamily,
                               ),
@@ -85,6 +263,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                       InkWell(
                           onTap: () {
                             widget.settings.isVer = true;
+                            widget.settings.isFlip = false;
                             widget.updateFunc(widget.settings);
                           },
                           child: Container(
@@ -92,7 +271,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                             decoration: BoxDecoration(
                                 borderRadius:
                                     const BorderRadius.all(Radius.circular(40)),
-                                border: widget.settings.isVer == true
+                                border: widget.settings.isVer == true && widget.settings.isFlip == false
                                     ? Border.all(
                                         color: Colors.black,
                                         style: BorderStyle.solid,
@@ -102,7 +281,33 @@ class _ReadSettingsState extends State<ReadSettings> {
                                         style: BorderStyle.solid,
                                         width: 2)),
                             child: Text(
-                              '上下滚动',
+                              '上下',
+                              style: TextStyle(
+                                fontFamily: widget.settings.fontFamily,
+                              ),
+                            ),
+                          )),
+                      InkWell(
+                          onTap: () {
+                            widget.settings.isFlip = true;
+                            widget.updateFunc(widget.settings);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                                borderRadius:
+                                const BorderRadius.all(Radius.circular(40)),
+                                border: widget.settings.isFlip == true
+                                    ? Border.all(
+                                    color: Colors.black,
+                                    style: BorderStyle.solid,
+                                    width: 2)
+                                    : Border.all(
+                                    color: Colors.white,
+                                    style: BorderStyle.solid,
+                                    width: 2)),
+                            child: Text(
+                              '仿真',
                               style: TextStyle(
                                 fontFamily: widget.settings.fontFamily,
                               ),
@@ -765,181 +970,7 @@ class _ReadSettingsState extends State<ReadSettings> {
                       SizedBox(
                         width: width - 100,
                         child: TextButton(
-                            onPressed: () async {
-                              List<RegexpHistory> regexpHistories =
-                                  await DatabaseHelper.db.getAllRegexpHistory();
-                              var regexpOptions =
-                                  regexpHistories.map((toElement) {
-                                return toElement.regexp;
-                              }).toList();
-                              ScrollController controller = ScrollController();
-                              await Get.defaultDialog(
-                                  title: '章节正则',
-                                  content: Autocomplete<String>(
-                                    optionsBuilder:
-                                        (TextEditingValue textEditingValue) {
-                                      if (textEditingValue.text.isEmpty) {
-                                        return regexpOptions;
-                                      }
-
-                                      // 过滤匹配的选项
-                                      final filtered =
-                                          regexpOptions.where((option) {
-                                        return option.toLowerCase().contains(
-                                            textEditingValue.text
-                                                .toLowerCase());
-                                      }).toList();
-
-                                      // 如果用户输入的内容不在选项中，添加到列表末尾
-                                      final userInput = textEditingValue.text;
-                                      if (!filtered.contains(userInput) &&
-                                          !regexpOptions.contains(userInput)) {
-                                        filtered.add(userInput);
-                                      }
-                                      return filtered;
-                                    },
-                                    fieldViewBuilder: (
-                                      BuildContext context,
-                                      TextEditingController fieldController,
-                                      FocusNode fieldFocusNode,
-                                      VoidCallback onFieldSubmitted,
-                                    ) {
-                                      fieldController.text =
-                                          widget.chapterTitleExpController.text;
-                                      return TextFormField(
-                                        controller: fieldController,
-                                        focusNode: fieldFocusNode,
-                                        decoration: const InputDecoration(
-                                          labelText: '搜索或输入',
-                                          hintText: '输入章节名正则',
-                                          border: OutlineInputBorder(),
-                                          suffixIcon:
-                                              Icon(Icons.arrow_drop_down),
-                                        ),
-                                      );
-                                    },
-                                    optionsViewBuilder:
-                                        (context, onSelected, options) {
-                                      return Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Material(
-                                          elevation: 4.0,
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                          child: SizedBox(
-                                            height: MediaQuery.of(context)
-                                                    .size
-                                                    .height *
-                                                0.3, // 固定高度
-                                            width: MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                0.8, // 设置宽度
-                                            child: Scrollbar(
-                                              thumbVisibility: true, // 始终显示滚动条
-                                              controller: controller,
-                                              child: ListView.builder(
-                                                padding: EdgeInsets.zero,
-                                                itemCount: options.length,
-                                                controller: controller,
-                                                itemBuilder: (context, index) {
-                                                  final option =
-                                                      options.elementAt(index);
-                                                  return InkWell(
-                                                    onTap: () =>
-                                                        onSelected(option),
-                                                    child: Container(
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          vertical: 12,
-                                                          horizontal: 16),
-                                                      decoration: BoxDecoration(
-                                                        border: index <
-                                                                options.length -
-                                                                    1
-                                                            ? Border(
-                                                                bottom: BorderSide(
-                                                                    color: Colors
-                                                                        .grey
-                                                                        .shade200),
-                                                              )
-                                                            : null,
-                                                      ),
-                                                      child: ListTile(
-                                                        leading: Text(
-                                                            index.toString()),
-                                                        title: Text(option),
-                                                        trailing: IconButton(
-                                                            onPressed:
-                                                                () async {
-                                                              await DatabaseHelper
-                                                                  .db
-                                                                  .deleteRegexpHistoryByRegexp(
-                                                                      option);
-                                                              regexpOptions
-                                                                  .remove(
-                                                                      option);
-                                                              // OperationLog
-                                                              //     operationLog =
-                                                              //     OperationLog.setRegexpOperationLog(
-                                                              //         Constant
-                                                              //             .operationDeleteRegexpType,
-                                                              //         widget
-                                                              //             .chapterTitleExpController
-                                                              //             .text);
-                                                              // DatabaseHelper.db
-                                                              //     .insertOperationLog(
-                                                              //         operationLog);
-                                                            },
-                                                            icon: const Icon(Icons
-                                                                .delete_forever)),
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    onSelected: (String selected) {
-                                      widget.chapterTitleExpController.text =
-                                          selected;
-                                    },
-                                  ),
-                                  onConfirm: () async {
-                                    widget.updateExpFunc(
-                                        widget.chapterTitleExpController.text);
-
-                                    var regexpHistories = await DatabaseHelper
-                                        .db
-                                        .getRegexpHistoryByRegexp(widget
-                                            .chapterTitleExpController.text);
-                                    if (regexpHistories.isEmpty) {
-                                      RegexpHistory regexpHistory =
-                                          RegexpHistory();
-                                      regexpHistory.regexp =
-                                          widget.chapterTitleExpController.text;
-                                      regexpHistory.createTime =
-                                          DateTime.now().millisecondsSinceEpoch;
-                                      await DatabaseHelper.db
-                                          .insertRegexpHistory(regexpHistory);
-                                      // OperationLog operationLog =
-                                      //     OperationLog.setRegexpOperationLog(
-                                      //         Constant.operationAddRegexpType,
-                                      //         widget.chapterTitleExpController
-                                      //             .text);
-                                      // DatabaseHelper.db
-                                      //     .insertOperationLog(operationLog);
-                                    }
-
-                                    Get.back();
-                                  },
-                                  textConfirm: '确定',
-                                  textCancel: '取消');
-                              controller.dispose();
-                            },
+                            onPressed: _regexOnPressed,
                             child: Text(widget.chapterTitleExpController.text)),
                       ),
                     ],

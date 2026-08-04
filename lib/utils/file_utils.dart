@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:archive/archive.dart';
+import 'package:archive/archive_io.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -168,15 +171,24 @@ class FileUtils {
     var bookId = await DatabaseHelper.db.insert(book);
 
     OperationLog operationLog = OperationLog.setOperationLog(
-        book, bookId.toString(), Constant.operationAddType);
+      book,
+      bookId.toString(),
+      Constant.operationAddType,
+    );
     DatabaseHelper.db.insertOperationLog(operationLog);
 
     try {
       var content = await BookUtils.loadBook(file.path);
       var chapterContentList = BookUtils.splitChapterContent(
-          content, Constant.defaultChapterTitleExp);
-      await BookUtils.saveChapter(relativeDirPath, absoluteDirPath,
-          chapterContentList, bookId.toString());
+        content,
+        Constant.defaultChapterTitleExp,
+      );
+      await BookUtils.saveChapter(
+        relativeDirPath,
+        absoluteDirPath,
+        chapterContentList,
+        bookId.toString(),
+      );
     } catch (e) {
       rethrow;
     }
@@ -220,7 +232,10 @@ class FileUtils {
     var bookId = await DatabaseHelper.db.insert(book);
 
     OperationLog operationLog = OperationLog.setOperationLog(
-        book, bookId.toString(), Constant.operationAddType);
+      book,
+      bookId.toString(),
+      Constant.operationAddType,
+    );
     DatabaseHelper.db.insertOperationLog(operationLog);
   }
 
@@ -238,16 +253,19 @@ class FileUtils {
     File file = File.fromUri(Uri.file(filePath));
     await file.writeAsBytes(fileBytes);
 
-    final ByteData fontData =
-        ByteData.sublistView(await File(file.path).readAsBytes());
+    final ByteData fontData = ByteData.sublistView(
+      await File(file.path).readAsBytes(),
+    );
     final loader = FontLoader(basename(file.path).split('.')[0]);
     loader.addFont(Future.value(fontData));
     await loader.load();
   }
 
   static Future<void> selectAndImportFile(String parentId) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom, allowedExtensions: Constant.allTextType);
+    FilePickerResult? result = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: Constant.allTextType,
+    );
 
     if (result != null) {
       for (var i = 0; i < result.files.length; i++) {
@@ -257,15 +275,19 @@ class FileUtils {
   }
 
   static Future<List<String>> selectAndImportFont() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom, allowedExtensions: Constant.allFontType);
+    FilePickerResult? result = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: Constant.allFontType,
+    );
 
     List<String> successList = [];
 
     if (result != null) {
       for (var i = 0; i < result.files.length; i++) {
-        await uploadFile(await File(result.files[i].path!).readAsBytes(),
-            result.files[i].name);
+        await uploadFile(
+          await File(result.files[i].path!).readAsBytes(),
+          result.files[i].name,
+        );
         successList.add(path.basename(result.files[i].name).split('0')[0]);
       }
     }
@@ -294,8 +316,10 @@ class FileUtils {
     final filePath = path.join(assetsDir, '', name);
     await file.copy(filePath);
 
-    var chapterContentList =
-        BookUtils.splitChapterContent(content, Constant.defaultChapterTitleExp);
+    var chapterContentList = BookUtils.splitChapterContent(
+      content,
+      Constant.defaultChapterTitleExp,
+    );
 
     Book book = Book();
     book.percent = 0;
@@ -317,11 +341,18 @@ class FileUtils {
     var bookId = await DatabaseHelper.db.insert(book);
 
     OperationLog operationLog = OperationLog.setOperationLog(
-        book, bookId.toString(), Constant.operationAddType);
+      book,
+      bookId.toString(),
+      Constant.operationAddType,
+    );
     DatabaseHelper.db.insertOperationLog(operationLog);
 
-    await BookUtils.saveChapter(relativeDirPath, absoluteDirPath,
-        chapterContentList, bookId.toString());
+    await BookUtils.saveChapter(
+      relativeDirPath,
+      absoluteDirPath,
+      chapterContentList,
+      bookId.toString(),
+    );
   }
 
   static Future<void> saveSyncBook(var selectFile, Map syncBook) async {
@@ -359,8 +390,9 @@ class FileUtils {
     book.page = syncBook['page'];
     book.chapterTitleExp = syncBook['chapterTitleExp'];
     book.title = syncBook['title'];
-    book.updateTime =
-        DateTime.parse(syncBook['updateTime']).millisecondsSinceEpoch;
+    book.updateTime = DateTime.parse(
+      syncBook['updateTime'],
+    ).millisecondsSinceEpoch;
     book.createTime = DateTime.now().millisecondsSinceEpoch;
     book.seqNo = syncBook['seqNo'];
     book.cover = "";
@@ -375,16 +407,24 @@ class FileUtils {
 
     if (syncBook['type'] == Constant.bookType) {
       var content = await BookUtils.loadBook(file.path);
-      var chapterContentList =
-          BookUtils.splitChapterContent(content, syncBook['chapterTitleExp']);
-      await BookUtils.saveChapter(relativeDirPath, absoluteDirPath,
-          chapterContentList, bookId.toString());
+      var chapterContentList = BookUtils.splitChapterContent(
+        content,
+        syncBook['chapterTitleExp'],
+      );
+      await BookUtils.saveChapter(
+        relativeDirPath,
+        absoluteDirPath,
+        chapterContentList,
+        bookId.toString(),
+      );
     }
   }
 
   static Future<void> selectAndImportMedia(String parentId) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom, allowedExtensions: Constant.allMediaType);
+    FilePickerResult? result = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: Constant.allMediaType,
+    );
 
     if (result != null) {
       for (var i = 0; i < result.files.length; i++) {
@@ -495,8 +535,11 @@ class FileUtils {
     }
 
     if (newImageList.isNotEmpty) {
-      cover = path.join(relativeDirPath, path.basename(newDir.path),
-          path.basename(newImageList[0]));
+      cover = path.join(
+        relativeDirPath,
+        path.basename(newDir.path),
+        path.basename(newImageList[0]),
+      );
     } else {
       return;
     }
@@ -522,7 +565,7 @@ class FileUtils {
   static Future<String> selectDirectory() async {
     var status = await Permission.storage.request();
     if (status.isGranted) {
-      String? directoryPath = await FilePicker.platform.getDirectoryPath();
+      String? directoryPath = await FilePicker.getDirectoryPath();
 
       if (directoryPath == null) {
         return "";
@@ -535,7 +578,9 @@ class FileUtils {
   }
 
   static Future<void> saveBookByDirectory(
-      String dirPath, String parentId) async {
+    String dirPath,
+    String parentId,
+  ) async {
     Directory directory = Directory(dirPath);
     List<FileSystemEntity> files = directory.listSync();
 
@@ -553,7 +598,9 @@ class FileUtils {
   }
 
   static Future<void> saveComicByDirectory(
-      String dirPath, String parentId) async {
+    String dirPath,
+    String parentId,
+  ) async {
     Directory directory = Directory(dirPath);
     List<FileSystemEntity> files = directory.listSync();
 
@@ -567,7 +614,7 @@ class FileUtils {
   static Future<void> selectAndImportDirectory(String parentId) async {
     var status = await Permission.manageExternalStorage.request();
     if (status.isGranted) {
-      String? directoryPath = await FilePicker.platform.getDirectoryPath();
+      String? directoryPath = await FilePicker.getDirectoryPath();
 
       if (directoryPath == null) {
         return;
@@ -578,9 +625,23 @@ class FileUtils {
   }
 
   static Future<void> compressDirectory(
-      String dirPath, String outputPath) async {
-    // 创建一个空的 ZIP 文件
-    var archive = Archive();
+    String dirPath,
+    String outputPath, {
+    required void Function(double progress) onProgress,
+    required void Function(String outputPath) onDone,
+    required void Function(String error) onError,
+  }) async {
+    // 获取应用的临时目录
+    var tempDir = await getTemporaryDirectory();
+
+    // 创建一个临时文件路径
+    var time = DateTime.now();
+    var filePath = path.join(
+      tempDir.path,
+      '导出-${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')}-${time.hour.toString().padLeft(2, '0')}-${time.minute.toString().padLeft(2, '0')}-${time.second.toString().padLeft(2, '0')}.zip',
+    );
+
+    final filePaths = <String>[];
 
     // 获取文件夹中的所有文件
     var dir = Directory(dirPath);
@@ -588,25 +649,39 @@ class FileUtils {
     // 将文件添加到 ZIP 存档中
     await for (var file in dir.list(recursive: true)) {
       if (file is File) {
-        var fileBytes = await file.readAsBytes();
-        var relativePath = path.relative(file.path, from: dirPath);
-        archive.addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
+        filePaths.add(file.path);
       }
     }
 
-    // 将存档写入到文件
-    var zipData = await compute(encodeZip, archive);
-    // var outputFile = File(outputPath);
-    // await outputFile.writeAsBytes(zipData!);
-    // print('压缩完成，输出文件路径：$outputPath');
-
-    saveFile('导出', zipData);
+    await ZipExportService.startZipExport(
+      outputPath: filePath,
+      filePaths: filePaths,
+      relativePath: dirPath,
+      onProgress: onProgress,
+      onDone: onDone,
+      onError: onError,
+    );
   }
 
   static Future<void> compressSpecifiedDirectory(
-      String dirPath, String outputPath, List<int> typeList) async {
-    // 创建一个空的 ZIP 文件
-    var archive = Archive();
+    String dirPath,
+    String outputPath,
+    List<int> typeList, {
+    required void Function(double progress) onProgress,
+    required void Function(String outputPath) onDone,
+    required void Function(String error) onError,
+  }) async {
+    // 获取应用的临时目录
+    var tempDir = await getTemporaryDirectory();
+
+    // 创建一个临时文件路径
+    var time = DateTime.now();
+    var filePath = path.join(
+      tempDir.path,
+      '导出-${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')}-${time.hour.toString().padLeft(2, '0')}-${time.minute.toString().padLeft(2, '0')}-${time.second.toString().padLeft(2, '0')}.zip',
+    );
+
+    final filePaths = <String>[];
 
     // 获取文件夹中的所有文件
     var dir = Directory(dirPath);
@@ -615,10 +690,7 @@ class FileUtils {
     await for (var file in dir.list(recursive: true)) {
       if (file is File) {
         if (file.path.endsWith('data.db')) {
-          var fileBytes = await file.readAsBytes();
-          var relativePath = path.relative(file.path, from: dirPath);
-          archive
-              .addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
+          filePaths.add(file.path);
           break;
         }
       }
@@ -632,52 +704,57 @@ class FileUtils {
       switch (type) {
         case Constant.bookType:
           var file = File(path.join(dir.path, book.path));
-          var fileBytes = await file.readAsBytes();
-          var relativePath = path.relative(file.path, from: dirPath);
-          archive
-              .addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
+          filePaths.add(file.path);
           break;
         case Constant.pdfType:
           var file = File(path.join(dir.path, book.path));
-          var fileBytes = await file.readAsBytes();
-          var relativePath = path.relative(file.path, from: dirPath);
-          archive
-              .addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
+          filePaths.add(file.path);
           break;
         case Constant.mediaType:
           var file = File(path.join(dir.path, book.path));
-          var fileBytes = await file.readAsBytes();
-          var relativePath = path.relative(file.path, from: dirPath);
-          archive
-              .addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
+          filePaths.add(file.path);
           break;
         case Constant.comicType:
           var directory = Directory(path.join(dir.path, book.path));
           await for (var file in directory.list(recursive: true)) {
             if (file is File) {
-              var fileBytes = await file.readAsBytes();
-              var relativePath = path.relative(file.path, from: dirPath);
-              archive.addFile(
-                  ArchiveFile(relativePath, fileBytes.length, fileBytes));
+              filePaths.add(file.path);
             }
           }
           break;
       }
     }
 
-    // 将存档写入到文件
-    var zipData = await compute(encodeZip, archive);
-    // var outputFile = File(outputPath);
-    // await outputFile.writeAsBytes(zipData!);
-    // print('压缩完成，输出文件路径：$outputPath');
-
-    saveFile('导出', zipData);
+    await ZipExportService.startZipExport(
+      outputPath: filePath,
+      filePaths: filePaths,
+      relativePath: dirPath,
+      onProgress: onProgress,
+      onDone: onDone,
+      onError: onError,
+    );
   }
 
-  static Future<void> compressSpecifiedDirectoryByParentId(String parentId,
-      String dirPath, String outputPath, List<int> typeList) async {
-    // 创建一个空的 ZIP 文件
-    var archive = Archive();
+  static Future<void> compressSpecifiedDirectoryByParentId(
+    String parentId,
+    String dirPath,
+    String outputPath,
+    List<int> typeList, {
+    required void Function(double progress) onProgress,
+    required void Function(String outputPath) onDone,
+    required void Function(String error) onError,
+  }) async {
+    // 获取应用的临时目录
+    var tempDir = await getTemporaryDirectory();
+
+    // 创建一个临时文件路径
+    var time = DateTime.now();
+    var filePath = path.join(
+      tempDir.path,
+      '导出-${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')}-${time.hour.toString().padLeft(2, '0')}-${time.minute.toString().padLeft(2, '0')}-${time.second.toString().padLeft(2, '0')}.zip',
+    );
+
+    final filePaths = <String>[];
 
     var dir = await getApplicationDocumentsDirectory();
 
@@ -687,69 +764,49 @@ class FileUtils {
 
     for (var book in books) {
       var type = book.type;
-      print("${book.title}  ${book.type} ");
       switch (type) {
         case Constant.bookType:
           var file = File(path.join(dir.path, book.path));
-          var fileBytes = await file.readAsBytes();
-          var fileExtension = getFileExtension(file.path);
-          var relativePath = path.relative(
-              "${path.join(path.dirname(file.path), book.title)}.$fileExtension",
-              from: dirPath);
-          relativePath = relativePath.replaceFirst(
-              path.basename(file.parent.path), book.title);
-          archive
-              .addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
+          filePaths.add(file.path);
           break;
         case Constant.pdfType:
           var file = File(path.join(dir.path, book.path));
-          var fileBytes = await file.readAsBytes();
-          var fileExtension = getFileExtension(file.path);
-          var relativePath = path.relative(
-              "${path.join(path.dirname(file.path), book.title)}.$fileExtension",
-              from: dirPath);
-          archive
-              .addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
+          filePaths.add(file.path);
           break;
         case Constant.mediaType:
           var file = File(path.join(dir.path, book.path));
-          var fileBytes = await file.readAsBytes();
-          var fileExtension = getFileExtension(file.path);
-          var relativePath = path.relative(
-              "${path.join(path.dirname(file.path), book.title)}.$fileExtension",
-              from: dirPath);
-          archive
-              .addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
+          filePaths.add(file.path);
           break;
         case Constant.comicType:
           var directory = Directory(path.join(dir.path, book.path));
           await for (var file in directory.list(recursive: true)) {
             if (file is File) {
-              var fileBytes = await file.readAsBytes();
-              var relativePath = path.relative(file.path, from: dirPath);
-              relativePath = relativePath.replaceFirst(
-                  path.basename(book.path), book.title);
-              archive.addFile(
-                  ArchiveFile(relativePath, fileBytes.length, fileBytes));
+              filePaths.add(file.path);
             }
           }
           break;
       }
     }
 
-    // 将存档写入到文件
-    var zipData = await compute(encodeZip, archive);
-    // var outputFile = File(outputPath);
-    // await outputFile.writeAsBytes(zipData!);
-    // print('压缩完成，输出文件路径：$outputPath');
-
-    saveFile('导出', zipData);
+    await ZipExportService.startZipExport(
+      outputPath: filePath,
+      filePaths: filePaths,
+      relativePath: dirPath,
+      onProgress: onProgress,
+      onDone: onDone,
+      onError: onError,
+    );
   }
 
   static Future<void> getAllSyncBookByParentId(
-      List<Book> books, String parentId, List<int> typeList) async {
-    var syncBooks =
-        await DatabaseHelper.db.getAllSyncBookByParentId(parentId, typeList);
+    List<Book> books,
+    String parentId,
+    List<int> typeList,
+  ) async {
+    var syncBooks = await DatabaseHelper.db.getAllSyncBookByParentId(
+      parentId,
+      typeList,
+    );
 
     for (var book in syncBooks) {
       var type = book.type;
@@ -768,8 +825,10 @@ class FileUtils {
   }
 
   static Future<String> selectJsonFile() async {
-    FilePickerResult? result = await FilePicker.platform
-        .pickFiles(type: FileType.custom, allowedExtensions: ['json']);
+    FilePickerResult? result = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['json'],
+    );
 
     if (result != null) {
       return await loadFile(result.files.first.path!);
@@ -779,8 +838,10 @@ class FileUtils {
   }
 
   static Future<String> selectZipFile() async {
-    FilePickerResult? result = await FilePicker.platform
-        .pickFiles(type: FileType.custom, allowedExtensions: ['zip']);
+    FilePickerResult? result = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['zip'],
+    );
 
     if (result != null) {
       if (result.files.single.path != null) {
@@ -790,32 +851,16 @@ class FileUtils {
     return '';
   }
 
-  static Future<void> saveFile(String fileName, var bytes) async {
-    // 获取应用的临时目录
-    var tempDir = await getTemporaryDirectory();
-
-    // 创建一个临时文件路径
-    var time = DateTime.now();
-    var filePath = path.join(tempDir.path,
-        '导出-${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')}-${time.hour.toString().padLeft(2, '0')}-${time.minute.toString().padLeft(2, '0')}-${time.second.toString().padLeft(2, '0')}.zip');
-
-    // 将文件写入临时路径
-    var file = File(filePath);
-    await file.writeAsBytes(bytes);
-
-    final files = <XFile>[];
-    files.add(XFile(filePath));
-    Share.shareXFiles(files, text: "导出.zip");
-  }
-
   static Future<void> saveJsonFile(String fileName, String content) async {
     // 获取应用的临时目录
     var tempDir = await getTemporaryDirectory();
 
     // 创建一个临时文件路径
     var time = DateTime.now();
-    var filePath = path.join(tempDir.path,
-        '书源-${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')}-${time.hour.toString().padLeft(2, '0')}-${time.minute.toString().padLeft(2, '0')}-${time.second.toString().padLeft(2, '0')}.json');
+    var filePath = path.join(
+      tempDir.path,
+      '书源-${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')}-${time.hour.toString().padLeft(2, '0')}-${time.minute.toString().padLeft(2, '0')}-${time.second.toString().padLeft(2, '0')}.json',
+    );
 
     // 将文件写入临时路径
     var file = File(filePath);
@@ -827,39 +872,43 @@ class FileUtils {
   }
 
   static Future<void> unzipFile(String zipFilePath, String outputDir) async {
-    var file = File(zipFilePath);
-    var bytes = await file.readAsBytes();
+    final receivePort = ReceivePort();
+    final completer = Completer<void>();
+    await Isolate.spawn(
+      _unzipWorker,
+      {
+        'sendPort': receivePort.sendPort,
+        'zipPath': zipFilePath,
+        'outDir': outputDir,
+      },
+    );
 
-    // 解压ZIP文件
-    var archive = ZipDecoder().decodeBytes(bytes);
-
-    var outputDirectory = Directory(outputDir);
-    if (!await outputDirectory.exists()) {
-      await outputDirectory.create(recursive: true);
-    }
-
-    // 解压文件内容
-    for (var file in archive) {
-      var filename = path.join(outputDir, file.name);
-      if (file.isFile) {
-        var outFile = File(filename);
-
-        var directory = Directory(path.dirname(filename));
-        if (!await directory.exists()) {
-          await directory.create(recursive: true);
+    receivePort.listen((message) {
+      if (message is Map) {
+        switch (message['type']) {
+          case 'done':
+            receivePort.close();
+            print('解压完成，文件保存在：$outputDir');
+            completer.complete();
+            break;
+          case 'error':
+            receivePort.close();
+            completer.completeError(
+              Exception('解压失败：${message['message']}'),
+            );
+            break;
         }
-
-        await outFile.writeAsBytes(file.content);
-      } else {
-        await Directory(filename).create(recursive: true);
       }
-    }
+    });
 
-    print('解压完成，文件保存在：$outputDir');
+    return completer.future;
   }
 
   static Future<void> copyDirectory(
-      String fromPath, String toPath, ValueNotifier<String> tipText) async {
+    String fromPath,
+    String toPath,
+    ValueNotifier<String> tipText,
+  ) async {
     final destination = Directory(toPath);
     final source = Directory(fromPath);
 
@@ -874,8 +923,9 @@ class FileUtils {
     await for (var entity in source.list(recursive: false)) {
       if (entity is Directory) {
         // 递归复制子目录
-        var newDirectory =
-            Directory(path.join(destination.path, path.basename(entity.path)));
+        var newDirectory = Directory(
+          path.join(destination.path, path.basename(entity.path)),
+        );
         await copyDirectory(entity.path, newDirectory.path, tipText);
       } else if (entity is File) {
         if (entity.path.endsWith('data.db')) {
@@ -885,15 +935,18 @@ class FileUtils {
         }
 
         // 复制文件
-        var newFile =
-            File(path.join(destination.path, path.basename(entity.path)));
+        var newFile = File(
+          path.join(destination.path, path.basename(entity.path)),
+        );
         await newFile.writeAsBytes(await entity.readAsBytes());
       }
     }
   }
 
   static Future<void> uploadZipFile(
-      List<int> fileBytes, String filename) async {
+    List<int> fileBytes,
+    String filename,
+  ) async {
     String tempPath = '';
     String outputDir = '';
     try {
@@ -933,8 +986,10 @@ class FileUtils {
   }
 
   static Future<void> selectAndImportPdf(String parentId) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom, allowedExtensions: Constant.allPdfType);
+    FilePickerResult? result = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: Constant.allPdfType,
+    );
 
     if (result != null) {
       for (var i = 0; i < result.files.length; i++) {
@@ -978,12 +1033,18 @@ class FileUtils {
     var bookId = await DatabaseHelper.db.insert(book);
 
     OperationLog operationLog = OperationLog.setOperationLog(
-        book, bookId.toString(), Constant.operationAddType);
+      book,
+      bookId.toString(),
+      Constant.operationAddType,
+    );
     DatabaseHelper.db.insertOperationLog(operationLog);
   }
 
   static Future<void> shareFile(
-      String filename, var bytes, String fileExtension) async {
+    String filename,
+    var bytes,
+    String fileExtension,
+  ) async {
     final tempDir = await getTemporaryDirectory();
     var filePath = path.join(tempDir.path, "$filename.$fileExtension");
 
@@ -993,5 +1054,153 @@ class FileUtils {
     final files = <XFile>[];
     files.add(XFile(filePath));
     Share.shareXFiles(files, text: "$filename.$fileExtension");
+  }
+}
+
+class ZipExportService {
+  static Future<void> startZipExport({
+    required String outputPath,
+    required List<String> filePaths,
+    required String relativePath,
+    required void Function(double progress) onProgress,
+    required void Function(String outputPath) onDone,
+    required void Function(String error) onError,
+  }) async {
+    final receivePort = ReceivePort();
+    final completer = Completer<void>();
+
+    receivePort.listen((message) {
+      if (message is Map) {
+        switch (message['type']) {
+          case 'progress':
+            final progress = (message['progress'] as num).toDouble();
+            onProgress(progress);
+            break;
+
+          case 'done':
+            final path = message['outputPath'] as String;
+            onDone(path);
+            receivePort.close();
+            completer.complete();
+            break;
+
+          case 'error':
+            final msg = message['message'] as String;
+            onError(msg);
+            receivePort.close();
+            completer.completeError(msg);
+            break;
+        }
+      }
+    });
+
+    // ✅ 注意：只传可序列化的数据
+    final params = ZipExportParams(
+      outputPath: outputPath,
+      filePaths: filePaths,
+      relativePath: relativePath,
+      sendPort: receivePort.sendPort,
+    );
+
+    await Isolate.spawn(_zipWorker, params);
+
+    return completer.future;
+  }
+}
+
+void _zipWorker(ZipExportParams params) {
+  final sendPort = params.sendPort;
+
+  try {
+    final outputStream = OutputFileStream(params.outputPath);
+    final encoder = ZipEncoder();
+
+    encoder.startEncode(outputStream, level: 1);
+
+    final total = params.filePaths.length;
+
+    for (var i = 0; i < total; i++) {
+      final filePath = params.filePaths[i];
+
+      if (!File(filePath).existsSync()) continue;
+
+      final input = InputFileStream(filePath);
+      final relativePath = path.relative(
+        filePath,
+        from: params.relativePath,
+      ); // 或你自己算相对路径
+
+      final af = ArchiveFile.stream(relativePath, input);
+
+      encoder.add(af);
+
+      sendPort.send({
+        'type': 'progress',
+        'done': i + 1,
+        'total': total,
+        'progress': (i + 1) / total,
+      });
+    }
+
+    encoder.endEncode();
+    outputStream.close();
+
+    sendPort.send({'type': 'done', 'outputPath': params.outputPath});
+  } catch (e, st) {
+    sendPort.send({
+      'type': 'error',
+      'message': e.toString(),
+      'stack': st.toString(),
+    });
+  }
+}
+
+class ZipExportParams {
+  final String outputPath;
+  final String relativePath;
+  final List<String> filePaths; // 所有要压缩的文件绝对路径
+  final SendPort sendPort; // 回传进度 / 结果
+
+  ZipExportParams({
+    required this.outputPath,
+    required this.filePaths,
+    required this.relativePath,
+    required this.sendPort,
+  });
+}
+
+void _unzipWorker(Map<String, dynamic> params) {
+  final SendPort sendPort = params['sendPort'];
+  final String zipPath = params['zipPath'];
+  final String outDir = params['outDir'];
+
+  try {
+    final input = InputFileStream(zipPath);
+    final archive = ZipDecoder().decodeStream(input);
+
+    for (final file in archive.files) {
+      final filePath = path.join(outDir, file.name);
+
+      if (file.isFile) {
+        final dir = Directory(path.dirname(filePath));
+        if (!dir.existsSync()) {
+          dir.createSync(recursive: true);
+        }
+
+        final output = OutputFileStream(filePath);
+        file.writeContent(output);
+        output.closeSync(); // ✅ 关键：强制刷盘
+      } else {
+        Directory(filePath).createSync(recursive: true);
+      }
+    }
+
+    input.closeSync();
+    sendPort.send({'type': 'done'});
+  } catch (e) {
+    sendPort.send({
+      'type': 'error',
+      'message': e.toString(),
+    });
   }
 }

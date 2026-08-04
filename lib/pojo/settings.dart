@@ -26,6 +26,7 @@ class Settings {
   late double pageRightPadding = 10;
   late double pageTopPadding = 0;
   late double pageBottomPadding = 30;
+  late bool isFlip = false;
 
   static Settings fromMap(Map<String, dynamic> config) {
     Settings settings = Settings();
@@ -64,6 +65,7 @@ class Settings {
     settings.pageRightPadding = config['pageRightPadding'] ?? 10;
     settings.pageTopPadding = config['pageTopPadding'] ?? 0;
     settings.pageBottomPadding = config['pageBottomPadding'] ?? 30;
+    settings.isFlip = config['isFlip'] ?? false;
     return settings;
   }
 
@@ -103,6 +105,7 @@ class Settings {
       'pageRightPadding': pageRightPadding,
       'pageTopPadding': pageTopPadding,
       'pageBottomPadding': pageBottomPadding,
+      'isFlip': isFlip,
     };
   }
 
