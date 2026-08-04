@@ -817,63 +817,6 @@ class _ReadPageState extends State<ReadPage> {
     return right;
   }
 
-  List<String> splitTextToLines(String text, TextStyle style, double maxWidth) {
-    if (text.isEmpty) return [];
-
-    final painter = TextPainter(
-      text: TextSpan(text: text, style: style),
-      textDirection: TextDirection.ltr,
-    )..layout(maxWidth: maxWidth);
-
-    // 获取所有行的度量信息
-    final lineMetrics = painter.computeLineMetrics();
-
-    if (lineMetrics.isEmpty) return [];
-
-    List<String> lines = [];
-    int currentOffset = 0;
-
-    for (var i = 0; i < lineMetrics.length; i++) {
-      final line = lineMetrics[i];
-
-      // 获取这一行结束的字符位置
-      int lineEnd;
-
-      if (i == lineMetrics.length - 1) {
-        // 最后一行
-        lineEnd = text.length;
-      } else {
-        // 使用 getPositionForOffset 获取行尾位置
-        // 注意：这里使用行宽度作为偏移量
-        final position = painter.getPositionForOffset(
-          Offset(line.width, line.baseline),
-        );
-        lineEnd = position.offset;
-
-        // 确保不会超出文本长度
-        if (lineEnd > text.length) {
-          lineEnd = text.length;
-        }
-      }
-
-      // 提取这一行的文本
-      if (lineEnd > currentOffset) {
-        String lineText = text.substring(currentOffset, lineEnd);
-
-        // 去除行尾的换行符（如果有）
-        lineText = lineText.replaceAll(RegExp(r'[\n\r]+$'), '');
-
-        if (lineText.isNotEmpty) {
-          lines.add(lineText);
-        }
-
-        currentOffset = lineEnd;
-      }
-    }
-
-    return lines;
-  }
-
   String firstLineText(String text, TextStyle style, double maxWidth) {
     int low = 0;
     int high = text.length;
