@@ -608,7 +608,7 @@ class _ReadPageState extends State<ReadPage> {
       height = height - 30;
     }
 
-    height = (height - settings.pageTopPadding - settings.pageBottomPadding)
+    height = (height - settings.pageTopPadding - settings.pageBottomPadding - 10)
         .floorToDouble();
 
     width = (width - settings.pageLeftPadding - settings.pageRightPadding)
@@ -802,31 +802,23 @@ class _ReadPageState extends State<ReadPage> {
     final painter = TextPainter(
       text: TextSpan(text: text, style: style),
       textDirection: TextDirection.ltr,
-      maxLines: 1, // 关键：限制为1行，或者不限制也可以，通过offset获取
-      ellipsis: '...', // 如果需要截断符号可以加，不需要则去掉
+      textAlign: TextAlign.justify, // 必须保持和你的 Text 组件一致
     );
 
-    // 1. 布局文本，给定最大宽度
     painter.layout(minWidth: 0, maxWidth: maxWidth);
 
-    // 2. 获取布局后的行信息
-    // 注意：这里不用二分法，直接利用引擎的计算结果
     final lines = painter.computeLineMetrics();
 
     if (lines.isEmpty) return '';
 
-    // 3. 获取第一行的宽度
-    // 这里的宽度是引擎自动处理避头尾后的实际宽度，可能略微超过 maxWidth
-    final firstLineWidth = lines.first.width;
+    if (lines.length == 1 && painter.width <= maxWidth) {
+      return text;
+    }
 
-    // 4. 根据第一行的实际宽度，找到对应的字符位置
-    // 我们将点击位置设置在行宽的最右侧，稍微往左一点点（-0.1）以避免命中下一行的首个字符
-    // height / 2 确保垂直位置在第一行内
     final position = painter.getPositionForOffset(
-      Offset(firstLineWidth - 0.1, lines.first.height / 2),
+      Offset(10000.0, lines.first.height / 2),
     );
 
-    // 5. 截取字符串
     return text.substring(0, position.offset);
   }
 
