@@ -90,8 +90,8 @@ class _ReadPageState extends State<ReadPage> {
   late final WindowListener _listener;
   int maxContentPage = 5000;
   int nowContentPage = 0;
-  String zhanwei = '       ';
-  String zhanwei1 = '     ';
+  String zhanwei = '\u3000\u3000';
+  String zhanwei1 = '\u3000\u3000';
   int _contentRevision = 0;
 
   Future<void> init(Book book) async {
@@ -270,9 +270,7 @@ class _ReadPageState extends State<ReadPage> {
       );
 
       if (nowContentPage + pages.length > maxContentPage) {
-        pageList.addAll(
-          List.generate(maxContentPage, (index) => null),
-        );
+        pageList.addAll(List.generate(maxContentPage, (index) => null));
       }
 
       for (int j = 0; j < pages.length; j++) {
@@ -408,12 +406,7 @@ class _ReadPageState extends State<ReadPage> {
         chapterPageNumTitleMap[beforeAddLength] = chapter;
 
         if (nowContentPage + pages.length > widgetList.length) {
-          widgetList.addAll(
-            List.generate(
-              maxContentPage,
-              (index) => null,
-            ),
-          );
+          widgetList.addAll(List.generate(maxContentPage, (index) => null));
         }
 
         for (int i = 0; i < pages.length; i++) {
@@ -473,7 +466,10 @@ class _ReadPageState extends State<ReadPage> {
           ),
         );
       } else {
-        if (text.contains(zhanwei)) {
+        if (i == textList.length - 1 && text.isEmpty) {
+          continue;
+        }
+        if (text.startsWith(zhanwei)) {
           if (isLast) {
             text = text.replaceFirst(zhanwei, zhanwei1);
             var lastTextList = text.split('');
@@ -612,10 +608,11 @@ class _ReadPageState extends State<ReadPage> {
       height = height - 30;
     }
 
-    height -= settings.pageTopPadding;
-    height -= settings.pageBottomPadding;
+    height = (height - settings.pageTopPadding - settings.pageBottomPadding)
+        .floorToDouble();
 
-    width = (width - settings.pageLeftPadding - settings.pageRightPadding);
+    width = (width - settings.pageLeftPadding - settings.pageRightPadding)
+        .floorToDouble();
 
     List<String> tempList = data.split('\n');
 
@@ -661,7 +658,6 @@ class _ReadPageState extends State<ReadPage> {
         textInfo['lineNum'] = lineNum;
         pageTextList.add(textInfo);
       } else {
-        var xxxText = text;
         while (text.isNotEmpty) {
           var str = firstLineText(
             text,
@@ -734,23 +730,6 @@ class _ReadPageState extends State<ReadPage> {
           var line = lines[i];
 
           if (nowHeight + thisLineHeight > height) {
-            // if (nowText.isNotEmpty) {
-            //   if (lineNum == 1) {
-            //     textListPage.add({
-            //       'text': nowText,
-            //       'hasChapterTitle': hasChapterTitle,
-            //       'isLast': true,
-            //     });
-            //   } else {
-            //     textListPage.add({
-            //       'text': nowText,
-            //       'hasChapterTitle': hasChapterTitle,
-            //       'isLast': false,
-            //     });
-            //   }
-            //
-            // }
-
             if (lineList.isNotEmpty) {
               for (var line1 in lineList) {
                 textListPage.add({
@@ -818,42 +797,37 @@ class _ReadPageState extends State<ReadPage> {
   }
 
   String firstLineText(String text, TextStyle style, double maxWidth) {
-    int low = 0;
-    int high = text.length;
-    int best = 0;
+    if (text.isEmpty) return '';
 
-    while (low <= high) {
-      final mid = (low + high) ~/ 2;
+    final painter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: TextDirection.ltr,
+      maxLines: 1, // 关键：限制为1行，或者不限制也可以，通过offset获取
+      ellipsis: '...', // 如果需要截断符号可以加，不需要则去掉
+    );
 
-      final painter = TextPainter(
-        text: TextSpan(text: text.substring(0, mid), style: style),
-        textDirection: TextDirection.ltr,
-        maxLines: 1,
-      )..layout();
+    // 1. 布局文本，给定最大宽度
+    painter.layout(minWidth: 0, maxWidth: maxWidth);
 
-      if (painter.width <= maxWidth) {
-        best = mid;
-        low = mid + 1;
-      } else {
-        high = mid - 1;
-      }
-    }
+    // 2. 获取布局后的行信息
+    // 注意：这里不用二分法，直接利用引擎的计算结果
+    final lines = painter.computeLineMetrics();
 
-    if (best <= 0) return '';
+    if (lines.isEmpty) return '';
 
-    if (best < text.length) {
-      final tryPainter = TextPainter(
-        text: TextSpan(text: text.substring(0, best + 1), style: style),
-        textDirection: TextDirection.ltr,
-        maxLines: 1,
-      )..layout();
+    // 3. 获取第一行的宽度
+    // 这里的宽度是引擎自动处理避头尾后的实际宽度，可能略微超过 maxWidth
+    final firstLineWidth = lines.first.width;
 
-      if (tryPainter.width <= maxWidth) {
-        best += 1;
-      }
-    }
+    // 4. 根据第一行的实际宽度，找到对应的字符位置
+    // 我们将点击位置设置在行宽的最右侧，稍微往左一点点（-0.1）以避免命中下一行的首个字符
+    // height / 2 确保垂直位置在第一行内
+    final position = painter.getPositionForOffset(
+      Offset(firstLineWidth - 0.1, lines.first.height / 2),
+    );
 
-    return text.substring(0, best);
+    // 5. 截取字符串
+    return text.substring(0, position.offset);
   }
 
   void _onPageChanged(int leftPageIndex, int page) {
@@ -939,12 +913,13 @@ class _ReadPageState extends State<ReadPage> {
                 config: PageFlipConfig(
                   skipTapAnimation: false,
                   enableSinglePageSettleReveal: true,
-                  snapshotRefreshPolicy: PageFlipSnapshotRefreshPolicy.whenDirty,
+                  snapshotRefreshPolicy:
+                      PageFlipSnapshotRefreshPolicy.whenDirty,
                   backgroundColor: Color(settings.backgroundColor),
                   cutoffForward: 0.35,
                   cutoffPrevious: 0.5,
                   sensitivity: 0.5,
-                  maxSnapshotPixelRatio: 2.5
+                  maxSnapshotPixelRatio: 2.5,
                 ),
                 spreadMode: PageFlipSpreadMode.single,
                 itemBuilder: (BuildContext context, int index) {
@@ -960,9 +935,7 @@ class _ReadPageState extends State<ReadPage> {
                 onPageFlipped: (page) {
                   _onPageChanged(0, page);
                 },
-                onPageChanged: (page) {
-
-                },
+                onPageChanged: (page) {},
                 onFlipEnd: () {
                   _pageFlipController.markCurrentPageDirty();
                 },
@@ -1047,7 +1020,9 @@ class _ReadPageState extends State<ReadPage> {
     height = conte.size.height - conte.padding.top - conte.padding.bottom;
     width = conte.size.width - conte.padding.left - conte.padding.right;
     return Scaffold(
-      backgroundColor: PlatFormUtils.isDesktop() ? Colors.transparent : Color(settings.backgroundColor),
+      backgroundColor: PlatFormUtils.isDesktop()
+          ? Colors.transparent
+          : Color(settings.backgroundColor),
       resizeToAvoidBottomInset: false,
       appBar: null,
       body: SafeArea(
