@@ -1,0 +1,87 @@
+name: Flutter CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    # 使用矩阵策略，同时构建 Android 和 Windows
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: android
+            build_cmd: flutter build apk --release
+            artifact_path: build/app/outputs/flutter-apk/app-release.apk
+            asset_name: app-release.apk
+          - os: windows-latest
+            target: windows
+            build_cmd: flutter build windows --release
+            # Windows 构建产物是一个文件夹，需要先压缩
+            artifact_path: build/windows/x64/runner/Release
+            asset_name: Release.zip
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 仅 Android 需要 Java 环境
+      - name: Setup Java (Android)
+        if: ${{ matrix.target == 'android' }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.8'
+          channel: 'stable'
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Build App
+        run: ${{ matrix.build_cmd }}
+
+      # 仅 Windows 需要：压缩文件夹
+      - name: Compress Windows Artifact
+        if: ${{ matrix.target == 'windows' }}
+        run: Compress-Archive -Path '${{ matrix.artifact_path }}/*' -DestinationPath ${{ matrix.asset_name }}
+        shell: powershell
+
+      # 发布到 GitHub Releases
+      # 注意：使用相同的 tag_name，这样两个平台的文件会合并到同一个 Release 中
+      - name: Release to GitHub
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          files: |
+            ${{ matrix.artifact_path }}
+            ${{ matrix.asset_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # --- 通知服务器 (仅在所有构建完成后执行) ---
+  notify_server:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read pubspec version
+        id: vars
+        run: |
+          VERSION=$(grep -m1 "version:" pubspec.yaml | sed 's/version://')
+          echo "VERSION=$VERSION" >>$GITHUB_OUTPUT
+
+      - name: Send Webhook
+        run: |
+          curl -X POST https://www.yuumi.cc/webhook/deploy \
+          -H "Content-Type: application/json" \
+          -d "{\"status\": \"success\", \"version\": \"${{ steps.vars.outputs.VERSION }}\"}"
