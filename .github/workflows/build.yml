@@ -74,6 +74,12 @@ jobs:
     needs: [build-android, build-windows]
     runs-on: ubuntu-latest
     steps:
+      - name: Read pubspec version
+        id: vars
+        run: |
+          VERSION=$(grep -m1 '^version:' pubspec.yaml | sed 's/version: //' | cut -d'+' -f1)
+          echo "VERSION=$VERSION" >>$GITHUB_OUTPUT
+
       - name: Download Android Artifact
         uses: actions/download-artifact@v4
         with:
@@ -89,7 +95,7 @@ jobs:
       - name: Release to GitHub
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: v1.0.${{ github.run_number }}
+          tag_name: ${{ steps.vars.outputs.VERSION }}
           # 标签就用触发 workflow 的那个 tag，例如 v1.0.5
           # 也可以显式写 tag_name: ${{ github.ref_name }}
           files: |
