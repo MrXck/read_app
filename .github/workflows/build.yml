@@ -89,6 +89,7 @@ jobs:
       - name: Release to GitHub
         uses: softprops/action-gh-release@v3
         with:
+          tag_name: v1.0.${{ github.run_number }}
           # 标签就用触发 workflow 的那个 tag，例如 v1.0.5
           # 也可以显式写 tag_name: ${{ github.ref_name }}
           files: |
