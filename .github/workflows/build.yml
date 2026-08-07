@@ -8,89 +8,91 @@ permissions:
   contents: write
 
 jobs:
-  build:
-    # 使用矩阵策略，同时构建 Android 和 Windows
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            target: android
-            build_cmd: flutter build apk --release
-            artifact_path: build/app/outputs/flutter-apk/app-release.apk
-            asset_name: app-release.apk
-          - os: windows-latest
-            target: windows
-            build_cmd: flutter build windows --release
-            # Windows 构建产物是一个文件夹，需要先压缩
-#            artifact_path: build/windows/x64/runner/Release
-            artifact_path: Release.zip
-            asset_name: Release.zip
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      # 仅 Android 需要 Java 环境
-      - name: Setup Java (Android)
-        if: ${{ matrix.target == 'android' }}
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.44.8'
-          channel: 'stable'
-
-      - name: Get Dependencies
-        run: flutter pub get
-
-      - name: Configure MSVC (Workaround)
-        if: ${{ matrix.target == 'windows' }}
-        run: echo "CL=/D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS" >> $env:GITHUB_ENV
-        shell: pwsh
-
-      - name: Build App
-        run: ${{ matrix.build_cmd }}
-
-      # 仅 Windows 需要：压缩文件夹
-      - name: Compress Windows Artifact
-        if: ${{ matrix.target == 'windows' }}
-        run: Compress-Archive -Path 'build/windows/x64/runner/Release/*' -DestinationPath ${{ matrix.asset_name }}
-        shell: powershell
-
-      # 发布到 GitHub Releases
-      # 注意：使用相同的 tag_name，这样两个平台的文件会合并到同一个 Release 中
-      - name: Release to GitHub
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v1.0.${{ github.run_number }}
-          files: |
-            ${{ matrix.artifact_path }}
-            ${{ matrix.asset_name }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # --- 通知服务器 (仅在所有构建完成后执行) ---
-  notify_server:
-    needs: build
+  build-android:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Read pubspec version
-        id: vars
-        run: |
-          VERSION=$(grep -m1 "version:" pubspec.yaml | sed 's/version://')
-          echo "VERSION=$VERSION" >>$GITHUB_OUTPUT
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
 
-      - name: Send Webhook
-        run: |
-          curl -X POST https://www.yuumi.cc/webhook/deploy \
-          -H "Content-Type: application/json" \
-          -d "{\"status\": \"success\", \"version\": \"${{ steps.vars.outputs.VERSION }}\"}"
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.44.8"
+          channel: stable
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload Android Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.44.8"
+          channel: stable
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Configure MSVC (Workaround)
+        run: echo "CL=/D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS" >> $env:GITHUB_ENV
+        shell: pwsh
+
+      - name: Build Windows
+        run: flutter build windows --release
+
+      - name: Compress Windows Artifact
+        run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath Release.zip
+        shell: powershell
+
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-zip
+          path: Release.zip
+
+  release:
+    needs: [build-android, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Android Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: android-apk
+          path: artifacts/android
+
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-zip
+          path: artifacts/windows
+
+      - name: Release to GitHub
+        uses: softprops/action-gh-release@v3
+        with:
+          # 标签就用触发 workflow 的那个 tag，例如 v1.0.5
+          # 也可以显式写 tag_name: ${{ github.ref_name }}
+          files: |
+            artifacts/android/app-release.apk
+            artifacts/windows/Release.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
