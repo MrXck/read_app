@@ -45,6 +45,11 @@ jobs:
       - name: Get Dependencies
         run: flutter pub get
 
+      - name: Configure MSVC (Workaround)
+        if: ${{ matrix.target == 'windows' }}
+        run: echo "CL=/D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS" >> $env:GITHUB_ENV
+        shell: pwsh
+
       - name: Build App
         run: ${{ matrix.build_cmd }}
 
