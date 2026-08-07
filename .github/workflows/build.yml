@@ -70,8 +70,123 @@ jobs:
           name: windows-zip
           path: Release.zip
 
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.44.8"
+          channel: stable
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      # --no-codesign 参数用于在没有签名证书的情况下生成构建产物
+      - name: Build IOS (No Codesign)
+        run: flutter build ios --release --no-codesign
+
+      - name: Compress iOS Artifact
+        # 将生成的 app 包压缩，方便上传
+        run: zip -r ios-build.zip build/ios/iphoneos/Runner.app
+
+      - name: Upload iOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-zip
+          path: ios-build.zip
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.44.8"
+          channel: stable
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Build macOS
+        run: flutter build macos --release
+
+      - name: Compress macOS Artifact
+        run: zip -r macos-build.zip build/macos/Build/Products/Release/Runner.app
+
+      - name: Upload macOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-zip
+          path: macos-build.zip
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.44.8"
+          channel: stable
+
+      - name: Install Linux Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Build Linux
+        run: flutter build linux --release
+
+      - name: Compress Linux Artifact
+        run: zip -r linux-build.zip build/linux/x64/release/bundle
+
+      - name: Upload Linux Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-zip
+          path: linux-build.zip
+
+  build-web:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.44.8"
+          channel: stable
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Build Web
+        run: flutter build web --release
+
+      - name: Compress Web Artifact
+        run: zip -r web-build.zip build/web
+
+      - name: Upload Web Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-zip
+          path: web-build.zip
+
   release:
-    needs: [build-android, build-windows]
+    needs: [build-android, build-ios, build-windows, build-macos, build-linux, build-web]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -83,27 +198,50 @@ jobs:
           VERSION=$(grep -m1 '^version:' pubspec.yaml | sed 's/version: //' | cut -d'+' -f1)
           echo "VERSION=$VERSION" >>$GITHUB_OUTPUT
 
-      - name: Download Android Artifact
+      - name: Download All Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: android-apk
-          path: artifacts/android
-
-      - name: Download Windows Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: windows-zip
-          path: artifacts/windows
+          path: artifacts
 
       - name: Release to GitHub
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.vars.outputs.VERSION }}
           overwrite_files: true
-          # 标签就用触发 workflow 的那个 tag，例如 v1.0.5
-          # 也可以显式写 tag_name: ${{ github.ref_name }}
           files: |
-            artifacts/android/app-release.apk
-            artifacts/windows/Release.zip
+            artifacts/android-apk/app-release.apk
+            artifacts/ios-zip/ios-build.zip
+            artifacts/windows-zip/Release.zip
+            artifacts/macos-zip/macos-build.zip
+            artifacts/linux-zip/linux-build.zip
+            artifacts/web-zip/web-build.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Notify Server
+        run: |
+          VERSION="${{ steps.vars.outputs.VERSION }}"
+          REPO="${{ github.repository }}"
+          
+          # 拼接所有平台的下载链接
+          ANDROID_URL="https://github.com/$REPO/releases/download/$VERSION/app-release.apk"
+          IOS_URL="https://github.com/$REPO/releases/download/$VERSION/ios-build.zip"
+          WINDOWS_URL="https://github.com/$REPO/releases/download/$VERSION/Release.zip"
+          MACOS_URL="https://github.com/$REPO/releases/download/$VERSION/macos-build.zip"
+          LINUX_URL="https://github.com/$REPO/releases/download/$VERSION/linux-build.zip"
+          WEB_URL="https://github.com/$REPO/releases/download/$VERSION/web-build.zip"
+
+          echo "Notifying server for version $VERSION..."
+
+          curl -X POST https://www.yuumi.cc/webhook/deploy \
+          -H "Content-Type: application/json" \
+          -d "{
+            \"status\": \"success\",
+            \"version\": \"$VERSION\",
+            \"android_url\": \"$ANDROID_URL\",
+            \"ios_url\": \"$IOS_URL\",
+            \"windows_url\": \"$WINDOWS_URL\",
+            \"macos_url\": \"$MACOS_URL\",
+            \"linux_url\": \"$LINUX_URL\",
+            \"web_url\": \"$WEB_URL\"
+          }"
