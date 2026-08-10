@@ -87,7 +87,7 @@ jobs:
 
       # --no-codesign 参数用于在没有签名证书的情况下生成构建产物
       - name: Build IOS (No Codesign)
-        run: flutter build ipa --release --no-codesign --export-options-plist=ios/ExportOptions.plist
+        run: flutter build ios --release --no-codesign
 
       - name: Compress iOS Artifact
         # 将生成的 app 包压缩，方便上传
