@@ -98,7 +98,9 @@ jobs:
 
       # 压缩 IPA
       - name: Compress IPA
-        run: zip -r ios-build.zip build/Runner_unsigned.ipa
+        run: |
+          cd build/ios/ipa  # 进入 ipa 目录
+          zip -r ios-build.zip ../Runner_unsigned.ipa  # 使用相对路径
 
 #      - name: Compress iOS Artifact
 #        # 将生成的 app 包压缩，方便上传
