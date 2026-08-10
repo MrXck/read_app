@@ -115,7 +115,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ios-ipa
-          path: ios-build.zip
+          path: build/ios/ipa/ios-build.zip
 
   build-web:
     runs-on: ubuntu-latest
