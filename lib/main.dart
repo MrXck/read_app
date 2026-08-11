@@ -210,7 +210,12 @@ class MyApp extends StatelessWidget {
               } else {
                 Widget app = GetMaterialApp(
                   theme: ThemeData(
-                      fontFamily: snapshot.data?.appFont),
+                    colorScheme: ColorScheme.fromSeed(
+                      seedColor: Colors.white,
+                      surface: Colors.white, // surface 颜色也会影响 Scaffold 背景
+                    ),
+                    fontFamily: snapshot.data?.appFont
+                  ),
                   debugShowCheckedModeBanner: false,
                   initialRoute: "/",
                   getPages: AppPage.routes,

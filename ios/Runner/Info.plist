@@ -64,5 +64,9 @@
             </array>
         </dict>
     </array>
+    <key>com.apple.security.application-groups</key>
+    <array>
+        <string>group.com.read.readapp</string>
+    </array>
 </dict>
 </plist>
