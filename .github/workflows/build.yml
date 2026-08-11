@@ -8,35 +8,35 @@ permissions:
   contents: write
 
 jobs:
-  build-android:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: "3.44.8"
-          channel: stable
-
-      - name: Get Dependencies
-        run: flutter pub get
-
-      - name: Build APK
-        run: flutter build apk --release
-
-      - name: Upload Android Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+#  build-android:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v4
+#
+#      - name: Setup Java
+#        uses: actions/setup-java@v4
+#        with:
+#          distribution: temurin
+#          java-version: "17"
+#
+#      - name: Setup Flutter
+#        uses: subosito/flutter-action@v2
+#        with:
+#          flutter-version: "3.44.8"
+#          channel: stable
+#
+#      - name: Get Dependencies
+#        run: flutter pub get
+#
+#      - name: Build APK
+#        run: flutter build apk --release
+#
+#      - name: Upload Android Artifact
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: android-apk
+#          path: build/app/outputs/flutter-apk/app-release.apk
 
   build-windows:
     runs-on: windows-latest
@@ -145,7 +145,8 @@ jobs:
           path: web-build.zip
 
   release:
-    needs: [build-android, build-ios, build-windows, build-web]
+#    needs: [build-android, build-ios, build-windows, build-web]
+    needs: [build-ios, build-windows, build-web]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -168,7 +169,7 @@ jobs:
           tag_name: ${{ steps.vars.outputs.VERSION }}
           overwrite_files: true
           files: |
-            artifacts/android-apk/app-release.apk
+#            artifacts/android-apk/app-release.apk
             artifacts/ios-zip/ios-build.zip
             artifacts/windows-zip/Release.zip
             artifacts/web-zip/web-build.zip
@@ -181,7 +182,7 @@ jobs:
           REPO="${{ github.repository }}"
           
           # 拼接所有平台的下载链接
-          ANDROID_URL="https://github.com/$REPO/releases/download/$VERSION/app-release.apk"
+#          ANDROID_URL="https://github.com/$REPO/releases/download/$VERSION/app-release.apk"
           IOS_URL="https://github.com/$REPO/releases/download/$VERSION/ios-build.zip"
           WINDOWS_URL="https://github.com/$REPO/releases/download/$VERSION/Release.zip"
           WEB_URL="https://github.com/$REPO/releases/download/$VERSION/web-build.zip"
@@ -193,7 +194,7 @@ jobs:
           -d "{
             \"status\": \"success\",
             \"version\": \"$VERSION\",
-            \"android_url\": \"$ANDROID_URL\",
+#            \"android_url\": \"$ANDROID_URL\",
             \"ios_url\": \"$IOS_URL\",
             \"windows_url\": \"$WINDOWS_URL\",
             \"web_url\": \"$WEB_URL\"
