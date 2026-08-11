@@ -5,8 +5,11 @@ import 'package:mime/mime.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:read_app/controller/setting_controller.dart';
 import 'package:read_app/utils/file_utils.dart';
+import 'package:read_app/utils/random.dart';
 
 class HttpServiceLogic {
   List<HttpServer> services = [];
@@ -154,8 +157,18 @@ class HttpServiceLogic {
             filename = filename.replaceAll('', '');
 
             try {
-              await FileUtils.uploadZipFile(
-                  await multipart.toBytes(), filename);
+              Directory tempDirectory = await getTemporaryDirectory();
+              var comicDirName = generateRandomString(32);
+              final file = File(join(tempDirectory.path, '$comicDirName.zip'));
+              if (!await file.parent.exists()) {
+                await file.parent.create(recursive: true);
+              }
+              final sink = file.openWrite();
+              await multipart.pipe(sink);
+              await sink.close();
+
+              await FileUtils.uploadZipFileByFilePath(
+                  file.path, filename);
               request.response
                 ..statusCode = HttpStatus.ok
                 ..headers.contentType = ContentType.json

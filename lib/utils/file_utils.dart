@@ -985,6 +985,43 @@ class FileUtils {
     }
   }
 
+  static Future<void> uploadZipFileByFilePath(
+      String filepath,
+      String filename,
+      ) async {
+    String tempPath = filepath;
+    String outputDir = '';
+    try {
+      Directory tempDirectory = await getTemporaryDirectory();
+
+      var comicDirName = generateRandomString(32);
+
+      outputDir = path.join(tempDirectory.path, comicDirName);
+
+      await FileUtils.unzipFile(tempPath, outputDir);
+
+      Directory outputDirectory = Directory(outputDir);
+
+      await FileUtils.saveComicByDirectory(outputDir, '');
+
+      bool hasDir = false;
+      await for (var entity in outputDirectory.list(recursive: false)) {
+        if (entity is Directory) {
+          hasDir = true;
+        }
+      }
+
+      if (!hasDir) {
+        await FileUtils.saveComic(outputDir, '');
+      }
+    } catch (e) {
+      rethrow;
+    } finally {
+      FileUtils.deletePath(tempPath);
+      FileUtils.deletePath(outputDir);
+    }
+  }
+
   static Future<void> selectAndImportPdf(String parentId) async {
     FilePickerResult? result = await FilePicker.pickFiles(
       type: FileType.custom,
