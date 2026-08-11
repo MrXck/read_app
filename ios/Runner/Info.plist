@@ -51,5 +51,18 @@
     <string>我们需要访问您的相册以选取书籍封面或导入文件。</string>
     <key>NSPhotoLibraryAddUsageDescription</key>
     <string>我们需要保存图片到您的相册。</string>
+    <key>CFBundleDocumentTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Text File</string>
+            <key>LSHandlerRank</key>
+            <string>Alternate</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>public.plain-text</string>
+            </array>
+        </dict>
+    </array>
 </dict>
 </plist>

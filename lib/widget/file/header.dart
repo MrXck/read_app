@@ -16,11 +16,12 @@ class FileHeader extends StatelessWidget {
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
         const Text(
           '文件',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         Row(
           children: [
             IconButton(
+                style: IconButton.styleFrom(overlayColor: Colors.transparent),
                 onPressed: () {
                   showMenu(
                       context: context,

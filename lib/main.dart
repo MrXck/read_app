@@ -62,6 +62,47 @@ void initListenShare() {
   });
 }
 
+void initIOSListenShare() {
+  // 监听共享数据流
+  FlutterSharingIntent.instance.getMediaStream().listen(
+          (List<SharedFile> value) async {
+    if (value.isEmpty) {
+      return;
+    }
+
+    for (var file in value) {
+      Get.snackbar('提示', 'value ${file.value}  type ${file.type}');
+      if (file.type == SharedMediaType.FILE && file.value != null) {
+        // 需要手动读取文件内容
+        try {
+          await FileUtils.saveBook(file.value, '');
+        } catch (e) {
+          print("读取分享文件失败: $e");
+        }
+      }
+    }
+  }, onError: (err) {
+    print("getIntentDataStream error: $err");
+  });
+
+  // 获取应用启动时的初始共享数据
+  FlutterSharingIntent.instance
+      .getInitialSharing()
+      .then((List<SharedFile> value) async {
+    if (value.isEmpty) {
+      return;
+    }
+
+    for (var file in value) {
+      if (file.type == SharedMediaType.FILE && file.value != null) {
+        await FileUtils.saveBook(file.value, '');
+      }
+    }
+
+    FlutterSharingIntent.instance.reset();
+  });
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (PlatFormUtils.isDesktop()) {
@@ -80,9 +121,12 @@ void main() async {
     });
   }
   // debugPaintSizeEnabled = true;
-  switch (Platform.operatingSystem) {
-    case 'android':
+  switch (defaultTargetPlatform) {
+    case TargetPlatform.android:
       initListenShare();
+      break;
+    case TargetPlatform.iOS:
+      initIOSListenShare();
       break;
     default:
       break;
@@ -200,7 +244,11 @@ class MyApp extends StatelessWidget {
                               bottom: 0,
                               child: GetMaterialApp(
                                 theme: ThemeData(
-                                    fontFamily: snapshot.data?.appFont),
+                                  colorScheme: ColorScheme.fromSeed(
+                                    seedColor: Colors.white,
+                                    surface: Colors.white, // surface 颜色也会影响 Scaffold 背景
+                                  ),
+                                  fontFamily: snapshot.data?.appFont),
                                 debugShowCheckedModeBanner: false,
                                 initialRoute: "/",
                                 getPages: AppPage.routes,

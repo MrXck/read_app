@@ -24,168 +24,189 @@ class BookShelfHeader extends StatelessWidget {
         children: [
           const Text(
             '书架',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
           Row(
             children: [
-              IconButton(onPressed: () {
-                data.updateSort();
-              }, icon: const Icon(Icons.sort)),
               IconButton(
-                  onPressed: () {
-                    Get.toNamed('/search');
-                  },
-                  icon: const Icon(Icons.search)),
+                onPressed: () {
+                  data.updateSort();
+                },
+                style: IconButton.styleFrom(overlayColor: Colors.transparent),
+                icon: const Icon(Icons.sort),
+              ),
               IconButton(
-                  onPressed: () {
-                    showMenu(
-                        context: context,
-                        position: const RelativeRect.fromLTRB(420, 60, 0, 0),
-                        items: <PopupMenuEntry<String>>[
-                          PopupMenuItem(
-                            child: const Text('新增分组'),
-                            onTap: () async {
-                              data.addDirectory();
-                            },
-                          ),
-                          PopupMenuItem(
-                            child: const Text('导入书籍'),
-                            onTap: () async {
-                              var status = await PermissionUtils.getFilePermission();
-                              if (status.isGranted) {
-                                try {
-                                  LoadingUtils.showLoading();
-                                  await FileUtils.selectAndImportFile(
-                                      data.parentId);
-                                } catch (e) {
-                                  Get.snackbar('错误', e.toString());
-                                } finally {
-                                  LoadingUtils.hideLoading();
-                                  data.refresh();
-                                }
-                              } else {
-                                Get.snackbar('提示', '没有权限');
-                              }
-                            },
-                          ),
-                          PopupMenuItem(
-                            child: const Text('导入选中文件夹下的书籍'),
-                            onTap: () async {
-                              var status = await PermissionUtils.getFilePermission();
-                              if (status.isGranted) {
-                                var directoryPath =
-                                    await FileUtils.selectDirectory();
-                                if (directoryPath.isNotEmpty) {
-                                  LoadingUtils.showLoading();
-                                  try {
-                                    await FileUtils.saveBookByDirectory(
-                                        directoryPath, data.parentId);
-                                  } catch (e) {
-                                    Get.snackbar('错误', e.toString());
-                                  } finally {
-                                    LoadingUtils.hideLoading();
-                                    data.refresh();
-                                  }
-                                }
-                              } else {
-                                Get.snackbar('提示', '没有权限');
-                              }
-                            },
-                          ),
-                          PopupMenuItem(
-                            child: const Text('导入图片'),
-                            onTap: () async {
-                              var status = await PermissionUtils.getFilePermission();
-                              if (status.isGranted) {
-                                LoadingUtils.showLoading();
-                                try {
-                                  await FileUtils.selectAndImportDirectory(
-                                      data.parentId);
-                                } catch (e) {
-                                  Get.snackbar('错误', e.toString());
-                                } finally {
-                                  LoadingUtils.hideLoading();
-                                  data.refresh();
-                                }
-                              } else {
-                                Get.snackbar('提示', '没有权限');
-                              }
-                            },
-                          ),
-                          PopupMenuItem(
-                            child: const Text('导入选中文件夹下的文件夹(图片)'),
-                            onTap: () async {
-                              var status = await PermissionUtils.getFilePermission();
-                              if (status.isGranted) {
-                                var directoryPath =
-                                    await FileUtils.selectDirectory();
-                                if (directoryPath.isNotEmpty) {
-                                  LoadingUtils.showLoading();
-                                  try {
-                                    await FileUtils.saveComicByDirectory(
-                                        directoryPath, data.parentId);
-                                  } catch (e) {
-                                    Get.snackbar('错误', e.toString());
-                                  } finally {
-                                    LoadingUtils.hideLoading();
-                                    data.refresh();
-                                  }
-                                }
-                              } else {
-                                Get.snackbar('提示', '没有权限');
-                              }
-                            },
-                          ),
-                          PopupMenuItem(
-                            child: const Text('导入音视频'),
-                            onTap: () async {
-                              var status = await PermissionUtils.getFilePermission();
-                              if (status.isGranted) {
-                                LoadingUtils.showLoading();
-                                try {
-                                  await FileUtils.selectAndImportMedia(
-                                      data.parentId);
-                                } catch (e) {
-                                  Get.snackbar('错误', e.toString());
-                                } finally {
-                                  LoadingUtils.hideLoading();
-                                  data.refresh();
-                                }
-                              } else {
-                                Get.snackbar('提示', '没有权限');
-                              }
-                            },
-                          ),
-                          PopupMenuItem(
-                            child: const Text('导入pdf'),
-                            onTap: () async {
-                              var status = await PermissionUtils.getFilePermission();
-                              if (status.isGranted) {
-                                LoadingUtils.showLoading();
-                                try {
-                                  await FileUtils.selectAndImportPdf(
-                                      data.parentId);
-                                } catch (e) {
-                                  Get.snackbar('错误', e.toString());
-                                } finally {
-                                  LoadingUtils.hideLoading();
-                                  data.refresh();
-                                }
-                              } else {
-                                Get.snackbar('提示', '没有权限');
-                              }
-                            },
-                          ),
-                          PopupMenuItem(
-                            child: const Text('局域网传书'),
-                            onTap: () async {
-                              await Get.toNamed("/uploadFile");
+                onPressed: () {
+                  Get.toNamed('/search');
+                },
+                style: IconButton.styleFrom(overlayColor: Colors.transparent),
+                icon: const Icon(Icons.search),
+              ),
+              IconButton(
+                onPressed: () {
+                  showMenu(
+                    context: context,
+                    position: const RelativeRect.fromLTRB(420, 60, 0, 0),
+                    items: <PopupMenuEntry<String>>[
+                      PopupMenuItem(
+                        child: const Text('新增分组'),
+                        onTap: () async {
+                          data.addDirectory();
+                        },
+                      ),
+                      PopupMenuItem(
+                        child: const Text('导入书籍'),
+                        onTap: () async {
+                          var status =
+                              await PermissionUtils.getFilePermission();
+                          if (status.isGranted) {
+                            try {
+                              LoadingUtils.showLoading();
+                              await FileUtils.selectAndImportFile(
+                                data.parentId,
+                              );
+                            } catch (e) {
+                              Get.snackbar('错误', e.toString());
+                            } finally {
+                              LoadingUtils.hideLoading();
                               data.refresh();
-                            },
-                          ),
-                        ]);
-                  },
-                  icon: const Icon(Icons.add))
+                            }
+                          } else {
+                            Get.snackbar('提示', '没有权限');
+                          }
+                        },
+                      ),
+                      PopupMenuItem(
+                        child: const Text('导入选中文件夹下的书籍'),
+                        onTap: () async {
+                          var status =
+                              await PermissionUtils.getFilePermission();
+                          if (status.isGranted) {
+                            var directoryPath =
+                                await FileUtils.selectDirectory();
+                            if (directoryPath.isNotEmpty) {
+                              LoadingUtils.showLoading();
+                              try {
+                                await FileUtils.saveBookByDirectory(
+                                  directoryPath,
+                                  data.parentId,
+                                );
+                              } catch (e) {
+                                Get.snackbar('错误', e.toString());
+                              } finally {
+                                LoadingUtils.hideLoading();
+                                data.refresh();
+                              }
+                            }
+                          } else {
+                            Get.snackbar('提示', '没有权限');
+                          }
+                        },
+                      ),
+                      PopupMenuItem(
+                        child: const Text('导入图片'),
+                        onTap: () async {
+                          var status =
+                              await PermissionUtils.getFilePermission();
+                          if (status.isGranted) {
+                            LoadingUtils.showLoading();
+                            try {
+                              await FileUtils.selectAndImportDirectory(
+                                data.parentId,
+                              );
+                            } catch (e) {
+                              Get.snackbar('错误', e.toString());
+                            } finally {
+                              LoadingUtils.hideLoading();
+                              data.refresh();
+                            }
+                          } else {
+                            Get.snackbar('提示', '没有权限');
+                          }
+                        },
+                      ),
+                      PopupMenuItem(
+                        child: const Text('导入选中文件夹下的文件夹(图片)'),
+                        onTap: () async {
+                          var status =
+                              await PermissionUtils.getFilePermission();
+                          if (status.isGranted) {
+                            var directoryPath =
+                                await FileUtils.selectDirectory();
+                            if (directoryPath.isNotEmpty) {
+                              LoadingUtils.showLoading();
+                              try {
+                                await FileUtils.saveComicByDirectory(
+                                  directoryPath,
+                                  data.parentId,
+                                );
+                              } catch (e) {
+                                Get.snackbar('错误', e.toString());
+                              } finally {
+                                LoadingUtils.hideLoading();
+                                data.refresh();
+                              }
+                            }
+                          } else {
+                            Get.snackbar('提示', '没有权限');
+                          }
+                        },
+                      ),
+                      PopupMenuItem(
+                        child: const Text('导入音视频'),
+                        onTap: () async {
+                          var status =
+                              await PermissionUtils.getFilePermission();
+                          if (status.isGranted) {
+                            LoadingUtils.showLoading();
+                            try {
+                              await FileUtils.selectAndImportMedia(
+                                data.parentId,
+                              );
+                            } catch (e) {
+                              Get.snackbar('错误', e.toString());
+                            } finally {
+                              LoadingUtils.hideLoading();
+                              data.refresh();
+                            }
+                          } else {
+                            Get.snackbar('提示', '没有权限');
+                          }
+                        },
+                      ),
+                      PopupMenuItem(
+                        child: const Text('导入pdf'),
+                        onTap: () async {
+                          var status =
+                              await PermissionUtils.getFilePermission();
+                          if (status.isGranted) {
+                            LoadingUtils.showLoading();
+                            try {
+                              await FileUtils.selectAndImportPdf(data.parentId);
+                            } catch (e) {
+                              Get.snackbar('错误', e.toString());
+                            } finally {
+                              LoadingUtils.hideLoading();
+                              data.refresh();
+                            }
+                          } else {
+                            Get.snackbar('提示', '没有权限');
+                          }
+                        },
+                      ),
+                      PopupMenuItem(
+                        child: const Text('局域网传书'),
+                        onTap: () async {
+                          await Get.toNamed("/uploadFile");
+                          data.refresh();
+                        },
+                      ),
+                    ],
+                  );
+                },
+                style: IconButton.styleFrom(overlayColor: Colors.transparent),
+                icon: const Icon(Icons.add),
+              ),
             ],
           ),
         ],

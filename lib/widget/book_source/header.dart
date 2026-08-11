@@ -28,7 +28,7 @@ class BookSourceHeader extends StatelessWidget {
         children: [
           const Text(
             '书源',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
           Row(
             children: [
@@ -36,8 +36,10 @@ class BookSourceHeader extends StatelessWidget {
                   onPressed: () {
                     Get.toNamed('/search_outside');
                   },
+                  style: IconButton.styleFrom(overlayColor: Colors.transparent),
                   icon: const Icon(Icons.search)),
               IconButton(
+                  style: IconButton.styleFrom(overlayColor: Colors.transparent),
                   onPressed: () {
                     showMenu(
                         context: context,
