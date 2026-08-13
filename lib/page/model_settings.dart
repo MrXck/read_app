@@ -147,7 +147,7 @@ class _ModelSettingsState extends State<ModelSettingsPage> {
                                           await ModelManager.copyModelsIfNeeded();
                                           TtsService().initTTS();
                                         },
-                                        leading: const Text('下载模型'),
+                                        title: const Text('下载模型'),
                                       );
                                     }
                                     return const ListTile(title: Text('模型已下载'));
