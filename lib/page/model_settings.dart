@@ -20,7 +20,7 @@ class _ModelSettingsState extends State<ModelSettingsPage> {
   ValueNotifier<bool> modelExist = ValueNotifier(false);
   Settings settings = Settings();
   List<int> speakList = List.generate(104, (index) {
-    return index + 1;
+    return index;
   });
 
   Future<void> init() async {
