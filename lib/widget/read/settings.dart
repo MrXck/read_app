@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:get/get.dart';
-import 'package:read_app/pojo/operation_log.dart';
 import 'package:read_app/pojo/regexp_history.dart';
 import 'package:read_app/pojo/settings.dart';
+import 'package:read_app/pojo/status.dart';
 import 'package:read_app/utils/color_utils.dart';
-import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/db.dart';
+import 'package:read_app/utils/tts_service.dart';
 
 typedef UpdateFunc = void Function(Settings setting);
 typedef UpdateExpFunc = void Function(String text);
+typedef StartSpeak = void Function();
 
 class ReadSettings extends StatefulWidget {
   final Settings settings;
   final UpdateFunc updateFunc;
   final UpdateExpFunc updateExpFunc;
+  final StartSpeak startSpeak;
   final List<int> backgroundColorList;
   final TextEditingController chapterTitleExpController;
+  final Status status;
 
   const ReadSettings(
       {super.key,
@@ -24,7 +27,10 @@ class ReadSettings extends StatefulWidget {
       required this.settings,
       required this.updateFunc,
       required this.updateExpFunc,
-      required this.backgroundColorList});
+      required this.backgroundColorList,
+      required this.startSpeak,
+      required this.status
+      });
 
   @override
   State<ReadSettings> createState() => _ReadSettingsState();
@@ -206,6 +212,20 @@ class _ReadSettingsState extends State<ReadSettings> {
         textConfirm: '确定',
         textCancel: '取消');
     controller.dispose();
+  }
+
+  ValueNotifier<bool> isSpeaking = ValueNotifier(false);
+  ValueNotifier<bool> isPause = ValueNotifier(false);
+
+  void init() {
+    isSpeaking.value = widget.status.isSpeaking;
+    isPause.value = widget.status.isPause;
+  }
+
+  @override
+  void initState() {
+    init();
+    super.initState();
   }
 
   @override
@@ -716,244 +736,110 @@ class _ReadSettingsState extends State<ReadSettings> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('内容空格除系数'),
-                      InkWell(
-                        onTap: () {
-                          widget.settings
-                                  .chapterContentEmptyStrDivisionCoefficient -=
-                              0.01;
-                          widget.updateFunc(widget.settings);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                          decoration: const BoxDecoration(
-                              color: Color(0xFFEAEAEA),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
-                          child: Text(
-                            '-',
-                            style: TextStyle(
-                              fontFamily: widget.settings.fontFamily,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 6, right: 6),
-                        child: Text(
-                          widget.settings
-                              .chapterContentEmptyStrDivisionCoefficient
-                              .toStringAsFixed(2),
-                          style: TextStyle(
-                            fontFamily: widget.settings.fontFamily,
-                          ),
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          widget.settings
-                                  .chapterContentEmptyStrDivisionCoefficient +=
-                              0.01;
-                          widget.updateFunc(widget.settings);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                          decoration: const BoxDecoration(
-                              color: Color(0xFFEAEAEA),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
-                          child: Text(
-                            '+',
-                            style: TextStyle(
-                              fontFamily: widget.settings.fontFamily,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
                       const Text(
-                        '章节标题乘大小',
+                        '有声',
                       ),
-                      InkWell(
-                        onTap: () {
-                          widget.settings.chapterTitleMultiFontSize -= 0.01;
-                          widget.updateFunc(widget.settings);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                          decoration: const BoxDecoration(
-                              color: Color(0xFFEAEAEA),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
-                          child: Text(
-                            '-',
-                            style: TextStyle(
-                              fontFamily: widget.settings.fontFamily,
-                            ),
+                      ValueListenableBuilder(valueListenable: isSpeaking, builder: (BuildContext context, bool value, Widget? child) {
+                        if (value) {
+                          return Container(
+                            padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+                            decoration: const BoxDecoration(
+                                color: Color(0xFF353535),
+                                borderRadius:
+                                BorderRadius.all(Radius.circular(40))),
+                            child: const Icon(Icons.play_arrow, size: 18,),
+                          );
+                        }
+                        return InkWell(
+                          onTap: () {
+                            if (widget.status.isPause) {
+                              TtsService().resume();
+                              widget.status.isPause = false;
+                              widget.status.isSpeaking = true;
+                              isSpeaking.value = true;
+                              isPause.value = false;
+                              return;
+                            }
+
+                            if (!widget.status.isSpeaking) {
+                              widget.startSpeak();
+                              widget.status.isSpeaking = true;
+                              isSpeaking.value = true;
+                              widget.status.isStartSpeak = true;
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+                            decoration: const BoxDecoration(
+                                color: Color(0xFFEAEAEA),
+                                borderRadius:
+                                BorderRadius.all(Radius.circular(40))),
+                            child: const Icon(Icons.play_arrow, size: 18,),
                           ),
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 6, right: 6),
-                        child: Text(
-                          widget.settings.chapterTitleMultiFontSize
-                              .toStringAsFixed(2),
-                          style: TextStyle(
-                            fontFamily: widget.settings.fontFamily,
+                        );
+                      }),
+                      ValueListenableBuilder(valueListenable: isPause, builder: (BuildContext context, bool value, Widget? child) {
+                        if (value) {
+                          return Container(
+                            padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+                            decoration: const BoxDecoration(
+                                color: Color(0xFF353535),
+                                borderRadius:
+                                BorderRadius.all(Radius.circular(40))),
+                            child: const Icon(Icons.pause, size: 18,),
+                          );
+                        }
+                        return InkWell(
+                          onTap: () {
+                            if (widget.status.isSpeaking && !widget.status.isPause) {
+                              TtsService().pause();
+                              widget.status.isPause = true;
+                              isPause.value = true;
+                              widget.status.isStartSpeak = false;
+                              isSpeaking.value = false;
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+                            decoration: const BoxDecoration(
+                                color: Color(0xFFEAEAEA),
+                                borderRadius:
+                                BorderRadius.all(Radius.circular(40))),
+                            child: const Icon(Icons.pause, size: 18,),
                           ),
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          widget.settings.chapterTitleMultiFontSize += 0.01;
-                          widget.updateFunc(widget.settings);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                          decoration: const BoxDecoration(
-                              color: Color(0xFFEAEAEA),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
-                          child: Text(
-                            '+',
-                            style: TextStyle(
-                              fontFamily: widget.settings.fontFamily,
-                            ),
+                        );
+                      }),
+                      ValueListenableBuilder(valueListenable: isSpeaking, builder: (BuildContext context, bool value, Widget? child) {
+                        if (!value) {
+                          return Container(
+                            padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+                            decoration: const BoxDecoration(
+                                color: Color(0xFF353535),
+                                borderRadius:
+                                BorderRadius.all(Radius.circular(40))),
+                            child: const Icon(Icons.stop_circle_sharp, size: 18,),
+                          );
+                        }
+                        return InkWell(
+                          onTap: () {
+                            if (widget.status.isSpeaking) {
+                              TtsService().stop();
+                              widget.status.isSpeaking = false;
+                              widget.status.isPause = false;
+                              isSpeaking.value = false;
+                              isPause.value = false;
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+                            decoration: const BoxDecoration(
+                                color: Color(0xFFEAEAEA),
+                                borderRadius:
+                                BorderRadius.all(Radius.circular(40))),
+                            child: const Icon(Icons.stop_circle_sharp, size: 18,),
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        '标题非中除系数',
-                      ),
-                      InkWell(
-                        onTap: () {
-                          widget.settings
-                                  .chapterTitleNotChinaStrDivisionCoefficient -=
-                              0.01;
-                          widget.updateFunc(widget.settings);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                          decoration: const BoxDecoration(
-                              color: Color(0xFFEAEAEA),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
-                          child: Text(
-                            '-',
-                            style: TextStyle(
-                              fontFamily: widget.settings.fontFamily,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 6, right: 6),
-                        child: Text(
-                          widget.settings
-                              .chapterTitleNotChinaStrDivisionCoefficient
-                              .toStringAsFixed(2),
-                          style: TextStyle(
-                            fontFamily: widget.settings.fontFamily,
-                          ),
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          widget.settings
-                                  .chapterTitleNotChinaStrDivisionCoefficient +=
-                              0.01;
-                          widget.updateFunc(widget.settings);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                          decoration: const BoxDecoration(
-                              color: Color(0xFFEAEAEA),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
-                          child: Text(
-                            '+',
-                            style: TextStyle(
-                              fontFamily: widget.settings.fontFamily,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        '标题字数除系数',
-                      ),
-                      InkWell(
-                        onTap: () {
-                          widget.settings.chapterTitleStrDivisionCoefficient -=
-                              0.01;
-                          widget.updateFunc(widget.settings);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                          decoration: const BoxDecoration(
-                              color: Color(0xFFEAEAEA),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
-                          child: Text(
-                            '-',
-                            style: TextStyle(
-                              fontFamily: widget.settings.fontFamily,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 6, right: 6),
-                        child: Text(
-                          widget.settings.chapterTitleStrDivisionCoefficient
-                              .toStringAsFixed(2),
-                          style: TextStyle(
-                            fontFamily: widget.settings.fontFamily,
-                          ),
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          widget.settings.chapterTitleStrDivisionCoefficient +=
-                              0.01;
-                          widget.updateFunc(widget.settings);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                          decoration: const BoxDecoration(
-                              color: Color(0xFFEAEAEA),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
-                          child: Text(
-                            '+',
-                            style: TextStyle(
-                              fontFamily: widget.settings.fontFamily,
-                            ),
-                          ),
-                        ),
-                      ),
+                        );
+                      }),
                     ],
                   ),
                 ),

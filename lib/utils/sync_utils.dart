@@ -65,12 +65,8 @@ class SyncUtils {
   }
 
   static Future<void> syncUploadFile() async {
-    var logs = await DatabaseHelper.db.getAllSyncLog();
-    if (logs.isNotEmpty) {
-      return;
-    }
     var books = await DatabaseHelper.db
-        .getAllSyncBook([Constant.bookType, Constant.pdfType]);
+        .getAllSyncBook(settingController.needSyncTypeList);
     var response = await RequestUtils.postJson(
         Constant.validBookMd5Url,
         {

@@ -11,7 +11,7 @@ class SettingController extends GetxController {
   var isOpenSync = false.obs;
   var isSyncing = false.obs;
   var isSecretMode = false.obs;
-  var needSyncTypeList = [].obs;
+  RxList<int> needSyncTypeList = <int>[].obs;
   var syncTip = ''.obs;
 
   init() async {
@@ -20,7 +20,7 @@ class SettingController extends GetxController {
 
     var needSyncTypeListString = shared.getString(Constant.needSyncTypeKey) ?? "[]";
 
-    needSyncTypeList.value = const JsonDecoder().convert(needSyncTypeListString) ?? [];
+    needSyncTypeList.value = (const JsonDecoder().convert(needSyncTypeListString) as List? ?? []).cast<int>();
   }
 
   updateSync() async {

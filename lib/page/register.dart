@@ -15,6 +15,7 @@ class _RegisterPageState extends State<RegisterPage> {
   late double height;
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  TextEditingController repeatPasswordController = TextEditingController();
 
   @override
   void initState() {
@@ -23,90 +24,104 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    width = MediaQuery.of(context).size.width;
-    height = MediaQuery.of(context).size.height;
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Center(
-          child: Text('注册'),
-        ),
-      ),
       body: Center(
-        child: SizedBox(
-          width: width * 0.9,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
           child: Column(
-            children: [
-              SizedBox(
-                height: height * 0.2,
-              ),
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const FlutterLogo(size: 80.0),
+              const SizedBox(height: 30.0),
               const Text(
-                "用户注册",
+                '创建新账户',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Text(
-                    "用户名:",
-                    style: TextStyle(fontSize: 20),
+              const SizedBox(height: 8.0),
+              const Text(
+                '请填写以下信息完成注册',
+                style: TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 40.0),
+              TextField(
+                controller: usernameController,
+                decoration: InputDecoration(
+                  labelText: '用户名',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  SizedBox(
-                    width: width * 0.8 * 0.8,
-                    child: TextField(
-                      controller: usernameController,
-                    ),
-                  )
-                ],
+                  prefixIcon: const Icon(Icons.person_outline),
+                ),
               ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Text(
-                    "密    码:",
-                    style: TextStyle(fontSize: 20),
+              const SizedBox(height: 16.0),
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: '设置密码',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  SizedBox(
-                    width: width * 0.8 * 0.8,
-                    child: TextField(
-                      controller: passwordController,
-                      obscureText: true,
-                    ),
-                  )
-                ],
+                  prefixIcon: const Icon(Icons.lock_outline),
+                ),
               ),
-              const SizedBox(
-                height: 20,
+              const SizedBox(height: 16.0),
+              TextField(
+                controller: repeatPasswordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: '确认密码',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  prefixIcon: const Icon(Icons.lock_outline),
+                ),
               ),
+              const SizedBox(height: 24.0),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(onPressed: () async {
+                  var username = usernameController.text;
+                  var password = passwordController.text;
+                  var repeatPassword = repeatPasswordController.text;
+                  if (username.isEmpty || password.isEmpty) {
+                    Get.snackbar("提示", "用户名密码不能为空");
+                    return;
+                  }
+                  if (password != repeatPassword) {
+                    Get.snackbar("提示", "两次输入的密码不一致");
+                    return;
+                  }
+                  var result = await RequestUtils.postJson(Constant.registerUrl, {
+                    'username': username,
+                    'password': password,
+                  }, Constant.headers);
+                  if (result.data['code'] == 1) {
+                    Get.snackbar("提示", result.data['msg']);
+                  } else {
+                    Get.toNamed("/login");
+                  }
+
+                }, child: const Text("注册")),
+              ),
+              const SizedBox(height: 24.0),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
-                    child: ElevatedButton(onPressed: () async {
-                      var username = usernameController.text;
-                      var password = passwordController.text;
-                      if (username.isEmpty || password.isEmpty) {
-                        Get.snackbar("提示", "用户名密码不能为空");
-                        return;
-                      }
-                      var result = await RequestUtils.postJson(Constant.registerUrl, {
-                        'username': username,
-                        'password': password,
-                      }, Constant.headers);
-                      if (result.data['code'] == 1) {
-                        Get.snackbar("提示", result.data['msg']);
-                      } else {
-                        Get.toNamed("/login");
-                      }
-
-                    }, child: const Text("注册")),
+                  const Text('已有账号？'),
+                  GestureDetector(
+                    onTap: () {
+                      Get.offNamed('/login');
+                    },
+                    child: const Text(
+                      '去登录',
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                  ElevatedButton(
-                      onPressed: () {
-                        Get.offNamed('/login');
-                      },
-                      child: const Text("去登录")),
                 ],
               )
             ],

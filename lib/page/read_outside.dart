@@ -8,6 +8,7 @@ import 'package:read_app/controller/setting_controller.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/pojo/chapter.dart';
 import 'package:read_app/pojo/settings.dart';
+import 'package:read_app/pojo/status.dart';
 import 'package:read_app/spider/spider.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/db.dart';
@@ -78,6 +79,7 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
   Map<String, String> alreadySpiderChapterMap = {};
   List<int> chapterPageNumList = [];
   int startHasContentPage = 500;
+  Status status = Status();
 
   Timer? _throttleTimer;
   Timer? _timeTimer;
@@ -1208,6 +1210,8 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                   builder: (context, value, child) {
                     return value
                         ? ReadSettings(
+                            startSpeak: () {},
+                            status: status,
                             chapterTitleExpController:
                                 _chapterTitleExpController,
                             settings: settings,

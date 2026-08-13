@@ -17,6 +17,7 @@ import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/file_utils.dart';
 import 'package:read_app/utils/platform_utils.dart';
 import 'package:read_app/utils/sync_utils.dart';
+import 'package:read_app/utils/tts_service.dart';
 import 'package:read_app/utils/update_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -119,6 +120,8 @@ void main() async {
       await windowManager.setAsFrameless();
       await windowManager.show();
     });
+  } else {
+    FileUtils.cleanTempFiles();
   }
   // debugPaintSizeEnabled = true;
   switch (defaultTargetPlatform) {
@@ -140,6 +143,7 @@ class MyApp extends StatelessWidget {
   static final SettingController settingController = Get.find();
 
   Future<APPSettings> init() async {
+    TtsService().initTTS();
     await initFont();
     var value = await SharedPreferences.getInstance();
     var appConfig = const JsonDecoder()
@@ -405,21 +409,5 @@ class MyApp extends StatelessWidget {
               }
           }
         });
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: TabPage(),
-    );
   }
 }

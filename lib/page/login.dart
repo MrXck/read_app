@@ -31,92 +31,81 @@ class _LoginPageState extends State<LoginPage> {
     height = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Center(
-          child: Text('登录'),
-        ),
-      ),
       body: Center(
-        child: SizedBox(
-          width: width * 0.9,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
           child: Column(
-            children: [
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const FlutterLogo(size: 80.0),
+              const SizedBox(height: 40.0),
+              const Text('欢迎回来',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8.0),
+              const Text('请登录您的账户', style: TextStyle(color: Colors.grey)),
+              const SizedBox(height: 40.0),
+              TextField(
+                controller: usernameController,
+                decoration: InputDecoration(
+                  labelText: '用户名',
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(Icons.account_box_outlined),
+                ),
+              ),
+              const SizedBox(height: 16.0),
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: '密码',
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(Icons.lock_outline),
+                ),
+              ),
+              const SizedBox(height: 24.0),
               SizedBox(
-                height: height * 0.2,
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                    onPressed: () async {
+                      var username = usernameController.text;
+                      var password = passwordController.text;
+                      if (username.isEmpty || password.isEmpty) {
+                        Get.snackbar("提示", "用户名密码不能为空");
+                        return;
+                      }
+                      var result = await RequestUtils.postJson(Constant.loginUrl, {
+                        'username': username,
+                        'password': password,
+                      }, Constant.headers);
+
+
+
+                      if (result.data['code'] == 1) {
+                        Get.snackbar("提示", result.data['msg']);
+                      } else {
+                        var shard = await SharedPreferences.getInstance();
+                        shard.setString(Constant.tokenKey, result.data['data']['token']);
+                        shard.setString("user", const JsonEncoder().convert(result.data['data']['user']));
+                        Get.offAndToNamed("/");
+                      }
+                    }, child: const Text("登录")),
               ),
-              const Text(
-                "用户登录",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Text(
-                    "用户名:",
-                    style: TextStyle(fontSize: 20),
-                  ),
-                  SizedBox(
-                    width: width * 0.8 * 0.8,
-                    child: TextField(
-                      controller: usernameController,
-                    ),
-                  )
-                ],
-              ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Text(
-                    "密    码:",
-                    style: TextStyle(fontSize: 20),
-                  ),
-                  SizedBox(
-                    width: width * 0.8 * 0.8,
-                    child: TextField(
-                      controller: passwordController,
-                      obscureText: true,
-                    ),
-                  )
-                ],
-              ),
-              const SizedBox(
-                height: 20,
-              ),
+              const SizedBox(height: 24.0),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
-                    child: ElevatedButton(
-                        onPressed: () async {
-                          var username = usernameController.text;
-                          var password = passwordController.text;
-                          if (username.isEmpty || password.isEmpty) {
-                            Get.snackbar("提示", "用户名密码不能为空");
-                            return;
-                          }
-                          var result = await RequestUtils.postJson(Constant.loginUrl, {
-                            'username': username,
-                            'password': password,
-                          }, Constant.headers);
-
-
-
-                          if (result.data['code'] == 1) {
-                            Get.snackbar("提示", result.data['msg']);
-                          } else {
-                            var shard = await SharedPreferences.getInstance();
-                            shard.setString(Constant.tokenKey, result.data['data']['token']);
-                            shard.setString("user", const JsonEncoder().convert(result.data['data']['user']));
-                            Get.offAndToNamed("/");
-                          }
-                        }, child: const Text("登录")),
-                  ),
-                  ElevatedButton(
+                  const Text('还没有账号？'),
+                  TextButton(
                       onPressed: () {
                         Get.offNamed('/register');
                       },
-                      child: const Text("去注册")),
+                      child: const Text('立即注册',
+                          style: TextStyle(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold))),
                 ],
               )
             ],

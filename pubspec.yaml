@@ -67,6 +67,8 @@ dependencies:
 #  turnable_page: 1.0.1
 #  pdfrx: 2.1.5
   real_page_flip: 2.1.2
+  sherpa_onnx: ^1.13.5
+  audioplayers: ^6.5.1
 #  video_player_media_kit: ^1.0.4
 #  media_kit_libs_android_video: any
 #  media_kit_libs_ios_video: any

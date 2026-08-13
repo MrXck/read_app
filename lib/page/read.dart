@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:read_app/pojo/status.dart';
 import 'package:read_app/utils/color_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -16,6 +17,7 @@ import 'package:read_app/utils/book_utils.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/db.dart';
 import 'package:read_app/utils/platform_utils.dart';
+import 'package:read_app/utils/tts_service.dart';
 import 'package:read_app/utils/volume_utils.dart';
 import 'package:read_app/widget/read/brightness_setting.dart';
 import 'package:read_app/widget/read/chapter_list.dart';
@@ -93,6 +95,10 @@ class _ReadPageState extends State<ReadPage> {
   String zhanwei = '\u3000\u3000';
   String zhanwei1 = '\u3000\u3000';
   int _contentRevision = 0;
+  TtsService tts = TtsService();
+  ValueNotifier<String> nowSpeakLine = ValueNotifier('');
+  List<List<String>?> pageTextList = [];
+  Status status = Status();
 
   Future<void> init(Book book) async {
     if (settingController.isOpenVolumeFlip.value) {
@@ -169,6 +175,14 @@ class _ReadPageState extends State<ReadPage> {
   @override
   void initState() {
     super.initState();
+    tts.callback = (text) {
+      print('text $text');
+      nowSpeakLine.value = text;
+      var nowPage = pageTextList[_currentPage.value + 1];
+      if (text == nowPage?[0]) {
+        nextPage();
+      }
+    };
     if (PlatFormUtils.isDesktop()) {
       _listener = MyWindowListener(() {
         switchChapter1(currentSeqNo.value);
@@ -231,6 +245,7 @@ class _ReadPageState extends State<ReadPage> {
     nowContentPage = startHasContentPage;
 
     List<Widget?> pageList = List.generate(maxContentPage, (index) => null);
+    List<List<String>?> textPageList = List.generate(maxContentPage, (index) => null);
     var dataDir = await getApplicationDocumentsDirectory();
 
     for (var i = start; i <= end; i++) {
@@ -261,7 +276,7 @@ class _ReadPageState extends State<ReadPage> {
       chapterPageNumList.add(beforeAddLength);
       chapterPageNumTitleMap[beforeAddLength] = chapter;
 
-      List<Widget> pages = calcPage(
+      Map pageMap = calcPage(
         chapterContent,
         height,
         width,
@@ -269,12 +284,17 @@ class _ReadPageState extends State<ReadPage> {
         settings.lineHeight,
       );
 
+      List<Widget> pages = pageMap['pageList'];
+      List<List<String>> textPage = pageMap['textPage'];
+
       if (nowContentPage + pages.length > maxContentPage) {
         pageList.addAll(List.generate(maxContentPage, (index) => null));
+        textPageList.addAll(List.generate(maxContentPage, (index) => null));
       }
 
       for (int j = 0; j < pages.length; j++) {
         pageList[nowContentPage + j] = pages[j];
+        textPageList[nowContentPage + j] = textPage[j];
       }
 
       nowContentPage += pages.length;
@@ -295,6 +315,7 @@ class _ReadPageState extends State<ReadPage> {
     setState(() {
       data = content;
       widgetList = pageList;
+      pageTextList = textPageList;
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -390,13 +411,24 @@ class _ReadPageState extends State<ReadPage> {
     );
 
     var beforeAddLength = nowContentPage;
-    List<Widget> pages = calcPage(
+
+    Map pageMap = calcPage(
       chapterContent,
       height,
       width,
       settings.fontSize,
       settings.lineHeight,
     );
+    List<Widget> pages = pageMap['pageList'];
+    List<List<String>> textPage = pageMap['textPage'];
+    if (status.isStartSpeak && isAfter) {
+      for (var i = 0; i < textPage.length; i++) {
+        var textList = textPage[i];
+        for (var text in textList) {
+          tts.speak(text, settings.sid);
+        }
+      }
+    }
     pageList.addAll(pages);
 
     setState(() {
@@ -407,10 +439,12 @@ class _ReadPageState extends State<ReadPage> {
 
         if (nowContentPage + pages.length > widgetList.length) {
           widgetList.addAll(List.generate(maxContentPage, (index) => null));
+          pageTextList.addAll(List.generate(maxContentPage, (index) => null));
         }
 
         for (int i = 0; i < pages.length; i++) {
           widgetList[nowContentPage + i] = pages[i];
+          pageTextList[nowContentPage + i] = textPage[i];
         }
 
         content = '$data\n$chapterContent';
@@ -424,6 +458,7 @@ class _ReadPageState extends State<ReadPage> {
         chapterPageNumTitleMap[startHasContentPage - pageList.length] = chapter;
         for (int i = pageList.length - 1; i >= 0; i--) {
           widgetList[startHasContentPage - (pageList.length - i)] = pageList[i];
+          pageTextList[startHasContentPage - (pageList.length - i)] = textPage[i];
         }
         startHasContentPage -= pageList.length;
       }
@@ -448,22 +483,29 @@ class _ReadPageState extends State<ReadPage> {
 
       if (hasChapterTitle) {
         widgetList.add(
-          SizedBox(
-            width: double.infinity,
-            child: Text(
-              text.trim().replaceFirst(zhanwei, ''),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                height:
-                    settings.lineHeight * settings.chapterTitleMultiFontSize,
-                fontSize:
-                    settings.fontSize * settings.chapterTitleMultiFontSize,
-                fontFamily: settings.fontFamily,
-                color: Color(settings.fontColor),
-                fontWeight: fontWeightList[settings.titleFontWeight],
+          ValueListenableBuilder(valueListenable: nowSpeakLine, builder: (BuildContext context, String value, Widget? child) {
+            var isHighLight = false;
+            if (value.isNotEmpty && text.trim().replaceFirst(zhanwei, '') == value) {
+              isHighLight = true;
+            }
+            return Container(
+              color: isHighLight ? Colors.yellow : Colors.transparent,
+              width: double.infinity,
+              child: Text(
+                text.trim().replaceFirst(zhanwei, ''),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  height:
+                  settings.lineHeight * settings.chapterTitleMultiFontSize,
+                  fontSize:
+                  settings.fontSize * settings.chapterTitleMultiFontSize,
+                  fontFamily: settings.fontFamily,
+                  color: Color(settings.fontColor),
+                  fontWeight: fontWeightList[settings.titleFontWeight],
+                ),
               ),
-            ),
-          ),
+            );
+          }),
         );
       } else {
         if (i == textList.length - 1 && text.isEmpty) {
@@ -474,64 +516,116 @@ class _ReadPageState extends State<ReadPage> {
             text = text.replaceFirst(zhanwei, zhanwei1);
             var lastTextList = text.split('');
             widgetList.add(
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: lastTextList.map((element) {
-                  return Text(
-                    element,
-                    style: TextStyle(
-                      height: settings.lineHeight,
-                      fontSize: settings.fontSize,
-                      fontFamily: settings.fontFamily,
-                      color: Color(settings.fontColor),
-                      fontWeight: fontWeightList[settings.contentFontWeight],
-                    ),
-                  );
-                }).toList(),
-              ),
-            );
-          } else {
-            widgetList.add(
-              Container(
-                width: double.infinity,
-                alignment: Alignment.centerLeft,
-                child: Text.rich(
-                  TextSpan(
-                    children: [
-                      WidgetSpan(
-                        child: SizedBox(
-                          width: settings.fontSize * 2, // 2 个汉字宽度
-                        ),
-                      ),
-                      TextSpan(
-                        text: text.replaceFirst(zhanwei, ''),
+              ValueListenableBuilder(valueListenable: nowSpeakLine, builder: (BuildContext context, String value, Widget? child) {
+                var isHighLight = false;
+                if (value.isNotEmpty && text.replaceFirst(zhanwei1, '') == value ) {
+                  isHighLight = true;
+                }
+                return Container(
+                  color: isHighLight ? Colors.yellow : Colors.transparent,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: lastTextList.map((element) {
+                      return Text(
+                        element,
                         style: TextStyle(
                           height: settings.lineHeight,
                           fontSize: settings.fontSize,
                           fontFamily: settings.fontFamily,
                           color: Color(settings.fontColor),
-                          fontWeight:
-                              fontWeightList[settings.contentFontWeight],
+                          fontWeight: fontWeightList[settings.contentFontWeight],
                         ),
-                      ),
-                    ],
+                      );
+                    }).toList(),
                   ),
-                  textAlign: TextAlign.justify,
-                  softWrap: true,
-                  textWidthBasis: TextWidthBasis.longestLine,
-                ),
-              ),
+                );
+              },),
+            );
+          } else {
+            widgetList.add(
+              ValueListenableBuilder(valueListenable: nowSpeakLine, builder: (BuildContext context, String value, Widget? child) {
+                var isHighLight = false;
+                if (value.isNotEmpty && text.replaceFirst(zhanwei1, '') == value) {
+                  isHighLight = true;
+                }
+                return Container(
+                  width: double.infinity,
+                  color: isHighLight ? Colors.yellow : Colors.transparent,
+                  alignment: Alignment.centerLeft,
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        WidgetSpan(
+                          child: SizedBox(
+                            width: settings.fontSize * 2, // 2 个汉字宽度
+                          ),
+                        ),
+                        TextSpan(
+                          text: text.replaceFirst(zhanwei, ''),
+                          style: TextStyle(
+                            height: settings.lineHeight,
+                            fontSize: settings.fontSize,
+                            fontFamily: settings.fontFamily,
+                            color: Color(settings.fontColor),
+                            fontWeight:
+                            fontWeightList[settings.contentFontWeight],
+                          ),
+                        ),
+                      ],
+                    ),
+                    textAlign: TextAlign.justify,
+                    softWrap: true,
+                    textWidthBasis: TextWidthBasis.longestLine,
+                  ),
+                );
+              }),
             );
           }
         } else {
           if (isLast) {
             var lastTextList = text.split('');
             widgetList.add(
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: lastTextList.map((element) {
-                  return Text(
-                    element,
+              ValueListenableBuilder(valueListenable: nowSpeakLine, builder: (BuildContext context, String value, Widget? child) {
+                var isHighLight = false;
+                if (value.isNotEmpty && text == value) {
+                  isHighLight = true;
+                }
+                return Container(
+                  color: isHighLight ? Colors.yellow : Colors.transparent,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: lastTextList.map((element) {
+                      return Text(
+                        element,
+                        style: TextStyle(
+                          height: settings.lineHeight,
+                          fontSize: settings.fontSize,
+                          fontFamily: settings.fontFamily,
+                          color: Color(settings.fontColor),
+                          fontWeight: fontWeightList[settings.contentFontWeight],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                );
+              }),
+            );
+          } else {
+            widgetList.add(
+              ValueListenableBuilder(valueListenable: nowSpeakLine, builder: (BuildContext context, String value, Widget? child) {
+                var isHighLight = false;
+                if (value.isNotEmpty && text == value) {
+                  isHighLight = true;
+                }
+                return Container(
+                  color: isHighLight ? Colors.yellow : Colors.transparent,
+                  width: double.infinity,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    text,
+                    textAlign: TextAlign.justify,
+                    softWrap: true,
+                    textWidthBasis: TextWidthBasis.longestLine,
                     style: TextStyle(
                       height: settings.lineHeight,
                       fontSize: settings.fontSize,
@@ -539,29 +633,9 @@ class _ReadPageState extends State<ReadPage> {
                       color: Color(settings.fontColor),
                       fontWeight: fontWeightList[settings.contentFontWeight],
                     ),
-                  );
-                }).toList(),
-              ),
-            );
-          } else {
-            widgetList.add(
-              Container(
-                width: double.infinity,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  text,
-                  textAlign: TextAlign.justify,
-                  softWrap: true,
-                  textWidthBasis: TextWidthBasis.longestLine,
-                  style: TextStyle(
-                    height: settings.lineHeight,
-                    fontSize: settings.fontSize,
-                    fontFamily: settings.fontFamily,
-                    color: Color(settings.fontColor),
-                    fontWeight: fontWeightList[settings.contentFontWeight],
                   ),
-                ),
-              ),
+                );
+              }),
             );
           }
         }
@@ -597,7 +671,7 @@ class _ReadPageState extends State<ReadPage> {
     return textPainter;
   }
 
-  List<Widget> calcPage(
+  Map calcPage(
     String data,
     double height,
     double width,
@@ -690,6 +764,7 @@ class _ReadPageState extends State<ReadPage> {
     }
 
     List<Widget> pageList = [];
+    List<List<String>> textPage = [];
     List<Map> textListPage = [];
     double nowHeight = 0.0;
     for (var pageText in pageTextList) {
@@ -699,6 +774,7 @@ class _ReadPageState extends State<ReadPage> {
 
       if (hasChapterTitle && textListPage.isNotEmpty) {
         pageList.add(addPage(textListPage));
+        textPage.add(generateTextPage(textListPage));
         textListPage = [];
       }
 
@@ -741,6 +817,7 @@ class _ReadPageState extends State<ReadPage> {
             }
 
             pageList.add(addPage(textListPage));
+            textPage.add(generateTextPage(textListPage));
             lineList = [];
             textListPage = [];
             nowText = line;
@@ -766,9 +843,13 @@ class _ReadPageState extends State<ReadPage> {
 
     if (textListPage.isNotEmpty) {
       pageList.add(addPage(textListPage));
+      textPage.add(generateTextPage(textListPage));
     }
 
-    return pageList;
+    return {
+      'pageList': pageList,
+      'textPage': textPage
+    };
   }
 
   int getChapterTitle(int pageNum) {
@@ -1003,6 +1084,21 @@ class _ReadPageState extends State<ReadPage> {
         child: widgetList.isNotEmpty ? pageWidget : const SizedBox.shrink(),
       ),
     );
+  }
+
+  List<String> generateTextPage(List<Map> textPageList) {
+    List<String> textPage = [];
+    for (var textMap in textPageList) {
+      var text = textMap['text'] as String;
+      if (text.startsWith(zhanwei)) {
+        text = text.replaceFirst(zhanwei, '');
+      }
+      if (text.isEmpty) {
+        continue;
+      }
+      textPage.add(text);
+    }
+    return textPage;
   }
 
   @override
@@ -1411,6 +1507,20 @@ class _ReadPageState extends State<ReadPage> {
                             });
                           },
                           backgroundColorList: backgroundColorList,
+                          startSpeak: () {
+                            // 3 外国少女   45 中文女  46 中文播音女  47 中文播音伪少女  48 中文少女
+                            // tts.speak(tempList[i].trim(), 48);
+                            for (var i = _currentPage.value; i < pageTextList.length; i++) {
+                              var textList = pageTextList[i];
+                              if (textList == null) {
+                                return;
+                              }
+                              for (var text in textList) {
+                                tts.speak(text, settings.sid);
+                              }
+                            }
+                          },
+                          status: status,
                         )
                       : const SizedBox.shrink();
                 },
@@ -1478,6 +1588,7 @@ class _ReadPageState extends State<ReadPage> {
 
   @override
   void dispose() {
+    tts.stop();
     _timeTimer?.cancel();
     _dataTimer?.cancel();
     book.page = nowChapterPage;

@@ -1092,6 +1092,14 @@ class FileUtils {
     files.add(XFile(filePath));
     Share.shareXFiles(files, text: "$filename.$fileExtension");
   }
+
+  static Future<void> cleanTempFiles() async {
+    final tempDir = await getTemporaryDirectory();
+    // 例如：删除超过 1 小时的 tts_*.wav
+    await for (final entity in tempDir.list(recursive: true)) {
+      deletePath(entity.path);
+    }
+  }
 }
 
 class ZipExportService {

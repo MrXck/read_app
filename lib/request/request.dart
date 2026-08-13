@@ -44,6 +44,8 @@ class RequestInterceptor extends Interceptor {
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     if (response.requestOptions.path.startsWith(Constant.syncUrl)) {
       if (response.statusCode == 401) {
+        SharedPreferences.getInstance()
+            .then((value) => value.setBool(Constant.syncConfigKey, false));
         Get.Get.offNamed('login');
       }
       var token = response.headers['authorization']?[0] ?? '';

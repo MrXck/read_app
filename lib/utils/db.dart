@@ -15,6 +15,7 @@ import 'package:read_app/utils/book_utils.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/file_utils.dart';
 import 'package:read_app/utils/hash_utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -640,6 +641,12 @@ class DatabaseHelper {
   }
 
   Future<int?> insertOperationLog(OperationLog operationLog) async {
+    var shared = await SharedPreferences.getInstance();
+    var isOpenSync = shared.getBool(Constant.syncConfigKey) ?? false;
+    if (!isOpenSync) {
+      return 0;
+    }
+
     final db = await database;
     try {
       var result = await db?.rawInsert(

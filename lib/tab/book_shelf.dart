@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:read_app/utils/tts_service.dart';
 import 'package:read_app/widget/book_shelf/body.dart';
 import 'package:read_app/widget/book_shelf/header.dart';
 
@@ -15,6 +16,8 @@ class _BookShelfPageState extends State<BookShelfPage> {
 
   @override
   void initState() {
+    // data.tts = TtsService();
+    // data.tts.initTTS();
     super.initState();
   }
 
@@ -35,6 +38,12 @@ class _BookShelfPageState extends State<BookShelfPage> {
           )),
         ));
   }
+
+  @override
+  void dispose() {
+    // data.tts.dispose();
+    super.dispose();
+  }
 }
 
 class Data {
@@ -43,4 +52,5 @@ class Data {
   late Function addDirectory;
   late Function routeBack;
   late Function updateSort;
+  late TtsService tts;
 }

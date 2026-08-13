@@ -107,34 +107,36 @@ class _SettingsPageState extends State<SettingsPage> {
                                         borderRadius: BorderRadius.vertical(
                                             top: Radius.circular(16)),
                                       ),
-                                      child: ListView(
-                                          children: fontFamilyList.map((item) {
-                                        return ListTile(
-                                            title: Text(
-                                              item,
-                                              style: TextStyle(
-                                                  fontFamily: item,
-                                                  color: appSettings.appFont ==
-                                                          item
-                                                      ? Colors.blue
-                                                      : Colors.black),
-                                            ),
-                                            onTap: () async {
-                                              setState(() {
-                                                appSettings.appFont = item;
-                                              });
-                                              var value =
-                                                  await SharedPreferences
-                                                      .getInstance();
-                                              value.setString(
-                                                  Constant.appConfigKey,
-                                                  const JsonEncoder().convert(
-                                                      appSettings.toMap()));
-                                              Get.changeTheme(ThemeData(
-                                                  fontFamily:
-                                                      appSettings.appFont));
-                                            });
-                                      }).toList()),
+                                      child: Material(
+                                        child: ListView(
+                                            children: fontFamilyList.map((item) {
+                                              return ListTile(
+                                                  title: Text(
+                                                    item,
+                                                    style: TextStyle(
+                                                        fontFamily: item,
+                                                        color: appSettings.appFont ==
+                                                            item
+                                                            ? Colors.blue
+                                                            : Colors.black),
+                                                  ),
+                                                  onTap: () async {
+                                                    setState(() {
+                                                      appSettings.appFont = item;
+                                                    });
+                                                    var value =
+                                                    await SharedPreferences
+                                                        .getInstance();
+                                                    value.setString(
+                                                        Constant.appConfigKey,
+                                                        const JsonEncoder().convert(
+                                                            appSettings.toMap()));
+                                                    Get.changeTheme(ThemeData(
+                                                        fontFamily:
+                                                        appSettings.appFont));
+                                                  });
+                                            }).toList()),
+                                      ),
                                     ),
                                   );
                                 },

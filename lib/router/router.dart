@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:read_app/page/comic.dart';
 import 'package:read_app/page/login.dart';
+import 'package:read_app/page/model_settings.dart';
 import 'package:read_app/page/pdf.dart';
 import 'package:read_app/page/read.dart';
 import 'package:read_app/page/read_outside.dart';
@@ -73,5 +74,9 @@ class AppPage {
         page: () => const RegisterPage(),
         transition: Transition.rightToLeft,
         transitionDuration: const Duration(milliseconds: 200)),
+    GetPage(
+      name: "/model_settings",
+      page: () => const ModelSettingsPage(),
+    ),
   ];
 }

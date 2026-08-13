@@ -26,18 +26,13 @@ class _FileBodyState extends State<FileBody> {
   List<Book> books = [];
   List<FilePoJo> files = [];
   List<String> rootTypePath = [
-    'read\\book',
-    'read\\comic',
-    'read\\data',
-    'read\\pdf',
-    'read\\media',
-    'read\\font',
-    'read/book',
-    'read/comic',
-    'read/data',
-    'read/pdf',
-    'read/media'
-    'read/font'
+    join('read', 'book'),
+    join('read', 'comic'),
+    join('read', 'data'),
+    join('read', 'pdf'),
+    join('read', 'media'),
+    join('read', 'model'),
+    join('read', 'font'),
   ];
   List<String> pathList = [];
 

@@ -8,6 +8,7 @@ import 'package:read_app/controller/setting_controller.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/file_utils.dart';
 import 'package:read_app/utils/loading_utils.dart';
+import 'package:read_app/utils/model_utils.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -30,10 +31,10 @@ class _MyPageState extends State<MyPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-          child: ListView(
-        children: [
-          TextButton(
-              onPressed: () async {
+        child: ListView(
+          children: [
+            ListTile(
+              onTap: () async {
                 final dir = await getApplicationDocumentsDirectory();
                 try {
                   var tip = LoadingUtils.showLoading(tip: '导出中');
@@ -49,15 +50,15 @@ class _MyPageState extends State<MyPage> {
                       Constant.pdfType,
                     ],
                     onProgress: (progress) {
-                      tip.value = '导出中: ${(progress * 100).toStringAsFixed(2)}%';
+                      tip.value =
+                          '导出中: ${(progress * 100).toStringAsFixed(2)}%';
                     },
                     onDone: (outputPath) async {
                       final file = File(outputPath);
                       if (await file.exists()) {
-                        await Share.shareXFiles(
-                          [XFile(outputPath)],
-                          text: '导出.zip',
-                        );
+                        await Share.shareXFiles([
+                          XFile(outputPath),
+                        ], text: '导出.zip');
                         // 延迟清理
                         // Future.delayed(const Duration(seconds: 5), () {
                         //   if (File(outputPath).existsSync()) {
@@ -66,7 +67,7 @@ class _MyPageState extends State<MyPage> {
                         // });
                       }
                     },
-                    onError: (String error) {}
+                    onError: (String error) {},
                   );
                 } catch (e) {
                   Get.snackbar('错误', e.toString());
@@ -74,9 +75,10 @@ class _MyPageState extends State<MyPage> {
                   LoadingUtils.hideLoading();
                 }
               },
-              child: const Text('导出')),
-          TextButton(
-              onPressed: () async {
+              title: const Text('导出'),
+            ),
+            ListTile(
+              onTap: () async {
                 final dir = await getApplicationDocumentsDirectory();
                 try {
                   var tip = LoadingUtils.showLoading(tip: '导出中');
@@ -84,25 +86,25 @@ class _MyPageState extends State<MyPage> {
                     join(dir.path, 'read'),
                     join(dir.path, 'read_book.zip'),
                     [Constant.bookType, Constant.directoryType],
-                      onProgress: (progress) {
-                        tip.value = '导出中: ${(progress * 100).toStringAsFixed(2)}%';
-                      },
-                      onDone: (outputPath) async {
-                        final file = File(outputPath);
-                        if (await file.exists()) {
-                          await Share.shareXFiles(
-                            [XFile(outputPath)],
-                            text: '导出.zip',
-                          );
-                          // 延迟清理
-                          // Future.delayed(const Duration(seconds: 5), () {
-                          //   if (File(outputPath).existsSync()) {
-                          //     File(outputPath).deleteSync();
-                          //   }
-                          // });
-                        }
-                      },
-                      onError: (String error) {}
+                    onProgress: (progress) {
+                      tip.value =
+                          '导出中: ${(progress * 100).toStringAsFixed(2)}%';
+                    },
+                    onDone: (outputPath) async {
+                      final file = File(outputPath);
+                      if (await file.exists()) {
+                        await Share.shareXFiles([
+                          XFile(outputPath),
+                        ], text: '导出.zip');
+                        // 延迟清理
+                        // Future.delayed(const Duration(seconds: 5), () {
+                        //   if (File(outputPath).existsSync()) {
+                        //     File(outputPath).deleteSync();
+                        //   }
+                        // });
+                      }
+                    },
+                    onError: (String error) {},
                   );
                 } catch (e) {
                   Get.snackbar('错误', e.toString());
@@ -110,9 +112,10 @@ class _MyPageState extends State<MyPage> {
                   LoadingUtils.hideLoading();
                 }
               },
-              child: const Text('导出书籍')),
-          TextButton(
-              onPressed: () async {
+              title: const Text('导出书籍'),
+            ),
+            ListTile(
+              onTap: () async {
                 final dir = await getApplicationDocumentsDirectory();
                 try {
                   var tip = LoadingUtils.showLoading(tip: '导出中');
@@ -120,25 +123,25 @@ class _MyPageState extends State<MyPage> {
                     join(dir.path, 'read'),
                     join(dir.path, 'read_comic.zip'),
                     [Constant.comicType, Constant.directoryType],
-                      onProgress: (progress) {
-                        tip.value = '导出中: ${(progress * 100).toStringAsFixed(2)}%';
-                      },
-                      onDone: (outputPath) async {
-                        final file = File(outputPath);
-                        if (await file.exists()) {
-                          await Share.shareXFiles(
-                            [XFile(outputPath)],
-                            text: '导出.zip',
-                          );
-                          // 延迟清理
-                          // Future.delayed(const Duration(seconds: 5), () {
-                          //   if (File(outputPath).existsSync()) {
-                          //     File(outputPath).deleteSync();
-                          //   }
-                          // });
-                        }
-                      },
-                      onError: (String error) {}
+                    onProgress: (progress) {
+                      tip.value =
+                          '导出中: ${(progress * 100).toStringAsFixed(2)}%';
+                    },
+                    onDone: (outputPath) async {
+                      final file = File(outputPath);
+                      if (await file.exists()) {
+                        await Share.shareXFiles([
+                          XFile(outputPath),
+                        ], text: '导出.zip');
+                        // 延迟清理
+                        // Future.delayed(const Duration(seconds: 5), () {
+                        //   if (File(outputPath).existsSync()) {
+                        //     File(outputPath).deleteSync();
+                        //   }
+                        // });
+                      }
+                    },
+                    onError: (String error) {},
                   );
                 } catch (e) {
                   Get.snackbar('错误', e.toString());
@@ -146,9 +149,10 @@ class _MyPageState extends State<MyPage> {
                   LoadingUtils.hideLoading();
                 }
               },
-              child: const Text('导出图片')),
-          TextButton(
-              onPressed: () async {
+              title: const Text('导出图片'),
+            ),
+            ListTile(
+              onTap: () async {
                 final zipPath = await FileUtils.selectZipFile();
                 if (zipPath.isEmpty) {
                   return;
@@ -167,7 +171,10 @@ class _MyPageState extends State<MyPage> {
                   await FileUtils.unzipFile(zipPath, fromPath);
 
                   await FileUtils.copyDirectory(
-                      fromPath, join(dir.path, 'read'), tipText);
+                    fromPath,
+                    join(dir.path, 'read'),
+                    tipText,
+                  );
 
                   FileUtils.deleteDirectoryRecursively(Directory(fromPath));
                 } catch (e) {
@@ -177,20 +184,22 @@ class _MyPageState extends State<MyPage> {
                   LoadingUtils.hideLoading();
                 }
               },
-              child: const Text('导入')),
-          Obx(() {
-            return TextButton(
-                onPressed: () async {
+              title: const Text('导入'),
+            ),
+            Obx(() {
+              return ListTile(
+                onTap: () async {
                   settingController.isOpenHidden.value =
                       !settingController.isOpenHidden.value;
                 },
-                child: settingController.isOpenHidden.value
+                title: settingController.isOpenHidden.value
                     ? const Text('关闭隐藏')
-                    : const Text('开启隐藏'));
-          }),
-          Obx(() {
-            return TextButton(
-                onPressed: () async {
+                    : const Text('开启隐藏'),
+              );
+            }),
+            Obx(() {
+              return ListTile(
+                onTap: () async {
                   var value = await SharedPreferences.getInstance();
                   var token = value.getString(Constant.tokenKey) ?? '';
                   if (token.isEmpty) {
@@ -200,23 +209,25 @@ class _MyPageState extends State<MyPage> {
 
                   settingController.updateSync();
                 },
-                child: settingController.isOpenSync.value
+                title: settingController.isOpenSync.value
                     ? const Text('关闭同步')
-                    : const Text('开启同步'));
-          }),
-          Obx(() {
-            return TextButton(
-                onPressed: () async {
+                    : const Text('开启同步'),
+              );
+            }),
+            Obx(() {
+              return ListTile(
+                onTap: () async {
                   settingController.isOpenVolumeFlip.value =
                       !settingController.isOpenVolumeFlip.value;
                 },
-                child: settingController.isOpenVolumeFlip.value
+                title: settingController.isOpenVolumeFlip.value
                     ? const Text('关闭音量翻页')
-                    : const Text('开启音量翻页'));
-          }),
-          Obx(() {
-            return TextButton(
-                onPressed: () async {
+                    : const Text('开启音量翻页'),
+              );
+            }),
+            Obx(() {
+              return ListTile(
+                onTap: () async {
                   TextEditingController controller = TextEditingController();
                   TextEditingController repeatController =
                       TextEditingController();
@@ -236,25 +247,33 @@ class _MyPageState extends State<MyPage> {
                                 TextField(
                                   controller: controller,
                                   obscureText: true,
-                                  decoration:
-                                      const InputDecoration(hintText: '请输入密码'),
+                                  decoration: const InputDecoration(
+                                    hintText: '请输入密码',
+                                  ),
                                 ),
                                 TextField(
                                   controller: repeatController,
                                   obscureText: true,
                                   decoration: const InputDecoration(
-                                      hintText: '请再次输入密码'),
+                                    hintText: '请再次输入密码',
+                                  ),
                                 ),
                                 ValueListenableBuilder(
-                                    valueListenable: tips,
-                                    builder: (BuildContext context, value,
-                                        Widget? child) {
-                                      return Text(
+                                  valueListenable: tips,
+                                  builder:
+                                      (
+                                        BuildContext context,
                                         value,
-                                        style:
-                                            const TextStyle(color: Colors.red),
-                                      );
-                                    })
+                                        Widget? child,
+                                      ) {
+                                        return Text(
+                                          value,
+                                          style: const TextStyle(
+                                            color: Colors.red,
+                                          ),
+                                        );
+                                      },
+                                ),
                               ],
                             ),
                           ),
@@ -272,7 +291,9 @@ class _MyPageState extends State<MyPage> {
                                 }
 
                                 value.setString(
-                                    Constant.secretKey, controller.text);
+                                  Constant.secretKey,
+                                  controller.text,
+                                );
 
                                 Get.back(); // 关闭对话框
                               },
@@ -296,18 +317,26 @@ class _MyPageState extends State<MyPage> {
                               TextField(
                                 controller: controller,
                                 obscureText: true,
-                                decoration:
-                                    const InputDecoration(hintText: '请输入密码'),
+                                decoration: const InputDecoration(
+                                  hintText: '请输入密码',
+                                ),
                               ),
                               ValueListenableBuilder(
-                                  valueListenable: tips,
-                                  builder: (BuildContext context, value,
-                                      Widget? child) {
-                                    return Text(
+                                valueListenable: tips,
+                                builder:
+                                    (
+                                      BuildContext context,
                                       value,
-                                      style: const TextStyle(color: Colors.red),
-                                    );
-                                  })
+                                      Widget? child,
+                                    ) {
+                                      return Text(
+                                        value,
+                                        style: const TextStyle(
+                                          color: Colors.red,
+                                        ),
+                                      );
+                                    },
+                              ),
                             ],
                           ),
                           actions: [
@@ -342,16 +371,18 @@ class _MyPageState extends State<MyPage> {
                         !settingController.isSecretMode.value;
                   }
                 },
-                child: settingController.isSecretMode.value
+                title: settingController.isSecretMode.value
                     ? const Text('退出私密模式')
-                    : const Text('进入私密模式'));
-          }),
-          Obx(() {
-            if (!settingController.isSecretMode.value) {
-              return const SizedBox.shrink();
-            }
-            return TextButton(
-                onPressed: () async {
+                    : const Text('进入私密模式'),
+              );
+            }),
+            Obx(() {
+              if (!settingController.isSecretMode.value) {
+                return const SizedBox.shrink();
+              }
+
+              return ListTile(
+                onTap: () async {
                   TextEditingController controller = TextEditingController();
                   TextEditingController repeatController =
                       TextEditingController();
@@ -370,37 +401,43 @@ class _MyPageState extends State<MyPage> {
                             TextField(
                               controller: controller,
                               obscureText: true,
-                              decoration:
-                              const InputDecoration(hintText: '请输入当前密码'),
+                              decoration: const InputDecoration(
+                                hintText: '请输入当前密码',
+                              ),
                             ),
                             TextField(
                               controller: newController,
                               obscureText: true,
-                              decoration:
-                              const InputDecoration(hintText: '请输入新密码'),
+                              decoration: const InputDecoration(
+                                hintText: '请输入新密码',
+                              ),
                             ),
                             TextField(
                               controller: repeatController,
                               obscureText: true,
-                              decoration:
-                              const InputDecoration(hintText: '请再次输入新密码'),
+                              decoration: const InputDecoration(
+                                hintText: '请再次输入新密码',
+                              ),
                             ),
                             ValueListenableBuilder(
-                                valueListenable: tips,
-                                builder: (BuildContext context, value,
-                                    Widget? child) {
-                                  return Text(
-                                    value,
-                                    style: const TextStyle(color: Colors.red),
-                                  );
-                                })
+                              valueListenable: tips,
+                              builder:
+                                  (BuildContext context, value, Widget? child) {
+                                    return Text(
+                                      value,
+                                      style: const TextStyle(color: Colors.red),
+                                    );
+                                  },
+                            ),
                           ],
                         ),
                       ),
                       actions: [
                         TextButton(
                           onPressed: () async {
-                            if (controller.text.isEmpty || newController.text.isEmpty || repeatController.text.isEmpty) {
+                            if (controller.text.isEmpty ||
+                                newController.text.isEmpty ||
+                                repeatController.text.isEmpty) {
                               tips.value = "密码不能为空";
                               return;
                             }
@@ -413,7 +450,9 @@ class _MyPageState extends State<MyPage> {
                               return;
                             }
                             value.setString(
-                                Constant.secretKey, newController.text);
+                              Constant.secretKey,
+                              newController.text,
+                            );
                             Get.back(); // 关闭对话框
                           },
                           child: const Text('确定'),
@@ -430,28 +469,42 @@ class _MyPageState extends State<MyPage> {
                   newController.dispose();
                   repeatController.dispose();
                 },
-                child: const Text('修改私密密码'));
-          }),
-          TextButton(
-              onPressed: () async {
+                title: const Text('修改私密密码'),
+              );
+            }),
+            ListTile(
+              onTap: () async {
                 var value = await SharedPreferences.getInstance();
                 value.setString(Constant.tokenKey, '');
                 value.setBool(Constant.syncConfigKey, false);
                 settingController.isOpenSync.value = false;
               },
-              child: const Text('退出登录')),
-          TextButton(
-              onPressed: () {
+              title: const Text('退出登录'),
+            ),
+            ListTile(
+              onTap: () {
                 Get.toNamed('/sync');
               },
-              child: const Text('同步相关')),
-          TextButton(
-              onPressed: () {
+              title: const Text('同步相关'),
+              trailing: const Icon(Icons.chevron_right),
+            ),
+            ListTile(
+              onTap: () {
                 Get.toNamed('/settings');
               },
-              child: const Text('更多设置')),
-        ],
-      )),
+              title: const Text('更多设置'),
+              trailing: const Icon(Icons.chevron_right),
+            ),
+            ListTile(
+              onTap: () {
+                Get.toNamed('/model_settings');
+              },
+              title: const Text('有声设置'),
+              trailing: const Icon(Icons.chevron_right),
+            )
+          ],
+        ),
+      ),
     );
   }
 }
