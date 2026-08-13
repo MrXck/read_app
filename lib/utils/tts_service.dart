@@ -259,6 +259,7 @@ void _backgroundEntry(List<dynamic> args) {
     dictDir: modelPath,
     lengthScale: 1.0,
     lexicon: join(modelPath, 'lexicon-zh.txt'),
+    lang: 'zh'
   );
   final modelConfig = OfflineTtsModelConfig(
     kokoro: vitsConfig,
