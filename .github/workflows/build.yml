@@ -37,6 +37,7 @@ jobs:
 #        with:
 #          name: android-apk
 #          path: build/app/outputs/flutter-apk/app-release.apk
+#          retention-days: 1
 
   build-windows:
     runs-on: windows-latest
@@ -69,6 +70,7 @@ jobs:
         with:
           name: windows-zip
           path: Release.zip
+          retention-days: 1
 
   build-ios:
     runs-on: macos-latest
@@ -116,6 +118,7 @@ jobs:
         with:
           name: ios-zip
           path: build/ios/ipa/ios-build.zip
+          retention-days: 1
 
   build-web:
     runs-on: ubuntu-latest
@@ -143,6 +146,7 @@ jobs:
         with:
           name: web-zip
           path: web-build.zip
+          retention-days: 1
 
   release:
 #    needs: [build-android, build-ios, build-windows, build-web]
