@@ -512,6 +512,55 @@ class _ReadSettingsState extends State<ReadSettings> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      Text(
+                        '字间距',
+                        style: TextStyle(fontFamily: widget.settings.fontFamily),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          widget.settings.letterSpacing -= 0.1;
+                          widget.updateFunc(widget.settings);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+                          decoration: const BoxDecoration(
+                              color: Color(0xFFEAEAEA),
+                              borderRadius: BorderRadius.all(Radius.circular(40))),
+                          child: const Text(
+                            'A-',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(left: 10, right: 10),
+                        child:
+                        Text((widget.settings.letterSpacing).toStringAsFixed(1)),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          widget.settings.letterSpacing += 0.1;
+                          widget.updateFunc(widget.settings);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+                          decoration: const BoxDecoration(
+                              color: Color(0xFFEAEAEA),
+                              borderRadius: BorderRadius.all(Radius.circular(40))),
+                          child: const Text(
+                            'A+',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
                       const Text('页面上边距'),
                       InkWell(
                         onTap: () {

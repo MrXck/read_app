@@ -281,7 +281,6 @@ class _ReadPageState extends State<ReadPage> {
         height,
         width,
         settings.fontSize,
-        settings.lineHeight,
       );
 
       List<Widget> pages = pageMap['pageList'];
@@ -417,7 +416,6 @@ class _ReadPageState extends State<ReadPage> {
       height,
       width,
       settings.fontSize,
-      settings.lineHeight,
     );
     List<Widget> pages = pageMap['pageList'];
     List<List<String>> textPage = pageMap['textPage'];
@@ -502,6 +500,7 @@ class _ReadPageState extends State<ReadPage> {
                   fontFamily: settings.fontFamily,
                   color: Color(settings.fontColor),
                   fontWeight: fontWeightList[settings.titleFontWeight],
+                  letterSpacing: settings.letterSpacing
                 ),
               ),
             );
@@ -534,6 +533,7 @@ class _ReadPageState extends State<ReadPage> {
                           fontFamily: settings.fontFamily,
                           color: Color(settings.fontColor),
                           fontWeight: fontWeightList[settings.contentFontWeight],
+                          letterSpacing: settings.letterSpacing
                         ),
                       );
                     }).toList(),
@@ -555,13 +555,22 @@ class _ReadPageState extends State<ReadPage> {
                   child: Text.rich(
                     TextSpan(
                       children: [
-                        WidgetSpan(
-                          child: SizedBox(
-                            width: settings.fontSize * 2, // 2 个汉字宽度
+                        TextSpan(
+                          text: '测试',
+                          // text: text,
+                          style: TextStyle(
+                            height: settings.lineHeight,
+                            fontSize: settings.fontSize,
+                            fontFamily: settings.fontFamily,
+                            color: Colors.transparent,
+                            fontWeight:
+                            fontWeightList[settings.contentFontWeight],
+                            letterSpacing: settings.letterSpacing
                           ),
                         ),
                         TextSpan(
                           text: text.replaceFirst(zhanwei, ''),
+                          // text: text,
                           style: TextStyle(
                             height: settings.lineHeight,
                             fontSize: settings.fontSize,
@@ -569,6 +578,7 @@ class _ReadPageState extends State<ReadPage> {
                             color: Color(settings.fontColor),
                             fontWeight:
                             fontWeightList[settings.contentFontWeight],
+                            letterSpacing: settings.letterSpacing
                           ),
                         ),
                       ],
@@ -603,6 +613,7 @@ class _ReadPageState extends State<ReadPage> {
                           fontFamily: settings.fontFamily,
                           color: Color(settings.fontColor),
                           fontWeight: fontWeightList[settings.contentFontWeight],
+                            letterSpacing: settings.letterSpacing
                         ),
                       );
                     }).toList(),
@@ -632,6 +643,7 @@ class _ReadPageState extends State<ReadPage> {
                       fontFamily: settings.fontFamily,
                       color: Color(settings.fontColor),
                       fontWeight: fontWeightList[settings.contentFontWeight],
+                      letterSpacing: settings.letterSpacing
                     ),
                   ),
                 );
@@ -657,32 +669,17 @@ class _ReadPageState extends State<ReadPage> {
     );
   }
 
-  TextPainter calculateTextHeight(
-    String text,
-    TextStyle style,
-    double maxWidth,
-  ) {
-    final TextPainter textPainter = TextPainter(
-      text: TextSpan(text: text, style: style),
-      maxLines: null, // null 表示不限制行数
-      textDirection: TextDirection.ltr,
-    )..layout(maxWidth: maxWidth);
-
-    return textPainter;
-  }
-
   Map calcPage(
     String data,
     double height,
     double width,
     double fontSize,
-    double lineHeight,
   ) {
     if (settings.showBottom) {
       height = height - 30;
     }
 
-    height = (height - settings.pageTopPadding - settings.pageBottomPadding - 10)
+    height = (height - settings.pageTopPadding - settings.pageBottomPadding)
         .floorToDouble();
 
     width = (width - settings.pageLeftPadding - settings.pageRightPadding)
@@ -720,8 +717,9 @@ class _ReadPageState extends State<ReadPage> {
               fontFamily: settings.fontFamily,
               color: Color(settings.fontColor),
               fontWeight: fontWeightList[settings.titleFontWeight],
+              letterSpacing: settings.letterSpacing
             ),
-            width,
+            width
           );
           text = text.replaceFirst(str, '');
 
@@ -741,8 +739,9 @@ class _ReadPageState extends State<ReadPage> {
               fontFamily: settings.fontFamily,
               color: Color(settings.fontColor),
               fontWeight: fontWeightList[settings.contentFontWeight],
+              letterSpacing: settings.letterSpacing
             ),
-            width,
+            width
           );
           text = text.replaceFirst(str, '');
           lines.add(str);
@@ -883,22 +882,33 @@ class _ReadPageState extends State<ReadPage> {
     final painter = TextPainter(
       text: TextSpan(text: text, style: style),
       textDirection: TextDirection.ltr,
-      textAlign: TextAlign.justify, // 必须保持和你的 Text 组件一致
+      textAlign: TextAlign.justify,
+      maxLines: null,
     );
 
     painter.layout(minWidth: 0, maxWidth: maxWidth);
-
     final lines = painter.computeLineMetrics();
 
-    if (lines.isEmpty) return '';
+    if (lines.isEmpty) {
+      painter.dispose();
+      return '';
+    }
 
-    if (lines.length == 1 && painter.width <= maxWidth) {
+    if (lines.length == 1) {
+      painter.dispose();
       return text;
     }
 
-    final position = painter.getPositionForOffset(
-      Offset(10000.0, lines.first.height / 2),
-    );
+    final secondLine = lines[1];
+
+    final safeY = secondLine.baseline;
+
+    final position = painter.getPositionForOffset(Offset(1.0, safeY));
+    painter.dispose();
+
+    if (position.offset > text.length) {
+      return text;
+    }
 
     return text.substring(0, position.offset);
   }
@@ -1174,6 +1184,7 @@ class _ReadPageState extends State<ReadPage> {
                                     value,
                                     style: TextStyle(
                                       fontFamily: settings.fontFamily,
+                                      color: Color(settings.fontColor)
                                     ),
                                   );
                                 },
@@ -1185,6 +1196,7 @@ class _ReadPageState extends State<ReadPage> {
                                     '${(((currentSeqNo.value + 1) / chapterList.length) * 100).toStringAsFixed(2)}%',
                                     style: TextStyle(
                                       fontFamily: settings.fontFamily,
+                                        color: Color(settings.fontColor)
                                     ),
                                   );
                                 },

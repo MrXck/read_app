@@ -28,6 +28,7 @@ class Settings {
   late double pageBottomPadding = 30;
   late bool isFlip = false;
   late int sid = 48;
+  late double letterSpacing = 0;
 
   static Settings fromMap(Map<String, dynamic> config) {
     Settings settings = Settings();
@@ -68,6 +69,7 @@ class Settings {
     settings.pageBottomPadding = config['pageBottomPadding'] ?? 30;
     settings.isFlip = config['isFlip'] ?? false;
     settings.sid = config['sid'] ?? 48;
+    settings.letterSpacing = config['letterSpacing'] ?? 0;
     return settings;
   }
 
@@ -109,6 +111,7 @@ class Settings {
       'pageBottomPadding': pageBottomPadding,
       'isFlip': isFlip,
       'sid': sid,
+      'letterSpacing': letterSpacing,
     };
   }
 
