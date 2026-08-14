@@ -61,12 +61,12 @@ class _SyncPageState extends State<SyncPage> {
                     settingController.isSyncing.value = true;
                     print('同步中 ${DateTime.now()}');
                     try {
+                      tips.value = '正在下载远端操作...';
+                      await SyncUtils.syncRemoteUpdate();
                       tips.value = '正在上传新文件...';
                       await SyncUtils.syncUploadFile();
                       tips.value = '正在上传操作历史...';
                       await SyncUtils.uploadOperationLogs();
-                      tips.value = '正在下载远端操作...';
-                      await SyncUtils.syncRemoteUpdate();
                       SyncLog syncLog = SyncLog();
                       syncLog.createTime = DateTime.now().millisecondsSinceEpoch;
                       var logId =

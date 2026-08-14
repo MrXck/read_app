@@ -27,9 +27,9 @@ class SyncUtils {
         settingController.isSyncing.value = true;
         print('同步中 ${DateTime.now()}');
         try {
+          await syncRemoteUpdate();
           await syncUploadFile();
           await uploadOperationLogs();
-          await syncRemoteUpdate();
           SyncLog syncLog = SyncLog();
           syncLog.createTime = DateTime.now().millisecondsSinceEpoch;
           DatabaseHelper.db.insertSyncLog(syncLog);
@@ -46,9 +46,9 @@ class SyncUtils {
           settingController.isSyncing.value = true;
           print('同步中 ${DateTime.now()}');
           try {
+            await syncRemoteUpdate();
             await syncUploadFile();
             await uploadOperationLogs();
-            await syncRemoteUpdate();
             SyncLog syncLog = SyncLog();
             syncLog.createTime = DateTime.now().millisecondsSinceEpoch;
             var logId =
@@ -128,6 +128,10 @@ class SyncUtils {
     }
     var list = response.data['data']['list'];
     var tempDir = await getTemporaryDirectory();
+
+    List<OperationLog> addList = await DatabaseHelper.db.getAllAddOperationLog();
+    List<String> addBookIds = addList.map((item) => item.bookId).toList();
+
     List<String> md5s = [];
     var index = 0;
     for (var book in list) {
@@ -163,6 +167,9 @@ class SyncUtils {
     List<Book> books = await DatabaseHelper.db
         .getBookByNotInMd5AndType(md5s, [Constant.bookType, Constant.pdfType]);
     await BookUtils.deleteBooks(books.map((item) {
+      if (addBookIds.contains(item.id)) {
+        return '';
+      }
 
       if (!settingController.needSyncTypeList.contains(item.type)) {
         return '';
