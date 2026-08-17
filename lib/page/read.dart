@@ -817,7 +817,7 @@ class _ReadPageState extends State<ReadPage> {
 
             pageList.add(addPage(textListPage));
             textPage.add(generateTextPage(textListPage));
-            lineList = [];
+            lineList = [line];
             textListPage = [];
             nowText = line;
             nowHeight = thisLineHeight;
