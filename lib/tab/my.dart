@@ -8,7 +8,6 @@ import 'package:read_app/controller/setting_controller.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/file_utils.dart';
 import 'package:read_app/utils/loading_utils.dart';
-import 'package:read_app/utils/model_utils.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -33,6 +32,67 @@ class _MyPageState extends State<MyPage> {
       body: SafeArea(
         child: ListView(
           children: [
+            const SizedBox(height: 10,),
+            ListTile(
+              onTap: () {
+                Get.toNamed('/sync');
+              },
+              title: const Text('同步相关'),
+              trailing: const Icon(Icons.chevron_right),
+            ),
+            ListTile(
+              onTap: () {
+                Get.toNamed('/settings');
+              },
+              title: const Text('更多设置'),
+              trailing: const Icon(Icons.chevron_right),
+            ),
+            ListTile(
+              onTap: () {
+                Get.toNamed('/model_settings');
+              },
+              title: const Text('有声设置'),
+              trailing: const Icon(Icons.chevron_right),
+            ),
+            Obx(() {
+              return ListTile(
+                onTap: () async {
+                  settingController.isOpenHidden.value =
+                  !settingController.isOpenHidden.value;
+                },
+                title: settingController.isOpenHidden.value
+                    ? const Text('关闭隐藏')
+                    : const Text('开启隐藏'),
+              );
+            }),
+            Obx(() {
+              return ListTile(
+                onTap: () async {
+                  var value = await SharedPreferences.getInstance();
+                  var token = value.getString(Constant.tokenKey) ?? '';
+                  if (token.isEmpty) {
+                    Get.offNamed('/login');
+                    return;
+                  }
+
+                  settingController.updateSync();
+                },
+                title: settingController.isOpenSync.value
+                    ? const Text('关闭同步')
+                    : const Text('开启同步'),
+              );
+            }),
+            Obx(() {
+              return ListTile(
+                onTap: () async {
+                  settingController.isOpenVolumeFlip.value =
+                  !settingController.isOpenVolumeFlip.value;
+                },
+                title: settingController.isOpenVolumeFlip.value
+                    ? const Text('关闭音量翻页')
+                    : const Text('开启音量翻页'),
+              );
+            }),
             ListTile(
               onTap: () async {
                 final dir = await getApplicationDocumentsDirectory();
@@ -186,45 +246,6 @@ class _MyPageState extends State<MyPage> {
               },
               title: const Text('导入'),
             ),
-            Obx(() {
-              return ListTile(
-                onTap: () async {
-                  settingController.isOpenHidden.value =
-                      !settingController.isOpenHidden.value;
-                },
-                title: settingController.isOpenHidden.value
-                    ? const Text('关闭隐藏')
-                    : const Text('开启隐藏'),
-              );
-            }),
-            Obx(() {
-              return ListTile(
-                onTap: () async {
-                  var value = await SharedPreferences.getInstance();
-                  var token = value.getString(Constant.tokenKey) ?? '';
-                  if (token.isEmpty) {
-                    Get.offNamed('/login');
-                    return;
-                  }
-
-                  settingController.updateSync();
-                },
-                title: settingController.isOpenSync.value
-                    ? const Text('关闭同步')
-                    : const Text('开启同步'),
-              );
-            }),
-            Obx(() {
-              return ListTile(
-                onTap: () async {
-                  settingController.isOpenVolumeFlip.value =
-                      !settingController.isOpenVolumeFlip.value;
-                },
-                title: settingController.isOpenVolumeFlip.value
-                    ? const Text('关闭音量翻页')
-                    : const Text('开启音量翻页'),
-              );
-            }),
             Obx(() {
               return ListTile(
                 onTap: () async {
@@ -481,27 +502,6 @@ class _MyPageState extends State<MyPage> {
               },
               title: const Text('退出登录'),
             ),
-            ListTile(
-              onTap: () {
-                Get.toNamed('/sync');
-              },
-              title: const Text('同步相关'),
-              trailing: const Icon(Icons.chevron_right),
-            ),
-            ListTile(
-              onTap: () {
-                Get.toNamed('/settings');
-              },
-              title: const Text('更多设置'),
-              trailing: const Icon(Icons.chevron_right),
-            ),
-            ListTile(
-              onTap: () {
-                Get.toNamed('/model_settings');
-              },
-              title: const Text('有声设置'),
-              trailing: const Icon(Icons.chevron_right),
-            )
           ],
         ),
       ),
