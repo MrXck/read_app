@@ -682,11 +682,11 @@ class DatabaseHelper {
     return logs;
   }
 
-  Future<List<OperationLog>> getAllAddOperationLog() async {
+  Future<List<OperationLog>> getOperationLogByType(int type) async {
     var db = await database;
     var query = await db?.query('operation_log',
         where: 'type = ?',
-        whereArgs: [Constant.operationAddType],
+        whereArgs: [type],
         orderBy: 'create_time asc');
     List<OperationLog> logs = query!.isNotEmpty
         ? query.map((t) => OperationLog.fromMap(t)).toList()

@@ -129,7 +129,14 @@ class SyncUtils {
     var list = response.data['data']['list'];
     var tempDir = await getTemporaryDirectory();
 
-    List<OperationLog> addList = await DatabaseHelper.db.getAllAddOperationLog();
+    List<OperationLog> addList = await DatabaseHelper.db.getOperationLogByType(Constant.operationAddType);
+    List<OperationLog> deleteList = await DatabaseHelper.db.getOperationLogByType(Constant.operationDeleteType);
+
+    List<String> deleteMd5List = [];
+    for (var deleteOperationLog in deleteList) {
+      deleteMd5List.add(deleteOperationLog.md5);
+    }
+
     List<String> addBookIds = addList.map((item) => item.bookId).toList();
 
     List<String> md5s = [];
@@ -139,6 +146,9 @@ class SyncUtils {
       settingController.syncTip.value = '下载服务器存储文件记录中进度 $index / ${list.length}';
       var timestamp = DateTime.parse(book['updateTime']).millisecondsSinceEpoch;
       var md5 = book['md5'];
+      if (deleteMd5List.contains(md5)) {
+        continue;
+      }
       md5s.add(md5);
       var oldBook = await DatabaseHelper.db.getByMd5(md5);
       if (oldBook == null) {
@@ -181,7 +191,7 @@ class SyncUtils {
 
   static Future<void> uploadOperationLogs() async {
     List<OperationLog> addLogs =
-        await DatabaseHelper.db.getAllAddOperationLog();
+        await DatabaseHelper.db.getOperationLogByType(Constant.operationAddType);
 
     if (addLogs.isNotEmpty) {
       var dir = await getApplicationDocumentsDirectory();
@@ -239,6 +249,8 @@ class SyncUtils {
       if (response.data['code'] == 0) {
         for (var log in logs) {
           DatabaseHelper.db.deleteOperationLogById(log.id);
+          index += 1;
+          settingController.syncTip.value = '上传操作日志中进度 $index / ${logs.length}';
         }
       }
     } catch (e) {
@@ -246,6 +258,8 @@ class SyncUtils {
       if (result['code'] == 0) {
         for (var log in logs) {
           DatabaseHelper.db.deleteOperationLogById(log.id);
+          index += 1;
+          settingController.syncTip.value = '上传操作日志中进度 $index / ${logs.length}';
         }
       }
     }
