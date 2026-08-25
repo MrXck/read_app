@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:chewie/chewie.dart';
@@ -34,6 +35,19 @@ class _VideoPageState extends State<VideoPage> {
   int changeSeconds = 0;
   int startSecond = 0;
 
+  Timer? _dataTimer;
+
+  Future<void> updateBook() async {
+    final duration = videoPlayerController.value.duration;
+    final position = videoPlayerController.value.position;
+
+    book.page = position.inSeconds;
+    book.percent = (position.inSeconds / duration.inSeconds * 100).isInfinite
+        ? 0
+        : position.inSeconds / duration.inSeconds * 100;
+    DatabaseHelper.db.updateById(book);
+  }
+
   Future<void> init(Book book) async {
     book = await DatabaseHelper.db.getById(book.id);
     var dataDir = await getApplicationDocumentsDirectory();
@@ -46,6 +60,10 @@ class _VideoPageState extends State<VideoPage> {
     // 初始化视频控制器
     await videoPlayerController.initialize();
     videoPlayerController.seekTo(Duration(seconds: book.page));
+
+    _dataTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
+      updateBook();
+    });
 
     // 初始化控制栏
     chewieController = ChewieController(
@@ -94,14 +112,8 @@ class _VideoPageState extends State<VideoPage> {
 
   @override
   void dispose() {
-    final duration = videoPlayerController.value.duration;
-    final position = videoPlayerController.value.position;
-
-    book.page = position.inSeconds;
-    book.percent = (position.inSeconds / duration.inSeconds * 100).isInfinite
-        ? 0
-        : position.inSeconds / duration.inSeconds * 100;
-    DatabaseHelper.db.updateById(book);
+    _dataTimer?.cancel();
+    updateBook();
 
     videoPlayerController.dispose();
     chewieController.dispose();

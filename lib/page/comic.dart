@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -32,11 +33,26 @@ class _ComicPageState extends State<ComicPage> {
   final VolumeUtils volumeUtils = VolumeUtils();
   final SettingController settingController = Get.find();
   Settings settings = Settings();
+  Timer? _dataTimer;
 
   double pageTopPadding = 0;
   double pageBottomPadding = 30;
   double pageLeftPadding = 10;
   double pageRightPadding = 10;
+
+  Future<void> updateBook() async {
+    book.page = _currentIndex.value - 1 < 0 ? 0 : _currentIndex.value - 1;
+    book.percent =
+    ((_currentIndex.value - 1 < 0 ? 0 : _currentIndex.value - 1) /
+        (imageList.length - 1) *
+        100)
+        .isInfinite
+        ? 0
+        : (_currentIndex.value - 1 < 0 ? 0 : _currentIndex.value - 1) /
+        (imageList.length - 1) *
+        100;
+    DatabaseHelper.db.updateById(book);
+  }
 
   Future<void> init(Book book) async {
     if (settingController.isOpenVolumeFlip.value) {
@@ -60,6 +76,10 @@ class _ComicPageState extends State<ComicPage> {
     var path = join(book.assetDir, book.path);
     _bookTitleController.text = book.title;
     _currentIndex.value = book.page + 1;
+
+    _dataTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
+      updateBook();
+    });
 
     var dir = Directory(path);
     if (dir.existsSync()) {
@@ -254,17 +274,8 @@ class _ComicPageState extends State<ComicPage> {
 
   @override
   void dispose() {
-    book.page = _currentIndex.value - 1 < 0 ? 0 : _currentIndex.value - 1;
-    book.percent =
-        ((_currentIndex.value - 1 < 0 ? 0 : _currentIndex.value - 1) /
-                    (imageList.length - 1) *
-                    100)
-                .isInfinite
-            ? 0
-            : (_currentIndex.value - 1 < 0 ? 0 : _currentIndex.value - 1) /
-                (imageList.length - 1) *
-                100;
-    DatabaseHelper.db.updateById(book);
+    _dataTimer?.cancel();
+    updateBook();
     SharedPreferences.getInstance().then((value) {
       value.setString(Constant.readConfigKey,
           const JsonEncoder().convert(settings.toMap()));

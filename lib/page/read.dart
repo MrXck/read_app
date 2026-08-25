@@ -128,7 +128,7 @@ class _ReadPageState extends State<ReadPage> {
           '${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')} ${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:${time.second.toString().padLeft(2, '0')}';
     });
 
-    _dataTimer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
+    _dataTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
       updateBook();
     });
 

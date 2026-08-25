@@ -269,6 +269,12 @@ class _SortableGridViewState<T extends HasId> extends State<SortableGridView>
               ));
         });
   }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 }
 
 class HasId extends Object {

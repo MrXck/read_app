@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -36,6 +37,19 @@ class _PdfPageState extends State<PdfPage> {
   double pageLeftPadding = 10;
   double pageRightPadding = 10;
   ValueNotifier<bool> showOption = ValueNotifier(false);
+  Timer? _dataTimer;
+
+  Future<void> updateBook() async {
+    book.page = _pdfViewerController.pageNumber;
+    book.percent =
+    (_pdfViewerController.pageNumber / _pdfViewerController.pageCount * 100)
+        .isInfinite
+        ? 0
+        : _pdfViewerController.pageNumber /
+        _pdfViewerController.pageCount *
+        100;
+    DatabaseHelper.db.updateById(book);
+  }
 
   @override
   void initState() {
@@ -106,13 +120,9 @@ class _PdfPageState extends State<PdfPage> {
                             onDocumentLoaded:
                                 (PdfDocumentLoadedDetails details) {
                               _pdfViewerController.jumpToPage(book.page);
-                            },
-                            onPageChanged: (PdfPageChangedDetails details) {
-                              book.page = _pdfViewerController.pageNumber;
-                              book.percent = _pdfViewerController.pageNumber /
-                                  _pdfViewerController.pageCount *
-                                  100;
-                              DatabaseHelper.db.updateById(book);
+                              _dataTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
+                                updateBook();
+                              });
                             },
                             onTap: (PdfGestureDetails details) {
                               showOption.value = !showOption.value;
@@ -207,15 +217,8 @@ class _PdfPageState extends State<PdfPage> {
 
   @override
   void dispose() {
-    book.page = _pdfViewerController.pageNumber;
-    book.percent =
-        (_pdfViewerController.pageNumber / _pdfViewerController.pageCount * 100)
-                .isInfinite
-            ? 0
-            : _pdfViewerController.pageNumber /
-                _pdfViewerController.pageCount *
-                100;
-    DatabaseHelper.db.updateById(book);
+    _dataTimer?.cancel();
+    updateBook();
     OperationLog operationLog = OperationLog.setOperationLog(
         book, book.id, Constant.operationUpdateType);
     DatabaseHelper.db.insertOperationLog(operationLog);
