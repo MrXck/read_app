@@ -76,21 +76,21 @@ class FileUtils {
     }
   }
 
-  static Future<void> uploadFile(List<int> fileBytes, filename) async {
+  static Future<void> uploadFile(List<int> fileBytes, filename, String parentId) async {
     var extension = getFileExtension(filename);
 
     if (Constant.allPdfType.contains(extension)) {
-      uploadPdf(fileBytes, filename);
+      uploadPdf(fileBytes, filename, parentId);
     } else if (Constant.allMediaType.contains(extension)) {
-      uploadMedia(fileBytes, filename);
+      uploadMedia(fileBytes, filename, parentId);
     } else if (Constant.allTextType.contains(extension)) {
-      uploadText(fileBytes, filename);
+      uploadText(fileBytes, filename, parentId);
     } else if (Constant.allFontType.contains(extension)) {
       uploadFont(fileBytes, filename);
     }
   }
 
-  static Future<void> uploadMedia(List<int> fileBytes, filename) async {
+  static Future<void> uploadMedia(List<int> fileBytes, filename, String parentId) async {
     Directory directory = await getApplicationDocumentsDirectory();
 
     final relativeDirPath = path.join('read', 'media');
@@ -118,7 +118,7 @@ class FileUtils {
     book.updateTime = DateTime.now().millisecondsSinceEpoch;
     book.createTime = DateTime.now().millisecondsSinceEpoch;
     book.seqNo = 0;
-    book.parentId = '';
+    book.parentId = parentId;
     book.path = path.join(relativeDirPath, name);
     book.type = Constant.mediaType;
     book.cover = "";
@@ -128,7 +128,7 @@ class FileUtils {
     await DatabaseHelper.db.insert(book);
   }
 
-  static Future<void> uploadText(List<int> fileBytes, filename) async {
+  static Future<void> uploadText(List<int> fileBytes, filename, String parentId) async {
     Directory directory = await getApplicationDocumentsDirectory();
 
     var bookDirName = generateRandomString(32);
@@ -160,7 +160,7 @@ class FileUtils {
     book.updateTime = DateTime.now().millisecondsSinceEpoch;
     book.createTime = DateTime.now().millisecondsSinceEpoch;
     book.seqNo = 0;
-    book.parentId = '';
+    book.parentId = parentId;
     book.path = path.join(relativeDirPath, name);
     book.type = Constant.bookType;
     book.cover = "";
@@ -194,7 +194,7 @@ class FileUtils {
     }
   }
 
-  static Future<void> uploadPdf(List<int> fileBytes, filename) async {
+  static Future<void> uploadPdf(List<int> fileBytes, filename, String parentId) async {
     Directory directory = await getApplicationDocumentsDirectory();
 
     final relativeDirPath = path.join('read', 'pdf');
@@ -222,7 +222,7 @@ class FileUtils {
     book.updateTime = DateTime.now().millisecondsSinceEpoch;
     book.createTime = DateTime.now().millisecondsSinceEpoch;
     book.seqNo = 0;
-    book.parentId = '';
+    book.parentId = parentId;
     book.path = path.join(relativeDirPath, name);
     book.type = Constant.pdfType;
     book.cover = "";
@@ -284,7 +284,7 @@ class FileUtils {
 
     if (result != null) {
       for (var i = 0; i < result.files.length; i++) {
-        await uploadFile(
+        await uploadFont(
           await File(result.files[i].path!).readAsBytes(),
           result.files[i].name,
         );
@@ -988,6 +988,7 @@ class FileUtils {
   static Future<void> uploadZipFileByFilePath(
       String filepath,
       String filename,
+      String parentId
       ) async {
     String tempPath = filepath;
     String outputDir = '';
@@ -1002,7 +1003,7 @@ class FileUtils {
 
       Directory outputDirectory = Directory(outputDir);
 
-      await FileUtils.saveComicByDirectory(outputDir, '');
+      await FileUtils.saveComicByDirectory(outputDir, parentId);
 
       bool hasDir = false;
       await for (var entity in outputDirectory.list(recursive: false)) {
@@ -1012,7 +1013,7 @@ class FileUtils {
       }
 
       if (!hasDir) {
-        await FileUtils.saveComic(outputDir, '');
+        await FileUtils.saveComic(outputDir, parentId);
       }
     } catch (e) {
       rethrow;

@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:read_app/tab/book_shelf.dart';
-import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/file_utils.dart';
 import 'package:read_app/utils/loading_utils.dart';
 import 'package:read_app/utils/permission_utils.dart';
-import 'package:read_app/utils/platform_utils.dart';
 
 class BookShelfHeader extends StatelessWidget {
   final Data data;
@@ -36,8 +34,9 @@ class BookShelfHeader extends StatelessWidget {
                 icon: const Icon(Icons.sort),
               ),
               IconButton(
-                onPressed: () {
-                  Get.toNamed('/search');
+                onPressed: () async {
+                  await Get.toNamed('/search');
+                  data.refresh();
                 },
                 style: IconButton.styleFrom(overlayColor: Colors.transparent),
                 icon: const Icon(Icons.search),
@@ -197,7 +196,9 @@ class BookShelfHeader extends StatelessWidget {
                       PopupMenuItem(
                         child: const Text('局域网传书'),
                         onTap: () async {
-                          await Get.toNamed("/uploadFile");
+                          await Get.toNamed("/uploadFile", arguments: {
+                            'parentId': data.parentId
+                          });
                           data.refresh();
                         },
                       ),

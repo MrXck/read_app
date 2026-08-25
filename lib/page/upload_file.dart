@@ -16,6 +16,7 @@ class HttpServiceLogic {
   late String address = '';
   List<String> ipList = [];
   int port = 25210;
+  String parentId = '';
 
   Future<List<String>> getIpv4AndIpV6Addresses() async {
     try {
@@ -105,7 +106,7 @@ class HttpServiceLogic {
 
             try {
               await FileUtils.uploadFile(
-                  await multipart.toBytes(), filename.toLowerCase());
+                  await multipart.toBytes(), filename.toLowerCase(), parentId);
               // 这边我直接成功，可以做其他判断
               request.response
                 ..statusCode = HttpStatus.ok
@@ -168,7 +169,7 @@ class HttpServiceLogic {
               await sink.close();
 
               await FileUtils.uploadZipFileByFilePath(
-                  file.path, filename);
+                  file.path, filename, parentId);
               request.response
                 ..statusCode = HttpStatus.ok
                 ..headers.contentType = ContentType.json
@@ -216,8 +217,10 @@ class _UploadFilePageState extends State<UploadFilePage> {
 
   @override
   void initState() {
+    Map data = Get.arguments as Map;
     settingController.isSyncing.value = true;
     logic = HttpServiceLogic();
+    logic.parentId = data['parentId'];
     logic.getIpv4AndIpV6Addresses().then((value) async {
       List<String> ips = await logic.startListen();
 
