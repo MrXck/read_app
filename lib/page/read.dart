@@ -254,14 +254,7 @@ class _ReadPageState extends State<ReadPage> {
     }
     nowContentPage = startHasContentPage;
 
-    List<Widget?> pageList = List.generate(maxContentPage, (index) {
-      // if (index < startHasContentPage) {
-      //   return const SizedBox.shrink();
-      // } else {
-      //   return null;
-      // }
-      return null;
-    });
+    List<Widget?> pageList = List.generate(maxContentPage, (index) => null);
     List<List<String>?> textPageList = List.generate(maxContentPage, (index) => null);
     var dataDir = await getApplicationDocumentsDirectory();
 
