@@ -40,6 +40,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
   ValueNotifier<int> count = ValueNotifier<int>(0);
   String sortString = '';
   bool isReady = false;
+  double bottomChangeHeight = 100;
 
   void refresh() async {
     var value = await DatabaseHelper.db.getBookByParentIdAndSort(
@@ -495,7 +496,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                   top: 70,
                   left: 10,
                   right: 10,
-                  bottom: isChange ? 50 : 0,
+                  bottom: isChange ? bottomChangeHeight : 0,
                   child: SortableGridView<Book>(
                     books,
                     itemBuilder: (context, data) {
@@ -567,7 +568,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                           checkedBreadList.add(book);
                           breadList.value = checkedBreadList;
                         },
-                        itemHeight - 86,
+                        itemHeight - 74,
                       );
                     },
                     canAccept: (oldIndex, newIndex) {
@@ -575,7 +576,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                       return accept;
                     },
                     itemWidth: itemWidth,
-                    itemHeight: itemHeight,
+                    itemHeight: itemHeight + 4,
                     itemMargin: const [0, 0, 0, 0],
                     itemPadding: [
                       defaultItemLeftRightPadding,
@@ -653,7 +654,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
               bottom: 0,
               left: 0,
               right: 0,
-              height: 100,
+              height: bottomChangeHeight,
               child: Container(
                 decoration: const BoxDecoration(color: Colors.white),
                 child: Column(
