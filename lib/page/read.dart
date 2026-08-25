@@ -129,7 +129,7 @@ class _ReadPageState extends State<ReadPage> {
     });
 
     _dataTimer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
-      DatabaseHelper.db.updateById(book);
+      updateBook();
     });
 
     var value = await SharedPreferences.getInstance();
@@ -139,6 +139,17 @@ class _ReadPageState extends State<ReadPage> {
     settings = Settings.fromMap(config);
 
     switchChapter1(currentSeqNo.value);
+  }
+
+  Future<void> updateBook() async {
+    book.page = nowChapterPage;
+    book.percent =
+    (((currentSeqNo.value + 1) / chapterList.length) * 100).isInfinite
+        ? 0
+        : ((currentSeqNo.value + 1) / chapterList.length) * 100;
+    book.chapterTitleExp = chapterTitleExp;
+    book.currentChapter = currentSeqNo.value;
+    DatabaseHelper.db.updateById(book);
   }
 
   void previousPage() {
@@ -1603,14 +1614,7 @@ class _ReadPageState extends State<ReadPage> {
     tts.stop();
     _timeTimer?.cancel();
     _dataTimer?.cancel();
-    book.page = nowChapterPage;
-    book.percent =
-        (((currentSeqNo.value + 1) / chapterList.length) * 100).isInfinite
-        ? 0
-        : ((currentSeqNo.value + 1) / chapterList.length) * 100;
-    book.chapterTitleExp = chapterTitleExp;
-    book.currentChapter = currentSeqNo.value;
-    DatabaseHelper.db.updateById(book);
+    updateBook();
     OperationLog operationLog = OperationLog.setOperationLog(
       book,
       book.id,
