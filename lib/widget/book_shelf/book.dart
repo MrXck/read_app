@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:path/path.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/utils/constant.dart';
+import 'package:read_app/utils/db.dart';
 
 typedef Click = void Function(Book book, bool isChecked);
 typedef Update = void Function();
@@ -38,6 +39,8 @@ class _BookShelfBookState extends State<BookShelfBook>
     with SingleTickerProviderStateMixin {
   late bool isSelect = false;
 
+  late final ValueNotifier<String> alreadyRead = ValueNotifier(widget.book.percent.toStringAsFixed(2));
+
   @override
   void initState() {
     super.initState();
@@ -56,24 +59,24 @@ class _BookShelfBookState extends State<BookShelfBook>
         } else {
           if (widget.book.type == Constant.bookType) {
             await Get.toNamed('/read', arguments: widget.book);
-            widget.update();
           } else if (widget.book.type == Constant.comicType) {
             await Get.toNamed('/comic', arguments: widget.book);
-            widget.update();
           } else if (widget.book.type == Constant.mediaType) {
             await Get.toNamed('/video', arguments: widget.book);
-            widget.update();
           } else if (widget.book.type == Constant.outSideType) {
             await Get.toNamed(
               '/read_outside',
               arguments: {'book': widget.book, 'outSideBook': null},
             );
-            widget.update();
           } else if (widget.book.type == Constant.directoryType) {
             widget.updateParentId(widget.book.id);
           } else if (widget.book.type == Constant.pdfType) {
             await Get.toNamed('/pdf', arguments: widget.book);
-            widget.update();
+          }
+
+          if (widget.book.type != Constant.directoryType) {
+            var book = await DatabaseHelper.db.getById(widget.book.id);
+            alreadyRead.value = book.percent.toStringAsFixed(2);
           }
         }
       },
@@ -148,12 +151,14 @@ class _BookShelfBookState extends State<BookShelfBook>
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(color: Colors.black45, fontSize: 14),
                 )
-              : Text(
-                  '已看${widget.book.percent.toStringAsFixed(2)}%',
+              : ValueListenableBuilder(valueListenable: alreadyRead, builder: (BuildContext context, String value, Widget? child) {
+                return Text(
+                  '已看$value%',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(color: Colors.black45, fontSize: 14),
-                ),
+                );
+          }),
         ],
       ),
     );
