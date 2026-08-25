@@ -83,14 +83,13 @@ class _ReadPageState extends State<ReadPage> {
   Map<String, int> chapterTitlePageNumMap = {};
   Map<int, Chapter> chapterPageNumTitleMap = {};
   List<int> chapterPageNumList = [];
-  int defaultHasContentPage = 500;
-  int startHasContentPage = 0;
 
-  Timer? _throttleTimer;
   Timer? _timeTimer;
   Timer? _dataTimer;
   late final WindowListener _listener;
   int maxContentPage = 5000;
+  late int defaultHasContentPage = (maxContentPage / 2).round();
+  int startHasContentPage = 0;
   int nowContentPage = 0;
   String zhanwei = '\u3000\u3000';
   String zhanwei1 = '\u3000\u3000';
@@ -248,14 +247,21 @@ class _ReadPageState extends State<ReadPage> {
 
     var content = '';
 
-    if (book.currentChapter == 0) {
+    if (currentSeqNo.value == 0) {
       startHasContentPage = 0;
     } else {
       startHasContentPage = defaultHasContentPage;
     }
     nowContentPage = startHasContentPage;
 
-    List<Widget?> pageList = List.generate(maxContentPage, (index) => null);
+    List<Widget?> pageList = List.generate(maxContentPage, (index) {
+      // if (index < startHasContentPage) {
+      //   return const SizedBox.shrink();
+      // } else {
+      //   return null;
+      // }
+      return null;
+    });
     List<List<String>?> textPageList = List.generate(maxContentPage, (index) => null);
     var dataDir = await getApplicationDocumentsDirectory();
 
@@ -325,6 +331,9 @@ class _ReadPageState extends State<ReadPage> {
     setState(() {
       data = content;
       widgetList = pageList;
+      if (startHasContentPage - 1 >= 0) {
+        widgetList[startHasContentPage - 1] = const SizedBox.shrink();
+      }
       pageTextList = textPageList;
     });
 
@@ -345,8 +354,8 @@ class _ReadPageState extends State<ReadPage> {
     });
   }
 
-  void switchChapter(int seqNo, bool isAfter, int currentPage) async {
-    if (seqNo == -1) {
+  Future<void> switchChapter(int seqNo, bool isAfter, int currentPage) async {
+    if (seqNo == -1 || isLoading) {
       return;
     }
     isLoading = true;
@@ -470,14 +479,15 @@ class _ReadPageState extends State<ReadPage> {
           pageTextList[startHasContentPage - (pageList.length - i)] = textPage[i];
         }
         startHasContentPage -= pageList.length;
+        if (startHasContentPage - 1 >= 0) {
+          widgetList[startHasContentPage - 1] = const SizedBox.shrink();
+        }
       }
       data = content;
       _contentRevision += 1;
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
       isLoading = false;
     });
+
   }
 
   Widget addPage(List<Map> textList) {
@@ -924,8 +934,13 @@ class _ReadPageState extends State<ReadPage> {
     return text.substring(0, position.offset);
   }
 
-  void _onPageChanged(int leftPageIndex, int page) {
+  void _onPageChanged(int leftPageIndex, int page) async {
     if (page == _currentPage.value) {
+      return;
+    }
+
+    if (page < startHasContentPage) {
+      jumpToPage(startHasContentPage);
       return;
     }
 
@@ -944,48 +959,37 @@ class _ReadPageState extends State<ReadPage> {
     var beforePage = _currentPage.value;
     _currentPage.value = page.round();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (beforePage > _currentPage.value) {
-        if (beforePage - startHasContentPage < 4) {
-          if (isLoading) {
-            return;
-          }
-          switchChapter(currentSeqNo.value - 1, false, _currentPage.value);
+    if (beforePage > _currentPage.value) {
+      if (beforePage - startHasContentPage < 4) {
+        if (isLoading) {
+          return;
         }
+        await switchChapter(currentSeqNo.value - 1, false, _currentPage.value);
       }
+    }
 
-      if (beforePage < _currentPage.value) {
-        if (nowContentPage - _currentPage.value < 4) {
-          if (isLoading) {
-            return;
-          }
-          switchChapter(currentSeqNo.value + 1, true, _currentPage.value);
+    if (beforePage < _currentPage.value) {
+      if (nowContentPage - _currentPage.value < 4) {
+        if (isLoading) {
+          return;
         }
+        await switchChapter(currentSeqNo.value + 1, true, _currentPage.value);
       }
+    }
 
-      _throttleTimer?.cancel();
+    if (page < chapterPageNumList[0]) {
+      _nowChapter.value = '开始';
+    } else {
+      var chapterPage = chapterPageNumList[getChapterTitle(page)];
+      nowChapterPage = page - chapterPage;
 
-      _throttleTimer = Timer(const Duration(milliseconds: 100), () async {
-        book.page = nowChapterPage;
-        book.percent = ((currentSeqNo.value + 1) / chapterList.length) * 100;
-        book.chapterTitleExp = chapterTitleExp;
-        book.currentChapter = currentSeqNo.value;
-
-        if (page < chapterPageNumList[0]) {
-          _nowChapter.value = '开始';
-        } else {
-          var chapterPage = chapterPageNumList[getChapterTitle(page)];
-          nowChapterPage = page - chapterPage;
-
-          var chapter = chapterPageNumTitleMap[chapterPage]!;
-          currentSeqNo.value = chapter.seqNo;
-          var title = chapter.title;
-          if (_nowChapter.value != title) {
-            _nowChapter.value = title;
-          }
-        }
-      });
-    });
+      var chapter = chapterPageNumTitleMap[chapterPage]!;
+      currentSeqNo.value = chapter.seqNo;
+      var title = chapter.title;
+      if (_nowChapter.value != title) {
+        _nowChapter.value = title;
+      }
+    }
   }
 
   Widget _buildPageWidget() {
