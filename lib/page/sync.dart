@@ -63,8 +63,6 @@ class _SyncPageState extends State<SyncPage> {
                     try {
                       tips.value = '正在下载远端操作...';
                       await SyncUtils.syncRemoteUpdate();
-                      tips.value = '正在上传新文件...';
-                      await SyncUtils.syncUploadFile();
                       tips.value = '正在上传操作历史...';
                       await SyncUtils.uploadOperationLogs();
                       SyncLog syncLog = SyncLog();

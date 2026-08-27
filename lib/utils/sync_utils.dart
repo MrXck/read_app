@@ -28,7 +28,6 @@ class SyncUtils {
         print('同步中 ${DateTime.now()}');
         try {
           await syncRemoteUpdate();
-          await syncUploadFile();
           await uploadOperationLogs();
           SyncLog syncLog = SyncLog();
           syncLog.createTime = DateTime.now().millisecondsSinceEpoch;
@@ -47,7 +46,6 @@ class SyncUtils {
           print('同步中 ${DateTime.now()}');
           try {
             await syncRemoteUpdate();
-            await syncUploadFile();
             await uploadOperationLogs();
             SyncLog syncLog = SyncLog();
             syncLog.createTime = DateTime.now().millisecondsSinceEpoch;
@@ -62,62 +60,6 @@ class SyncUtils {
         }
       });
     });
-  }
-
-  static Future<void> syncUploadFile() async {
-    var books = await DatabaseHelper.db
-        .getAllSyncBook(settingController.needSyncTypeList);
-    var response = await RequestUtils.postJson(
-        Constant.validBookMd5Url,
-        {
-          "bookLogDTOS": books.map((item) => {'md5': item.md5}).toList()
-        },
-        Constant.headers);
-
-    var md5s = [];
-
-    if (response.data['code'] == 0) {
-      md5s = response.data['data']['md5s'];
-    }
-
-    var index = 0;
-
-    var dir = await getApplicationDocumentsDirectory();
-    for (var book in books) {
-      index += 1;
-      settingController.syncTip.value = '上传中进度 $index / ${books.length}';
-
-      if (md5s.contains(book.md5)) {
-        continue;
-      }
-
-      if (!settingController.needSyncTypeList.contains(book.type)) {
-        continue;
-      }
-
-      var filePath = join(dir.path, book.path);
-      try {
-        await RequestUtils.postFileJson(
-            Constant.uploadBookUrl,
-            FormData.fromMap({
-              'file': await MultipartFile.fromFile(
-                filePath,
-                filename: basename(filePath),
-              ),
-              'title': book.title,
-              'chapterTitleExp': book.chapterTitleExp,
-              'md5': book.md5,
-              'seqNo': book.seqNo,
-              'page': book.page,
-              'type': book.type,
-              'currentChapter': book.currentChapter,
-              'percent': book.percent,
-            }),
-            {});
-      } catch (e) {
-        print(e);
-      }
-    }
   }
 
   static Future<void> syncRemoteUpdate() async {

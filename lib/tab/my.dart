@@ -85,7 +85,7 @@ class _MyPageState extends State<MyPage> {
                       OperationLog operationLog = OperationLog.setOperationLog(
                         book,
                         book.id,
-                        Constant.operationUpdateType,
+                        Constant.operationAddType,
                       );
                       await DatabaseHelper.db.insertOperationLog(operationLog);
                     }
