@@ -98,9 +98,11 @@ class _ReadPageState extends State<ReadPage> {
   ValueNotifier<String> nowSpeakLine = ValueNotifier('');
   List<List<String>?> pageTextList = [];
   Status status = Status();
+  bool openVolumeFlip = false;
 
   Future<void> init(Book book) async {
     if (settingController.isOpenVolumeFlip.value) {
+      openVolumeFlip = true;
       volumeUtils.init((double beforeVolume, double nowVolume) {
         if (beforeVolume < nowVolume) {
           nextPage();
@@ -1624,7 +1626,7 @@ class _ReadPageState extends State<ReadPage> {
         const JsonEncoder().convert(settings.toMap()),
       );
     });
-    if (settingController.isOpenVolumeFlip.value) {
+    if (openVolumeFlip) {
       volumeUtils.removeListener(needRestore: true);
     }
     _currentPage.dispose();
