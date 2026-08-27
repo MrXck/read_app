@@ -5,7 +5,9 @@ import 'package:get/get.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:read_app/controller/setting_controller.dart';
+import 'package:read_app/pojo/operation_log.dart';
 import 'package:read_app/utils/constant.dart';
+import 'package:read_app/utils/db.dart';
 import 'package:read_app/utils/file_utils.dart';
 import 'package:read_app/utils/loading_utils.dart';
 import 'package:share_plus/share_plus.dart';
@@ -75,7 +77,19 @@ class _MyPageState extends State<MyPage> {
                     return;
                   }
 
-                  settingController.updateSync();
+                  await settingController.updateSync();
+                  if (settingController.isOpenSync.value) {
+                    var books = await DatabaseHelper.db
+                        .getAllSyncBook([Constant.bookType, Constant.pdfType]);
+                    for (var book in books) {
+                      OperationLog operationLog = OperationLog.setOperationLog(
+                        book,
+                        book.id,
+                        Constant.operationUpdateType,
+                      );
+                      await DatabaseHelper.db.insertOperationLog(operationLog);
+                    }
+                  }
                 },
                 title: settingController.isOpenSync.value
                     ? const Text('关闭同步')

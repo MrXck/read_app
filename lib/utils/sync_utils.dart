@@ -174,6 +174,11 @@ class SyncUtils {
         }
       }
     }
+
+    if (md5s.isEmpty) {
+      return;
+    }
+
     List<Book> books = await DatabaseHelper.db
         .getBookByNotInMd5AndType(md5s, [Constant.bookType, Constant.pdfType]);
     await BookUtils.deleteBooks(books.map((item) {
@@ -193,6 +198,18 @@ class SyncUtils {
     List<OperationLog> addLogs =
         await DatabaseHelper.db.getOperationLogByType(Constant.operationAddType);
 
+    var allReadyExistResponse = await RequestUtils.postJson(
+        Constant.getAllBookUrl, {}, Constant.headers);
+    if (allReadyExistResponse.data['code'] != 0) {
+      return;
+    }
+    var allReadyExistBooks = allReadyExistResponse.data['data']['list'];
+    List<String> md5s = [];
+
+    for (var book in allReadyExistBooks) {
+      md5s.add(book['md5']);
+    }
+
     if (addLogs.isNotEmpty) {
       var dir = await getApplicationDocumentsDirectory();
       var index = 0;
@@ -203,6 +220,12 @@ class SyncUtils {
         var book = await DatabaseHelper.db.getById(bookId);
 
         if (!settingController.needSyncTypeList.contains(book.type)) {
+          await DatabaseHelper.db.deleteOperationLogById(log.id);
+          continue;
+        }
+
+        if (md5s.contains(book.md5)) {
+          await DatabaseHelper.db.deleteOperationLogById(log.id);
           continue;
         }
 
@@ -226,8 +249,10 @@ class SyncUtils {
                 'isSecret': book.isSecret,
               }),
               {});
-        } finally {
+          md5s.add(book.md5);
           await DatabaseHelper.db.deleteOperationLogById(log.id);
+        } finally {
+
         }
       }
     }

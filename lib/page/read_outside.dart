@@ -85,21 +85,6 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
   Timer? _timeTimer;
 
   Future<void> init(Book? book, OutSideBook? outSideBook1) async {
-    if (settingController.isOpenVolumeFlip.value) {
-      volumeUtils.init((double beforeVolume, double nowVolume) {
-        if (beforeVolume < nowVolume) {
-          _pageController.nextPage(
-              duration: const Duration(milliseconds: 100),
-              curve: Curves.easeOut);
-        } else if (beforeVolume > nowVolume) {
-          _pageController.previousPage(
-              duration: const Duration(milliseconds: 100),
-              curve: Curves.easeIn);
-        }
-        volumeUtils.setVolume(0.1);
-      });
-    }
-
     String bookSourceId;
     String url;
 
