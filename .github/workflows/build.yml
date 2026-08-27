@@ -176,6 +176,7 @@ jobs:
             artifacts/ios-zip/ios-build.zip
             artifacts/windows-zip/Release.zip
             artifacts/web-zip/web-build.zip
+            artifacts/android-apk/app-release.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
