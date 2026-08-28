@@ -68,5 +68,9 @@
     <array>
         <string>group.com.read.readapp</string>
     </array>
+    <key>UIFileSharingEnabled</key>
+    <true/>
+    <key>LSSupportsOpeningDocumentsInPlace</key>
+    <true/>
 </dict>
 </plist>
