@@ -16,6 +16,7 @@ import 'package:read_app/pojo/book.dart';
 import 'package:read_app/pojo/operation_log.dart';
 import 'package:read_app/utils/book_utils.dart';
 import 'package:read_app/utils/constant.dart';
+import 'package:read_app/utils/permission_utils.dart';
 import 'package:read_app/utils/random.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -563,7 +564,7 @@ class FileUtils {
   }
 
   static Future<String> selectDirectory() async {
-    var status = await Permission.storage.request();
+    var status = await PermissionUtils.getFilePermission();
     if (status.isGranted) {
       String? directoryPath = await FilePicker.getDirectoryPath();
 
@@ -612,7 +613,7 @@ class FileUtils {
   }
 
   static Future<void> selectAndImportDirectory(String parentId) async {
-    var status = await Permission.manageExternalStorage.request();
+    var status = await PermissionUtils.getFilePermission();
     if (status.isGranted) {
       String? directoryPath = await FilePicker.getDirectoryPath();
 
