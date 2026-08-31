@@ -6,6 +6,7 @@ import 'package:path/path.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/db.dart';
+import 'package:read_app/utils/value_notifier_utils.dart';
 
 typedef Click = void Function(Book book, bool isChecked);
 typedef Update = void Function();
@@ -13,7 +14,7 @@ typedef UpdateParentId = void Function(String parentId);
 
 class BookShelfBook extends StatefulWidget {
   final Book book;
-  final List checkedList;
+  final ListValueNotifier<String> checkedList;
   final bool isChange;
   final double itemHeight;
   final Click click;
@@ -123,15 +124,15 @@ class _BookShelfBookState extends State<BookShelfBook>
                   bottom: 10,
                   width: 10,
                   height: 10,
-                  child: Checkbox(
-                    value: isSelect,
-                    onChanged: (value) {
-                      setState(() {
+                  child: ValueListenableBuilder(valueListenable: widget.checkedList, builder: (BuildContext context, list, Widget? child) {
+                    return Checkbox(
+                      value: list.contains(widget.book.id),
+                      onChanged: (value) {
                         isSelect = !isSelect;
                         widget.click(widget.book, isSelect);
-                      });
-                    },
-                  ),
+                      },
+                    );
+                  }),
                 ),
               ),
             ],

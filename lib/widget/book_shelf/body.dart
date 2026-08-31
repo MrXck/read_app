@@ -17,6 +17,7 @@ import 'package:read_app/utils/loading_utils.dart';
 import 'package:read_app/utils/platform_utils.dart';
 import 'package:read_app/utils/random.dart';
 import 'package:read_app/utils/sortable_grid_view.dart';
+import 'package:read_app/utils/value_notifier_utils.dart';
 import 'package:read_app/widget/book_shelf/book.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -32,7 +33,7 @@ class BookShelfBody extends StatefulWidget {
 class _BookShelfBodyState extends State<BookShelfBody> {
   List<Book> books = [];
   bool isChange = false;
-  List<String> checkedList = [];
+  ListValueNotifier<String> checkedList = ListValueNotifier<String>([]);
   String parentId = '';
   ValueNotifier<List<Book>> breadList = ValueNotifier<List<Book>>([
     Book.fromMap({'id': '', 'title': '根目录'}),
@@ -41,6 +42,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
   String sortString = '';
   bool isReady = false;
   double bottomChangeHeight = 100;
+  double topChangeHeight = 70;
 
   void refresh() async {
     var value = await DatabaseHelper.db.getBookByParentIdAndSort(
@@ -204,9 +206,9 @@ class _BookShelfBodyState extends State<BookShelfBody> {
         actions: [
           TextButton(
             onPressed: () async {
-              for (var i = 0; i < checkedList.length; i++) {
+              for (var i = 0; i < checkedList.value.length; i++) {
                 await DatabaseHelper.db.updateParentIdById(
-                  checkedList[i],
+                  checkedList.value[i],
                   nowClick,
                 );
               }
@@ -222,7 +224,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
               }
               count.value = 0;
               setState(() {
-                checkedList = [];
+                checkedList.clear();
                 books.clear();
               });
 
@@ -314,7 +316,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
   }
 
   Future<void> updateDialog() async {
-    var id = checkedList[0];
+    var id = checkedList.value[0];
     var book = await DatabaseHelper.db.getById(id);
     final TextEditingController controller = TextEditingController();
     controller.text = book.title;
@@ -414,7 +416,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
   }
 
   Future<void> updateCover() async {
-    String id = checkedList.first;
+    String id = checkedList.value.first;
     var book = await DatabaseHelper.db.getById(id);
 
     var image = await FilePicker.pickFiles(
@@ -493,7 +495,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
           books.isEmpty
               ? Container()
               : Positioned(
-                  top: 70,
+                  top: topChangeHeight,
                   left: 10,
                   right: 10,
                   bottom: isChange ? bottomChangeHeight : 0,
@@ -512,7 +514,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                           } else {
                             checkedList.remove(book.id);
                           }
-                          count.value = checkedList.length;
+                          count.value = checkedList.value.length;
                         },
                         () async {
                           Timer(const Duration(milliseconds: 100), () async {
@@ -601,6 +603,17 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                         isChange = true;
                       });
                     },
+                    scrollPaddingBottom: bottomChangeHeight,
+                    checkWidget: (id) {
+                      if (!checkedList.contains(id)) {
+                        checkedList.add(id);
+                      } else {
+                        checkedList.remove(id);
+                      }
+                      count.value = checkedList.value.length;
+                    },
+                    isChange: isChange,
+                    widgetMarginTop: topChangeHeight,
                   ),
                 ),
           Visibility(
@@ -621,8 +634,8 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                           return item.id;
                         }).toList();
                         setState(() {
-                          checkedList = checked;
-                          count.value = checkedList.length;
+                          checkedList.value = checked;
+                          count.value = checkedList.value.length;
                         });
                       },
                       child: const Text('全选'),
@@ -638,7 +651,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                         setState(() {
                           isChange = false;
                         });
-                        checkedList = [];
+                        checkedList.clear();
                         count.value = 0;
                       },
                       child: const Text('完成'),
@@ -692,7 +705,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                                           await getApplicationDocumentsDirectory();
                                       try {
                                         await BookUtils.deleteBooks(
-                                          checkedList,
+                                          checkedList.value,
                                         );
                                       } catch (e) {
                                         Get.snackbar('错误', e.toString());
@@ -719,7 +732,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                                           .addPostFrameCallback((_) {
                                             setState(() {
                                               isChange = false;
-                                              checkedList = [];
+                                              checkedList.clear();
                                               count.value = 0;
                                               books.addAll(value);
                                             });
@@ -807,7 +820,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                               } else {
                                 return InkWell(
                                   onTap: () async {
-                                    String id = checkedList.first;
+                                    String id = checkedList.value.first;
                                     var book = await DatabaseHelper.db.getById(
                                       id,
                                     );
@@ -850,7 +863,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                               } else {
                                 return InkWell(
                                   onTap: () async {
-                                    String id = checkedList.first;
+                                    String id = checkedList.value.first;
                                     var dir =
                                         await getApplicationDocumentsDirectory();
 
@@ -914,7 +927,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                                 return InkWell(
                                   onTap: () async {
                                     await BookUtils.updateBooksSecret(
-                                      checkedList,
+                                      checkedList.value,
                                       Constant.secretType,
                                     );
                                     var value = await DatabaseHelper.db
@@ -930,7 +943,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                                     }
                                     count.value = 0;
                                     setState(() {
-                                      checkedList = [];
+                                      checkedList.clear();
                                       books.clear();
                                     });
 
@@ -958,7 +971,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                                 return InkWell(
                                   onTap: () async {
                                     await BookUtils.updateBooksSecret(
-                                      checkedList,
+                                      checkedList.value,
                                       Constant.publicType,
                                     );
                                     var value = await DatabaseHelper.db
@@ -974,7 +987,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                                     }
                                     count.value = 0;
                                     setState(() {
-                                      checkedList = [];
+                                      checkedList.clear();
                                       books.clear();
                                     });
 
