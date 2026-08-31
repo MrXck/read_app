@@ -48,6 +48,7 @@ class _SortableGridViewState<T extends HasId> extends State<SortableGridView>
   final ValueNotifier<int> _renderIndex = ValueNotifier(0);
 
   late int columnNum;
+  late double height;
 
   @override
   void initState() {
@@ -78,6 +79,7 @@ class _SortableGridViewState<T extends HasId> extends State<SortableGridView>
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
     var width = size.width;
+    height = size.height;
     columnNum = _calcColumnNum(width);
 
     if (_positionMap.isEmpty) {
@@ -157,8 +159,8 @@ class _SortableGridViewState<T extends HasId> extends State<SortableGridView>
     return ValueListenableBuilder(
         valueListenable: _renderIndex,
         builder: (context, value, child) {
-          if (_renderIndex.value - columnNum * 5 > index ||
-              _renderIndex.value + columnNum * 5 < index) {
+          if (_renderIndex.value - columnNum * 5 > _dataListBackUp.indexOf(data) ||
+              _renderIndex.value + columnNum * 5 < _dataListBackUp.indexOf(data)) {
             return const Offstage(
               offstage: true,
               child: SizedBox.shrink(),
@@ -187,6 +189,9 @@ class _SortableGridViewState<T extends HasId> extends State<SortableGridView>
                 },
                 onDragCompleted: () {
                   widget.dragEnd(_dataListBackUp);
+                },
+                onDragUpdate: (details) {
+                  print(details);
                 },
                 // childWhenDragging: Material(
                 //   color: Colors.transparent,
