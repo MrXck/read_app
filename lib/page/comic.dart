@@ -84,6 +84,16 @@ class _ComicPageState extends State<ComicPage> {
     var dir = Directory(path);
     if (dir.existsSync()) {
       var files = dir.listSync();
+      files.sort((a, b) {
+        var nameA = basenameWithoutExtension(a.uri.pathSegments.last);
+        var nameB = basenameWithoutExtension(b.uri.pathSegments.last);
+
+        var numberA = int.tryParse(nameA) ?? 999;
+        var numberB = int.tryParse(nameB) ?? 999;
+
+        return numberA.compareTo(numberB);
+      });
+
       setState(() {
         imageList = initPage(files);
       });
