@@ -14,7 +14,6 @@ import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/db.dart';
 import 'package:read_app/utils/file_utils.dart';
 import 'package:read_app/utils/loading_utils.dart';
-import 'package:read_app/utils/platform_utils.dart';
 import 'package:read_app/utils/random.dart';
 import 'package:read_app/utils/sortable_grid_view.dart';
 import 'package:read_app/utils/value_notifier_utils.dart';
