@@ -21,7 +21,6 @@ import 'package:read_app/widget/book_shelf/book.dart';
 import 'package:share_plus/share_plus.dart';
 
 class BookShelfBody extends StatefulWidget {
-
   const BookShelfBody({super.key});
 
   @override
@@ -86,8 +85,8 @@ class _BookShelfBodyState extends State<BookShelfBody> {
       newDialog();
     };
     DatabaseHelper.db.getBookByParentIdAndSort(data.parentId, sortString).then((
-        value,
-        ) async {
+      value,
+    ) async {
       final dir = await getApplicationDocumentsDirectory();
       for (var i = 0; i < value.length; i++) {
         var book = value[i];
@@ -114,7 +113,10 @@ class _BookShelfBodyState extends State<BookShelfBody> {
     await getParentBookByParentId(books, parentId);
   }
 
-  Future<void> getParentBookByParentId(List<Book> books, String parentId) async {
+  Future<void> getParentBookByParentId(
+    List<Book> books,
+    String parentId,
+  ) async {
     if (parentId == '') {
       return;
     }
@@ -456,9 +458,9 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                         return;
                       }
                       Get.toNamed(
-                          '/book_shelf',
-                          arguments: value[i],
-                          preventDuplicates: false
+                        '/book_shelf',
+                        arguments: value[i],
+                        preventDuplicates: false,
                       );
                     },
                     child: Text(value[i].title),
@@ -504,7 +506,10 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                         () async {
                           Timer(const Duration(milliseconds: 100), () async {
                             var value = await DatabaseHelper.db
-                                .getBookByParentIdAndSort(data.parentId, sortString);
+                                .getBookByParentIdAndSort(
+                                  data.parentId,
+                                  sortString,
+                                );
 
                             final dir =
                                 await getApplicationDocumentsDirectory();
@@ -529,9 +534,13 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                           data.refresh = refresh;
                           data.updateSort = () {
                             if (Constant.sortList.contains(sortString)) {
-                              var index = Constant.sortList.indexOf(sortString) + 1;
-                              sortString = Constant
-                                  .sortList[index + 1 >= Constant.sortList.length ? 0 : index + 1];
+                              var index =
+                                  Constant.sortList.indexOf(sortString) + 1;
+                              sortString =
+                                  Constant.sortList[index + 1 >=
+                                          Constant.sortList.length
+                                      ? 0
+                                      : index + 1];
                             } else {
                               sortString = Constant.sortList[0];
                             }
