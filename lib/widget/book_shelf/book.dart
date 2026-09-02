@@ -49,13 +49,11 @@ class _BookShelfBookState extends State<BookShelfBook>
 
   @override
   Widget build(BuildContext context) {
-    isSelect = widget.checkedList.contains(widget.book.id);
     return GestureDetector(
       onTap: () async {
         if (widget.isChange) {
           setState(() {
-            isSelect = !isSelect;
-            widget.click(widget.book, isSelect);
+            widget.click(widget.book, !widget.checkedList.contains(widget.book.id));
           });
         } else {
           if (widget.book.type == Constant.bookType) {
@@ -128,8 +126,7 @@ class _BookShelfBookState extends State<BookShelfBook>
                     return Checkbox(
                       value: list.contains(widget.book.id),
                       onChanged: (value) {
-                        isSelect = !isSelect;
-                        widget.click(widget.book, isSelect);
+                        widget.click(widget.book, !list.contains(widget.book.id));
                       },
                     );
                   }),
