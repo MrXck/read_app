@@ -966,6 +966,9 @@ class _ReadPageState extends State<ReadPage> {
           return;
         }
         await switchChapter(currentSeqNo.value - 1, false, _currentPage.value);
+        if (beforePage - startHasContentPage < 4) {
+          await switchChapter(currentSeqNo.value - 2, false, _currentPage.value);
+        }
       }
     }
 
@@ -975,6 +978,9 @@ class _ReadPageState extends State<ReadPage> {
           return;
         }
         await switchChapter(currentSeqNo.value + 1, true, _currentPage.value);
+        if (nowContentPage - _currentPage.value < 4) {
+          await switchChapter(currentSeqNo.value + 2, true, _currentPage.value);
+        }
       }
     }
 
