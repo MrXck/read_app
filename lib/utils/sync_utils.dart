@@ -49,8 +49,9 @@ class SyncUtils {
             await uploadOperationLogs();
             SyncLog syncLog = SyncLog();
             syncLog.createTime = DateTime.now().millisecondsSinceEpoch;
-            var logId =
-                (await DatabaseHelper.db.insertSyncLog(syncLog)).toString();
+            var logId = (await DatabaseHelper.db.insertSyncLog(
+              syncLog,
+            )).toString();
             DatabaseHelper.db.deleteSyncLogByNotEqualId(logId);
           } catch (e) {
             print(e);
@@ -64,15 +65,21 @@ class SyncUtils {
 
   static Future<void> syncRemoteUpdate() async {
     var response = await RequestUtils.postJson(
-        Constant.getAllBookUrl, {}, Constant.headers);
+      Constant.getAllBookUrl,
+      {},
+      Constant.headers,
+    );
     if (response.data['code'] != 0) {
       return;
     }
     var list = response.data['data']['list'];
     var tempDir = await getTemporaryDirectory();
 
-    List<OperationLog> addList = await DatabaseHelper.db.getOperationLogByType(Constant.operationAddType);
-    List<OperationLog> deleteList = await DatabaseHelper.db.getOperationLogByType(Constant.operationDeleteType);
+    List<OperationLog> addList = await DatabaseHelper.db.getOperationLogByType(
+      Constant.operationAddType,
+    );
+    List<OperationLog> deleteList = await DatabaseHelper.db
+        .getOperationLogByType(Constant.operationDeleteType);
 
     List<String> deleteMd5List = [];
     for (var deleteOperationLog in deleteList) {
@@ -85,7 +92,8 @@ class SyncUtils {
     var index = 0;
     for (var book in list) {
       index += 1;
-      settingController.syncTip.value = '下载服务器存储文件记录中进度 $index / ${list.length}';
+      settingController.syncTip.value =
+          '下载服务器存储文件记录中进度 $index / ${list.length}';
       var timestamp = DateTime.parse(book['updateTime']).millisecondsSinceEpoch;
       var md5 = book['md5'];
       if (deleteMd5List.contains(md5)) {
@@ -97,7 +105,9 @@ class SyncUtils {
         var filePath = join(tempDir.path, 'read', book['path']);
         try {
           await RequestUtils.getDownloadFile(
-              '${Constant.downloadBookUrl}${book["id"]}', filePath);
+            '${Constant.downloadBookUrl}${book["id"]}',
+            filePath,
+          );
           FileUtils.saveSyncBook(filePath, book);
         } catch (e) {
           print(e);
@@ -121,27 +131,35 @@ class SyncUtils {
       return;
     }
 
-    List<Book> books = await DatabaseHelper.db
-        .getBookByNotInMd5AndType(md5s, [Constant.bookType, Constant.pdfType]);
-    await BookUtils.deleteBooks(books.map((item) {
-      if (addBookIds.contains(item.id)) {
-        return '';
-      }
+    List<Book> books = await DatabaseHelper.db.getBookByNotInMd5AndType(md5s, [
+      Constant.bookType,
+      Constant.pdfType,
+    ]);
+    await BookUtils.deleteBooks(
+      books.map((item) {
+        if (addBookIds.contains(item.id)) {
+          return '';
+        }
 
-      if (!settingController.needSyncTypeList.contains(item.type)) {
-        return '';
-      }
+        if (!settingController.needSyncTypeList.contains(item.type)) {
+          return '';
+        }
 
-      return item.id;
-    }).toList());
+        return item.id;
+      }).toList(),
+    );
   }
 
   static Future<void> uploadOperationLogs() async {
-    List<OperationLog> addLogs =
-        await DatabaseHelper.db.getOperationLogByType(Constant.operationAddType);
+    List<OperationLog> addLogs = await DatabaseHelper.db.getOperationLogByType(
+      Constant.operationAddType,
+    );
 
     var allReadyExistResponse = await RequestUtils.postJson(
-        Constant.getAllBookUrl, {}, Constant.headers);
+      Constant.getAllBookUrl,
+      {},
+      Constant.headers,
+    );
     if (allReadyExistResponse.data['code'] != 0) {
       return;
     }
@@ -161,7 +179,13 @@ class SyncUtils {
         var bookId = log.bookId;
         var book = await DatabaseHelper.db.getById(bookId);
 
-        if (!settingController.needSyncTypeList.contains(book.type)) {
+        try {
+          if (!settingController.needSyncTypeList.contains(book.type)) {
+            await DatabaseHelper.db.deleteOperationLogById(log.id);
+            continue;
+          }
+        } catch (e) {
+          print(e);
           await DatabaseHelper.db.deleteOperationLogById(log.id);
           continue;
         }
@@ -174,43 +198,41 @@ class SyncUtils {
         try {
           var filePath = join(dir.path, book.path);
           await RequestUtils.postFileJson(
-              Constant.uploadBookUrl,
-              FormData.fromMap({
-                'file': await MultipartFile.fromFile(
-                  filePath,
-                  filename: basename(filePath),
-                ),
-                'title': book.title,
-                'chapterTitleExp': book.chapterTitleExp,
-                'md5': book.md5,
-                'seqNo': book.seqNo,
-                'page': book.page,
-                'type': book.type,
-                'currentChapter': book.currentChapter,
-                'percent': book.percent,
-                'isSecret': book.isSecret,
-              }),
-              {});
+            Constant.uploadBookUrl,
+            FormData.fromMap({
+              'file': await MultipartFile.fromFile(
+                filePath,
+                filename: basename(filePath),
+              ),
+              'title': book.title,
+              'chapterTitleExp': book.chapterTitleExp,
+              'md5': book.md5,
+              'seqNo': book.seqNo,
+              'page': book.page,
+              'type': book.type,
+              'currentChapter': book.currentChapter,
+              'percent': book.percent,
+              'isSecret': book.isSecret,
+            }),
+            {},
+          );
           md5s.add(book.md5);
           await DatabaseHelper.db.deleteOperationLogById(log.id);
-        } finally {
-
-        }
+        } finally {}
       }
     }
 
-    List<OperationLog> logs =
-        await DatabaseHelper.db.getAllNotAddOperationLog();
+    List<OperationLog> logs = await DatabaseHelper.db
+        .getAllNotAddOperationLog();
     var index = 0;
     if (logs.isEmpty) {
       return;
     }
 
     settingController.syncTip.value = '上传操作日志中进度 $index / ${logs.length}';
-    var response = await RequestUtils.postJson(
-        Constant.updateBookUrl,
-        {'bookLogDTOS': logs.map((item) => item.toJsonMap()).toList()},
-        Constant.headers);
+    var response = await RequestUtils.postJson(Constant.updateBookUrl, {
+      'bookLogDTOS': logs.map((item) => item.toJsonMap()).toList(),
+    }, Constant.headers);
 
     try {
       if (response.data['code'] == 0) {

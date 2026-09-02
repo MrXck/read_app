@@ -158,14 +158,16 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                         var directories = await DatabaseHelper.db
                             .getDirectoryByPatentId(value[i].id);
 
-                        var checkedBreadList = <Book>[
-                          Book.fromMap({'id': '', 'title': '根目录'}),
-                        ];
+                        directories = directories
+                            .where((item) => !checkedList.contains(item.id))
+                            .toList();
+
+                        var checkedBreadList = <Book>[];
                         for (var i = 0; i < breadList.value.length; i++) {
-                          if (breadList.value[i].id == value[i].id) {
+                          checkedBreadList.add(breadList.value[i]);
+                          if (breadList.value[i].id == nowClick) {
                             break;
                           }
-                          checkedBreadList.add(breadList.value[i]);
                         }
                         breadList.value = checkedBreadList;
                         li.value = directories;
@@ -196,7 +198,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                           var directories = await DatabaseHelper.db
                               .getDirectoryByPatentId(value[index].id);
 
-                          directories
+                          directories = directories
                               .where((item) => !checkedList.contains(item.id))
                               .toList();
 
