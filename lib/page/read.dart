@@ -151,6 +151,12 @@ class _ReadPageState extends State<ReadPage> {
     book.chapterTitleExp = chapterTitleExp;
     book.currentChapter = currentSeqNo.value;
     DatabaseHelper.db.updateById(book);
+    SharedPreferences.getInstance().then((value) {
+      value.setString(
+        Constant.readConfigKey,
+        const JsonEncoder().convert(settings.toMap()),
+      );
+    });
   }
 
   void previousPage() {
@@ -1620,12 +1626,6 @@ class _ReadPageState extends State<ReadPage> {
       Constant.operationUpdateType,
     );
     DatabaseHelper.db.insertOperationLog(operationLog);
-    SharedPreferences.getInstance().then((value) {
-      value.setString(
-        Constant.readConfigKey,
-        const JsonEncoder().convert(settings.toMap()),
-      );
-    });
     if (openVolumeFlip) {
       volumeUtils.removeListener(needRestore: true);
     }
