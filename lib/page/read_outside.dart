@@ -14,7 +14,6 @@ import 'package:read_app/utils/color_utils.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/db.dart';
 import 'package:read_app/utils/platform_utils.dart';
-import 'package:read_app/utils/regex_utils.dart';
 import 'package:read_app/utils/spider_utils.dart';
 import 'package:read_app/utils/tts_service.dart';
 import 'package:read_app/utils/volume_utils.dart';
