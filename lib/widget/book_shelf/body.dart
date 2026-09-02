@@ -6,9 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:read_app/global/data.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/pojo/operation_log.dart';
-import 'package:read_app/tab/book_shelf.dart';
 import 'package:read_app/utils/book_utils.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/db.dart';
@@ -21,9 +21,8 @@ import 'package:read_app/widget/book_shelf/book.dart';
 import 'package:share_plus/share_plus.dart';
 
 class BookShelfBody extends StatefulWidget {
-  final Data data;
 
-  const BookShelfBody({super.key, required this.data});
+  const BookShelfBody({super.key});
 
   @override
   State<BookShelfBody> createState() => _BookShelfBodyState();
@@ -33,9 +32,8 @@ class _BookShelfBodyState extends State<BookShelfBody> {
   List<Book> books = [];
   bool isChange = false;
   ListValueNotifier<String> checkedList = ListValueNotifier<String>([]);
-  String parentId = '';
   ValueNotifier<List<Book>> breadList = ValueNotifier<List<Book>>([
-    Book.fromMap({'id': '', 'title': '根目录'}),
+    Book.fromMap({'id': '', 'title': '书架'}),
   ]);
   ValueNotifier<int> count = ValueNotifier<int>(0);
   String sortString = '';
@@ -45,7 +43,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
 
   void refresh() async {
     var value = await DatabaseHelper.db.getBookByParentIdAndSort(
-      parentId,
+      data.parentId,
       sortString,
     );
 
@@ -68,8 +66,13 @@ class _BookShelfBodyState extends State<BookShelfBody> {
 
   @override
   void initState() {
-    widget.data.refresh = refresh;
-    widget.data.updateSort = () {
+    init();
+    super.initState();
+  }
+
+  Future<void> init() async {
+    data.refresh = refresh;
+    data.updateSort = () {
       if (Constant.sortList.contains(sortString)) {
         var index = Constant.sortList.indexOf(sortString) + 1;
         sortString = Constant
@@ -79,23 +82,12 @@ class _BookShelfBodyState extends State<BookShelfBody> {
       }
       refresh();
     };
-    widget.data.addDirectory = () async {
+    data.addDirectory = () async {
       newDialog();
     };
-    widget.data.routeBack = () async {
-      if (breadList.value.length == 1) {
-        Get.back();
-        return true;
-      }
-
-      breadList.value.removeLast();
-
-      updateParentId(breadList.value.last.id);
-      return false;
-    };
-    DatabaseHelper.db.getBookByParentIdAndSort(parentId, sortString).then((
-      value,
-    ) async {
+    DatabaseHelper.db.getBookByParentIdAndSort(data.parentId, sortString).then((
+        value,
+        ) async {
       final dir = await getApplicationDocumentsDirectory();
       for (var i = 0; i < value.length; i++) {
         var book = value[i];
@@ -106,10 +98,31 @@ class _BookShelfBodyState extends State<BookShelfBody> {
         books = value;
       });
     });
+    if (data.parentId != '') {
+      var list = [
+        Book.fromMap({'id': '', 'title': '书架'}),
+      ];
+      await updateBreadList(list, data.parentId);
+      breadList.value = list;
+    }
     Timer(const Duration(milliseconds: 50), () {
       if (mounted) setState(() => isReady = true);
     });
-    super.initState();
+  }
+
+  Future<void> updateBreadList(List<Book> books, String parentId) async {
+    await getParentBookByParentId(books, parentId);
+  }
+
+  Future<void> getParentBookByParentId(List<Book> books, String parentId) async {
+    if (parentId == '') {
+      return;
+    }
+    Book book = await DatabaseHelper.db.getById(parentId);
+    books.insert(1, book);
+    if (book.parentId != '') {
+      await getParentBookByParentId(books, book.parentId);
+    }
   }
 
   Future<void> moveDialog(width, height) async {
@@ -213,7 +226,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
               }
 
               var value = await DatabaseHelper.db.getBookByParentIdAndSort(
-                parentId,
+                data.parentId,
                 sortString,
               );
               final dir = await getApplicationDocumentsDirectory();
@@ -276,7 +289,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
               book.updateTime = DateTime.now().millisecondsSinceEpoch;
               book.createTime = DateTime.now().millisecondsSinceEpoch;
               book.seqNo = 1;
-              book.parentId = parentId;
+              book.parentId = data.parentId;
               book.path = '';
               book.type = Constant.directoryType;
               book.cover = "";
@@ -285,7 +298,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
               book.isSecret = Constant.publicType;
               await DatabaseHelper.db.insert(book);
               var value = await DatabaseHelper.db.getBookByParentIdAndSort(
-                parentId,
+                data.parentId,
                 sortString,
               );
               final dir = await getApplicationDocumentsDirectory();
@@ -293,14 +306,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                 var book = value[i];
                 book.assetDir = dir.path;
               }
-              setState(() {
-                books.clear();
-              });
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                setState(() {
-                  books.addAll(value);
-                });
-              });
+              refresh();
               Get.back(); // 关闭对话框
             },
             child: const Text('确定'),
@@ -352,7 +358,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
               DatabaseHelper.db.insertOperationLog(operationLog);
 
               var value = await DatabaseHelper.db.getBookByParentIdAndSort(
-                parentId,
+                data.parentId,
                 sortString,
               );
               final dir = await getApplicationDocumentsDirectory();
@@ -381,39 +387,6 @@ class _BookShelfBodyState extends State<BookShelfBody> {
     );
   }
 
-  Future<void> updateParentId(String id) async {
-    setState(() {
-      parentId = id;
-      widget.data.parentId = parentId;
-    });
-
-    var li = await DatabaseHelper.db.getBookByParentIdAndSort(
-      parentId,
-      sortString,
-    );
-    final dir = await getApplicationDocumentsDirectory();
-    for (var i = 0; i < li.length; i++) {
-      var book = li[i];
-      book.assetDir = dir.path;
-    }
-    setState(() {
-      books.clear();
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        books.addAll(li);
-      });
-    });
-    var checkedBreadList = <Book>[];
-    for (var i = 0; i < breadList.value.length; i++) {
-      checkedBreadList.add(breadList.value[i]);
-      if (breadList.value[i].id == parentId) {
-        break;
-      }
-    }
-    breadList.value = checkedBreadList;
-  }
-
   Future<void> updateCover() async {
     String id = checkedList.value.first;
     var book = await DatabaseHelper.db.getById(id);
@@ -438,7 +411,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
     await file.copy(join(dir.path, path));
     book.cover = path;
     await DatabaseHelper.db.updateById(book);
-    updateParentId(parentId);
+    refresh();
   }
 
   @override
@@ -458,7 +431,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
       return const SizedBox.shrink();
     }
     return SizedBox(
-      height: height - 60,
+      height: data.parentId == '' ? height - 60 : height,
       width: double.infinity,
       child: Stack(
         children: [
@@ -473,7 +446,20 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                 widgetList.add(
                   InkWell(
                     onTap: () async {
-                      updateParentId(value[i].id);
+                      if (data.parentId == value[i].id) {
+                        refresh();
+                        return;
+                      }
+
+                      if (value[i].id == '') {
+                        Get.offAllNamed('/', arguments: value[i]);
+                        return;
+                      }
+                      Get.toNamed(
+                          '/book_shelf',
+                          arguments: value[i],
+                          preventDuplicates: false
+                      );
                     },
                     child: Text(value[i].title),
                   ),
@@ -500,9 +486,9 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                   bottom: isChange ? bottomChangeHeight : 0,
                   child: SortableGridView<Book>(
                     books,
-                    itemBuilder: (context, data) {
+                    itemBuilder: (context, bookData) {
                       return BookShelfBook(
-                        data,
+                        bookData,
                         isChange,
                         checkedList,
                         (Book book, bool isChecked) {
@@ -518,7 +504,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                         () async {
                           Timer(const Duration(milliseconds: 100), () async {
                             var value = await DatabaseHelper.db
-                                .getBookByParentIdAndSort(parentId, sortString);
+                                .getBookByParentIdAndSort(data.parentId, sortString);
 
                             final dir =
                                 await getApplicationDocumentsDirectory();
@@ -539,35 +525,21 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                           });
                         },
                         (String id) async {
-                          var book = await DatabaseHelper.db.getById(id);
-                          setState(() {
-                            parentId = id;
-                            widget.data.parentId = parentId;
-                          });
-                          var value = await DatabaseHelper.db
-                              .getBookByParentIdAndSort(parentId, sortString);
-
-                          final dir = await getApplicationDocumentsDirectory();
-                          for (var i = 0; i < value.length; i++) {
-                            var book = value[i];
-                            book.assetDir = dir.path;
-                          }
-
-                          setState(() {
-                            books = [];
-                          });
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            setState(() {
-                              books.addAll(value);
-                            });
-                          });
-
-                          var checkedBreadList = <Book>[];
-                          for (var i = 0; i < breadList.value.length; i++) {
-                            checkedBreadList.add(breadList.value[i]);
-                          }
-                          checkedBreadList.add(book);
-                          breadList.value = checkedBreadList;
+                          data.parentId = id;
+                          data.refresh = refresh;
+                          data.updateSort = () {
+                            if (Constant.sortList.contains(sortString)) {
+                              var index = Constant.sortList.indexOf(sortString) + 1;
+                              sortString = Constant
+                                  .sortList[index + 1 >= Constant.sortList.length ? 0 : index + 1];
+                            } else {
+                              sortString = Constant.sortList[0];
+                            }
+                            refresh();
+                          };
+                          data.addDirectory = () async {
+                            newDialog();
+                          };
                         },
                         itemHeight - 74,
                       );
@@ -686,7 +658,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                           builder: (context, value, child) {
                             if (value == 0) {
                               return const Text(
-                                '删除',
+                                '删      除',
                                 style: TextStyle(color: Color(0xB2C4C4C4)),
                               );
                             } else {
@@ -714,7 +686,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
 
                                       var value = await DatabaseHelper.db
                                           .getBookByParentIdAndSort(
-                                            parentId,
+                                            data.parentId,
                                             sortString,
                                           );
 
@@ -740,7 +712,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                                   );
                                 },
                                 child: const Text(
-                                  '删除',
+                                  '删      除',
                                   style: TextStyle(color: Colors.red),
                                 ),
                               );
@@ -752,7 +724,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                           builder: (context, value, child) {
                             if (value == 0) {
                               return const Text(
-                                '移动至',
+                                '移 动  至',
                                 style: TextStyle(color: Color(0xB2C4C4C4)),
                               );
                             } else {
@@ -760,7 +732,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                                 onTap: () async {
                                   await moveDialog(width, height);
                                 },
-                                child: const Text('移动至'),
+                                child: const Text('移 动  至'),
                               );
                             }
                           },
@@ -813,7 +785,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                             builder: (context, value, child) {
                               if (value != 1) {
                                 return const Text(
-                                  '分享',
+                                  '分      享',
                                   style: TextStyle(color: Color(0xB2C4C4C4)),
                                 );
                               } else {
@@ -838,7 +810,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                                       FileUtils.getFileExtension(book.path),
                                     );
                                   },
-                                  child: const Text('分享'),
+                                  child: const Text('分      享'),
                                 );
                               }
                             },
@@ -856,7 +828,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                             builder: (context, value, child) {
                               if (value != 1) {
                                 return const Text(
-                                  '导出',
+                                  '导      出',
                                   style: TextStyle(color: Color(0xB2C4C4C4)),
                                 );
                               } else {
@@ -909,7 +881,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                                       LoadingUtils.hideLoading();
                                     }
                                   },
-                                  child: const Text('导出'),
+                                  child: const Text('导      出'),
                                 );
                               }
                             },
@@ -931,7 +903,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                                     );
                                     var value = await DatabaseHelper.db
                                         .getBookByParentIdAndSort(
-                                          parentId,
+                                          data.parentId,
                                           sortString,
                                         );
                                     final dir =
@@ -975,7 +947,7 @@ class _BookShelfBodyState extends State<BookShelfBody> {
                                     );
                                     var value = await DatabaseHelper.db
                                         .getBookByParentIdAndSort(
-                                          parentId,
+                                          data.parentId,
                                           sortString,
                                         );
                                     final dir =

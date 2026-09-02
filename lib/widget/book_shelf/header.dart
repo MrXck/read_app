@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:read_app/tab/book_shelf.dart';
+import 'package:read_app/global/data.dart';
 import 'package:read_app/utils/file_utils.dart';
 import 'package:read_app/utils/loading_utils.dart';
 import 'package:read_app/utils/permission_utils.dart';
 
 class BookShelfHeader extends StatelessWidget {
-  final Data data;
 
-  const BookShelfHeader({super.key, required this.data});
+  const BookShelfHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,9 +19,18 @@ class BookShelfHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
+          data.parentId == '' ? const Text(
             '书架',
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ) : TextButton(
+              style: IconButton.styleFrom(
+                  overlayColor: Colors.transparent,
+                padding: EdgeInsets.zero
+              ),
+              onPressed: () {
+                Get.back();
+              },
+              child: const Icon(Icons.arrow_back_ios)
           ),
           Row(
             children: [

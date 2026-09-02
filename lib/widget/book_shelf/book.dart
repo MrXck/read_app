@@ -68,7 +68,12 @@ class _BookShelfBookState extends State<BookShelfBook>
               arguments: {'book': widget.book, 'outSideBook': null},
             );
           } else if (widget.book.type == Constant.directoryType) {
-            widget.updateParentId(widget.book.id);
+            await Get.toNamed(
+              '/book_shelf',
+              arguments: widget.book,
+              preventDuplicates: false
+            );
+            widget.updateParentId(widget.book.parentId);
           } else if (widget.book.type == Constant.pdfType) {
             await Get.toNamed('/pdf', arguments: widget.book);
           }

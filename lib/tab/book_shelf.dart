@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:read_app/utils/tts_service.dart';
+import 'package:get/get.dart';
+import 'package:read_app/global/data.dart';
+import 'package:read_app/pojo/book.dart';
 import 'package:read_app/widget/book_shelf/body.dart';
 import 'package:read_app/widget/book_shelf/header.dart';
 
@@ -12,45 +13,30 @@ class BookShelfPage extends StatefulWidget {
 }
 
 class _BookShelfPageState extends State<BookShelfPage> {
-  final Data data = Data();
 
   @override
   void initState() {
-    // data.tts = TtsService();
-    // data.tts.initTTS();
+    var args = Get.arguments;
+    if (args != null && args is Book) {
+      data.parentId = args.id;
+    }
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-        canPop: false,
-        onPopInvokedWithResult: (bool didPop, result) async {
-          var canPop = await data.routeBack();
-          if (canPop) {
-            SystemNavigator.pop();
-          }
-        },
-        child: Scaffold(
-          body: SafeArea(
-              child: Stack(
-            children: [BookShelfHeader(data: data), BookShelfBody(data: data)],
+    return const Scaffold(
+      body: SafeArea(
+          child: Stack(
+            children: [BookShelfHeader(), BookShelfBody()],
           )),
-        ));
+    );
   }
 
   @override
   void dispose() {
-    // data.tts.dispose();
     super.dispose();
   }
 }
 
-class Data {
-  String parentId = '';
-  late Function refresh;
-  late Function addDirectory;
-  late Function routeBack;
-  late Function updateSort;
-  late TtsService tts;
-}
+

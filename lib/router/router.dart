@@ -12,6 +12,7 @@ import 'package:read_app/page/settings.dart';
 import 'package:read_app/page/sync.dart';
 import 'package:read_app/page/upload_file.dart';
 import 'package:read_app/page/video.dart';
+import 'package:read_app/tab/book_shelf.dart';
 import 'package:read_app/tab/tab.dart';
 
 class AppPage {
@@ -77,6 +78,12 @@ class AppPage {
     GetPage(
       name: "/model_settings",
       page: () => const ModelSettingsPage(),
+    ),
+    GetPage(
+      name: "/book_shelf",
+      page: () => const BookShelfPage(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 100),
     ),
   ];
 }
