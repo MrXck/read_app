@@ -10,6 +10,7 @@ import 'package:read_app/request/request.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/package_utils.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'file_utils.dart';
 
@@ -34,6 +35,7 @@ class UpdateUtils {
     var installStatus = await Permission.requestInstallPackages.request();
 
     if (!installStatus.isGranted) {
+      showDownloadDialog(updateData);
       return;
     }
 
@@ -186,5 +188,58 @@ exit /b 1
     });
 
     OpenFile.open(savePath);
+  }
+
+  static Future<void> showDownloadDialog(UpdateData updateData) async {
+    ValueNotifier<String> progress = ValueNotifier<String>('0%');
+
+    Get.defaultDialog(
+        title: "提示",
+        content: Column(
+          children: [
+            const Text("由于未获取到安装权限,需要在下载后手动安装."),
+            ...updateData.versionDesc.map((toElement) {
+              return Text(toElement);
+            }),
+          ],
+        ),
+        textConfirm: "下载",
+        textCancel: "取消",
+        onConfirm: () async {
+          Get.back();
+
+          Get.dialog(Dialog(
+              child: Container(
+                  padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                  child: ValueListenableBuilder(
+                      valueListenable: progress,
+                      builder: (BuildContext context, value, Widget? child) {
+                        return Text('下载进度：$value');
+                      }))));
+
+          switch (Platform.operatingSystem) {
+            case 'android':
+              var url = updateData.url;
+
+              var dir = await getTemporaryDirectory();
+              var savePath = join(dir.path, 'read', 'app', 'update.apk');
+
+              await Request.getInstance().dio.download(url, savePath,
+                  onReceiveProgress: (int count, int total) {
+                    progress.value = '${(count / total * 10000).ceil() / 100}%';
+                  });
+
+              final file = File(savePath);
+              if (await file.exists()) {
+                await Share.shareXFiles([
+                  XFile(savePath),
+                ], text: '${updateData.version}.apk');
+              }
+
+              break;
+            default:
+              break;
+          }
+        });
   }
 }
