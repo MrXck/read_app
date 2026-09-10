@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:read_app/tab/book_shelf.dart';
 import 'package:read_app/tab/book_source.dart';
 import 'package:read_app/tab/file.dart';
 import 'package:read_app/tab/my.dart';
+import 'package:read_app/utils/platform_utils.dart';
 
 class TabPage extends StatefulWidget {
   const TabPage({super.key});
@@ -60,5 +62,13 @@ class _TabPageState extends State<TabPage> {
         type: BottomNavigationBarType.fixed,
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    if (PlatFormUtils.isDesktop()) {
+      hotKeyManager.unregisterAll();
+    }
+    super.dispose();
   }
 }

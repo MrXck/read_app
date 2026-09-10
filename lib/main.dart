@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:read_app/controller/setting_controller.dart';
@@ -107,6 +108,7 @@ void initIOSListenShare() {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (PlatFormUtils.isDesktop()) {
+    await hotKeyManager.unregisterAll();
     await windowManager.ensureInitialized();
 
     WindowOptions windowOptions = WindowOptions(
@@ -168,6 +170,25 @@ class MyApp extends StatelessWidget {
     }
   }
 
+  Future<void> registerHotKey() async {
+    final hotKey = HotKey(
+      key: PhysicalKeyboardKey.keyQ,          // Q 键
+      modifiers: [HotKeyModifier.alt],        // Alt + Q
+      scope: HotKeyScope.system,              // 系统级，应用后台也响应
+    );
+    await hotKeyManager.register(
+      hotKey,
+      keyDownHandler: (hk) async {
+        if (await windowManager.isVisible()) {
+          windowManager.hide();
+        } else {
+          windowManager.show();
+        }
+      },
+      // 注意：keyUpHandler 仅 macOS 生效
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     SyncUtils.sync();
@@ -175,6 +196,7 @@ class MyApp extends StatelessWidget {
     double num = 4;
 
     if (PlatFormUtils.isDesktop()) {
+      registerHotKey();
       databaseFactory = databaseFactoryFfi;
     }
     return FutureBuilder(
@@ -391,13 +413,16 @@ class MyApp extends StatelessWidget {
                     }
                   },
                   child: KeyboardListener(
-                    onKeyEvent: (KeyEvent event) {
+                    onKeyEvent: (KeyEvent event) async {
                       if (event is KeyDownEvent) {
                         switch (event.logicalKey) {
                           case LogicalKeyboardKey.escape:
                             Get.back();
                             return;
                           case LogicalKeyboardKey.controlLeft:
+                            if (PlatFormUtils.isDesktop()) {
+                              await hotKeyManager.unregisterAll();
+                            }
                             exit(0);
                         }
                       }

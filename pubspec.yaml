@@ -69,6 +69,7 @@ dependencies:
   real_page_flip: 2.1.2
   sherpa_onnx: ^1.13.5
   audioplayers: ^6.5.1
+  hotkey_manager: ^0.2.3
 #  html: ^0.15.4
 #  json_path: ^0.6.0
 #  flutter_js: ^0.8.0
