@@ -82,15 +82,11 @@ class HttpServiceLogic {
           request.method.toUpperCase() == 'POST') {
         // 上传接口 这边定义跟后端写法差不多
         if (request.headers.contentType?.mimeType == 'multipart/form-data') {
-          // 指定 multipart/form-data 传输二进制类型
-          // 这里使用mime/mime.dart 的 MimeMultipartTransformer 解析二进制数据
-          // 坑点 使用官方示例会报错，然后调整以下
           String boundary =
               request.headers.contentType!.parameters['boundary']!;
           // 然后处理HttpRequest流
           await for (var multipart
               in MimeMultipartTransformer(boundary).bind(request)) {
-            // 然后在body里面的 filename和field 都在 multipart.headers里面 然后文件流就是multipart本身
             String? contentDisposition =
                 multipart.headers['content-disposition'];
             String? filename = contentDisposition
@@ -99,27 +95,55 @@ class HttpServiceLogic {
                 .first
                 .replaceFirst("filename=", "")
                 .replaceAll('"', '');
-            // 我这边指定txt文件，否则跳过，如果不需要就略过
             if (filename == null || filename.isEmpty) {
               continue;
             }
 
-            try {
-              await FileUtils.uploadFile(
-                  await multipart.toBytes(), filename.toLowerCase(), parentId);
-              // 这边我直接成功，可以做其他判断
-              request.response
-                ..statusCode = HttpStatus.ok
-                ..headers.contentType = ContentType.json
-                ..write({"code": 1, "msg": "upload success"})
-                ..close();
-            } catch (e) {
-              // 这边我直接成功，可以做其他判断
-              request.response
-                ..statusCode = HttpStatus.internalServerError
-                ..headers.contentType = ContentType.json
-                ..write({"code": 0, "msg": e.toString()})
-                ..close();
+            if (filename.toLowerCase().endsWith('.zip')) {
+              try {
+                Directory tempDirectory = await getTemporaryDirectory();
+                var comicDirName = generateRandomString(32);
+                final file = File(join(tempDirectory.path, '$comicDirName.zip'));
+                if (!await file.parent.exists()) {
+                  await file.parent.create(recursive: true);
+                }
+                final sink = file.openWrite();
+                await multipart.pipe(sink);
+                await sink.close();
+
+                await FileUtils.uploadZipFileByFilePath(
+                    file.path, filename, parentId);
+                request.response
+                  ..statusCode = HttpStatus.ok
+                  ..headers.contentType = ContentType.json
+                  ..write({"code": 1, "msg": "upload success"})
+                  ..close();
+              } catch (e) {
+                // 这边我直接成功，可以做其他判断
+                request.response
+                  ..statusCode = HttpStatus.internalServerError
+                  ..headers.contentType = ContentType.json
+                  ..write({"code": 0, "msg": e.toString()})
+                  ..close();
+              }
+            } else {
+              try {
+                await FileUtils.uploadFile(
+                    await multipart.toBytes(), filename.toLowerCase(), parentId);
+                // 这边我直接成功，可以做其他判断
+                request.response
+                  ..statusCode = HttpStatus.ok
+                  ..headers.contentType = ContentType.json
+                  ..write({"code": 1, "msg": "upload success"})
+                  ..close();
+              } catch (e) {
+                // 这边我直接成功，可以做其他判断
+                request.response
+                  ..statusCode = HttpStatus.internalServerError
+                  ..headers.contentType = ContentType.json
+                  ..write({"code": 0, "msg": e.toString()})
+                  ..close();
+              }
             }
           }
         } else {
@@ -128,70 +152,14 @@ class HttpServiceLogic {
             ..statusCode = HttpStatus.notFound
             ..close();
         }
-      } else if (request.uri.path == '/uploadComic' &&
-          request.method.toUpperCase() == 'POST') {
-        if (request.headers.contentType?.mimeType == 'multipart/form-data') {
-          // 指定 multipart/form-data 传输二进制类型
-          // 这里使用mime/mime.dart 的 MimeMultipartTransformer 解析二进制数据
-          // 坑点 使用官方示例会报错，然后调整以下
-          String boundary =
-              request.headers.contentType!.parameters['boundary']!;
-          // 然后处理HttpRequest流
-          await for (var multipart
-              in MimeMultipartTransformer(boundary).bind(request)) {
-            // 然后在body里面的 filename和field 都在 multipart.headers里面 然后文件流就是multipart本身
-            String? contentDisposition =
-                multipart.headers['content-disposition'];
-            String? filename = contentDisposition
-                ?.split("; ")
-                .where((item) => item.startsWith("filename="))
-                .first
-                .replaceFirst("filename=", "")
-                .replaceAll('"', '');
-            // 我这边指定txt文件，否则跳过，如果不需要就略过
-            if (filename == null ||
-                filename.isEmpty ||
-                !filename.toLowerCase().endsWith('.zip')) {
-              continue;
-            }
-
-            filename = filename.replaceAll('', '');
-
-            try {
-              Directory tempDirectory = await getTemporaryDirectory();
-              var comicDirName = generateRandomString(32);
-              final file = File(join(tempDirectory.path, '$comicDirName.zip'));
-              if (!await file.parent.exists()) {
-                await file.parent.create(recursive: true);
-              }
-              final sink = file.openWrite();
-              await multipart.pipe(sink);
-              await sink.close();
-
-              await FileUtils.uploadZipFileByFilePath(
-                  file.path, filename, parentId);
-              request.response
-                ..statusCode = HttpStatus.ok
-                ..headers.contentType = ContentType.json
-                ..write({"code": 1, "msg": "upload success"})
-                ..close();
-            } catch (e) {
-              // 这边我直接成功，可以做其他判断
-              request.response
-                ..statusCode = HttpStatus.internalServerError
-                ..headers.contentType = ContentType.json
-                ..write({"code": 0, "msg": e.toString()})
-                ..close();
-            }
-          }
-        } else {
+      } else {
           // 其他请求都是404
           request.response
             ..statusCode = HttpStatus.notFound
             ..close();
         }
       }
-    });
+    );
   }
 
   //关闭服务

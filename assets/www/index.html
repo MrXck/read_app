@@ -16,6 +16,7 @@
             text-align: center;
             line-height: 200px;
             margin: 10px 50px 50px;
+            cursor: pointer;
         }
 
         #radio {
@@ -76,12 +77,9 @@
 <div class="container">
     <div>
         <div id="radio">
-            <input id="txt" type="radio" name="upload" value="txt" checked>
-            <label for="txt">文件上传</label>
-            <input id="zip" type="radio" name="upload" value="zip">
-            <label for="zip">压缩包上传</label>
+            <input type="file" id="file" multiple style="display: none" onchange="uploadFile()">
         </div>
-        <div id="drop">
+        <div id="drop" onclick="uploadClick()">
             拖拽上传
         </div>
     </div>
@@ -104,36 +102,23 @@
 
 <script>
     const drop = document.getElementById('drop');
+    const fileUpload = document.getElementById('file');
     const uploadList = document.getElementById('uploadList');
     const fileList = []
 
-    function generateRandomString(length) {
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        let result = '';
-        for (let i = 0; i < length; i++) {
-            const randomIndex = Math.floor(Math.random() * characters.length);
-            result += characters[randomIndex];
-        }
-        return result;
+    function uploadClick() {
+        fileUpload.click()
     }
 
-    drop.addEventListener('dragstart', e => {
-        e.stopPropagation()
-    })
+    function uploadFile(e) {
+        upload(fileUpload.files)
+    }
 
-    drop.addEventListener('dragover', function (e) {
-        e.preventDefault();
-    });
-
-    drop.addEventListener('drop', function (e) {
-        e.preventDefault();
-
-        const uploadType = document.querySelector('input[name=upload]:checked').value
-        const uploadUrl = uploadType === 'txt' ? '/upload' : '/uploadComic'
+    function upload(files) {
+        const uploadUrl = '/upload'
         let html = uploadList.innerHTML
-
-        for (let i = 0; i < e.dataTransfer.files.length; i++) {
-            let file = e.dataTransfer.files[i];
+        for (let i = 0; i < files.length; i++) {
+            let file = files[i];
             const fileId = generateRandomString(16)
             const data = {name: file.name, status: 'uploading', id: fileId, file, upload: false}
             fileList.push(data)
@@ -221,6 +206,29 @@
                         </div>`
             }
         }
+    }
+
+    function generateRandomString(length) {
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        for (let i = 0; i < length; i++) {
+            const randomIndex = Math.floor(Math.random() * characters.length);
+            result += characters[randomIndex];
+        }
+        return result;
+    }
+
+    drop.addEventListener('dragstart', e => {
+        e.stopPropagation()
+    })
+
+    drop.addEventListener('dragover', function (e) {
+        e.preventDefault();
+    });
+
+    drop.addEventListener('drop', function (e) {
+        e.preventDefault();
+        upload(e.dataTransfer.files)
     })
 
 </script>
