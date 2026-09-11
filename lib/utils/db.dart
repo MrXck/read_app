@@ -742,7 +742,12 @@ class DatabaseHelper {
         if (!(await File(bookPath).exists())) {
           await deleteById(book.id);
         }
-      } else {
+      } else if (book.type == Constant.mediaType) {
+        var bookPath = join(dataDir.path, book.path);
+        if (!(await File(bookPath).exists())) {
+          await deleteById(book.id);
+        }
+      } else if (book.type == Constant.comicType) {
         var bookPath = join(dataDir.path, book.path);
         if (!(await Directory(bookPath).exists())) {
           await deleteById(book.id);
