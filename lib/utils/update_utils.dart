@@ -35,7 +35,11 @@ class UpdateUtils {
     var installStatus = await Permission.requestInstallPackages.request();
 
     if (!installStatus.isGranted) {
-      showDownloadDialog(updateData);
+      switch (Platform.operatingSystem) {
+        case 'android':
+          showDownloadDialog(updateData);
+          break;
+      }
       return;
     }
 
