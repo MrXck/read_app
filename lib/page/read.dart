@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:read_app/pojo/status.dart';
+import 'package:read_app/service/LogService.dart';
 import 'package:read_app/utils/color_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -1625,12 +1626,13 @@ class _ReadPageState extends State<ReadPage> {
     _dataTimer?.cancel();
     updateBook();
     saveReadConfig();
-    OperationLog operationLog = OperationLog.setOperationLog(
-      book,
-      book.id,
-      Constant.operationUpdateType,
+    LogService.instance.log(
+      OperationLog.setOperationLog(
+        book,
+        book.id,
+        Constant.operationUpdateType,
+      ),
     );
-    DatabaseHelper.db.insertOperationLog(operationLog);
     if (openVolumeFlip) {
       volumeUtils.removeListener(needRestore: true);
     }

@@ -13,6 +13,7 @@ import 'package:read_app/pojo/app_settings.dart';
 // import 'package:flutter/rendering.dart';
 import 'package:read_app/router/router.dart';
 import 'package:get/get.dart';
+import 'package:read_app/service/LogService.dart';
 import 'package:read_app/tab/tab.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/file_utils.dart';
@@ -107,6 +108,7 @@ void initIOSListenShare() {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  LogService.instance.init();
   if (PlatFormUtils.isDesktop()) {
     await hotKeyManager.unregisterAll();
     await windowManager.ensureInitialized();

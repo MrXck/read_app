@@ -10,6 +10,7 @@ import 'package:read_app/controller/setting_controller.dart';
 import 'package:read_app/pojo/book.dart';
 import 'package:read_app/pojo/operation_log.dart';
 import 'package:read_app/pojo/settings.dart';
+import 'package:read_app/service/LogService.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/db.dart';
 import 'package:read_app/utils/volume_utils.dart';
@@ -223,9 +224,10 @@ class _PdfPageState extends State<PdfPage> {
   void dispose() {
     _dataTimer?.cancel();
     updateBook();
-    OperationLog operationLog = OperationLog.setOperationLog(
-        book, book.id, Constant.operationUpdateType);
-    DatabaseHelper.db.insertOperationLog(operationLog);
+    LogService.instance.log(
+        OperationLog.setOperationLog(
+            book, book.id, Constant.operationUpdateType)
+    );
     saveReadConfig();
     if (settingController.isOpenVolumeFlip.value) {
       volumeUtils.removeListener(needRestore: true);
