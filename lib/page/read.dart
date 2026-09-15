@@ -1142,7 +1142,20 @@ class _ReadPageState extends State<ReadPage> {
     var topTitleHeight = 30.0;
     height = conte.size.height - conte.padding.top - conte.padding.bottom;
     width = conte.size.width - conte.padding.left - conte.padding.right;
-    return Scaffold(
+    return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) async {
+          if (didPop) return;
+          LogService.instance.log(
+            OperationLog.setOperationLog(
+              book,
+              book.id,
+              Constant.operationUpdateType,
+            ),
+          );
+          Navigator.of(context).pop(); // ← 做完才真正退出
+        },
+        child: Scaffold(
       backgroundColor: PlatFormUtils.isDesktop()
           ? Colors.transparent
           : Color(settings.backgroundColor),
@@ -1191,64 +1204,64 @@ class _ReadPageState extends State<ReadPage> {
               ),
               settings.showBottom
                   ? Positioned(
-                      left: 0,
-                      bottom: 0,
-                      child: Container(
-                        height: 30,
-                        padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                        color: Color(settings.backgroundColor),
-                        width: width,
-                        child: Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              ValueListenableBuilder(
-                                valueListenable: _now,
-                                builder: (context, value, child) {
-                                  return Text(
-                                    value,
-                                    style: TextStyle(
-                                      fontFamily: settings.fontFamily,
-                                      color: Color(settings.fontColor)
-                                    ),
-                                  );
-                                },
+                left: 0,
+                bottom: 0,
+                child: Container(
+                  height: 30,
+                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                  color: Color(settings.backgroundColor),
+                  width: width,
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        ValueListenableBuilder(
+                          valueListenable: _now,
+                          builder: (context, value, child) {
+                            return Text(
+                              value,
+                              style: TextStyle(
+                                  fontFamily: settings.fontFamily,
+                                  color: Color(settings.fontColor)
                               ),
-                              ValueListenableBuilder(
-                                valueListenable: _currentPage,
-                                builder: (context, value, child) {
-                                  return Text(
-                                    '${(((currentSeqNo.value + 1) / chapterList.length) * 100).toStringAsFixed(2)}%',
-                                    style: TextStyle(
-                                      fontFamily: settings.fontFamily,
-                                        color: Color(settings.fontColor)
-                                    ),
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
-                      ),
-                    )
+                        ValueListenableBuilder(
+                          valueListenable: _currentPage,
+                          builder: (context, value, child) {
+                            return Text(
+                              '${(((currentSeqNo.value + 1) / chapterList.length) * 100).toStringAsFixed(2)}%',
+                              style: TextStyle(
+                                  fontFamily: settings.fontFamily,
+                                  color: Color(settings.fontColor)
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              )
                   : const SizedBox.shrink(),
               ValueListenableBuilder(
                 valueListenable: showMask,
                 builder: (context, value, child) {
                   return value
                       ? Positioned.fill(
-                          child: ModalBarrier(
-                            color: Colors.black54,
-                            dismissible: true,
-                            onDismiss: () {
-                              showChapter.value = false;
-                              showFont.value = false;
-                              showBrightness.value = false;
-                              showSettings.value = false;
-                              showMask.value = false;
-                            },
-                          ),
-                        )
+                    child: ModalBarrier(
+                      color: Colors.black54,
+                      dismissible: true,
+                      onDismiss: () {
+                        showChapter.value = false;
+                        showFont.value = false;
+                        showBrightness.value = false;
+                        showSettings.value = false;
+                        showMask.value = false;
+                      },
+                    ),
+                  )
                       : const SizedBox.shrink();
                 },
               ),
@@ -1257,249 +1270,246 @@ class _ReadPageState extends State<ReadPage> {
                 builder: (context, value, child) {
                   return value
                       ? Positioned(
-                          left: 0,
-                          top: 0,
-                          right: 0,
-                          child: Container(
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: ColorUtils.returnDefaultColor(
-                                settings.backgroundColor,
-                              ),
+                    left: 0,
+                    top: 0,
+                    right: 0,
+                    child: Container(
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: ColorUtils.returnDefaultColor(
+                          settings.backgroundColor,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              Get.back();
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(10),
+                              child: const Icon(Icons.arrow_back_ios),
                             ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                      : const SizedBox.shrink();
+                },
+              ),
+              ValueListenableBuilder(
+                valueListenable: showOption,
+                builder: (context, value, child) {
+                  return value
+                      ? Positioned(
+                    left: 0,
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      height: 110,
+                      decoration: BoxDecoration(
+                        color: ColorUtils.returnDefaultColor(
+                          settings.backgroundColor,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment:
+                            MainAxisAlignment.spaceAround,
+                            children: [
+                              InkWell(
+                                onTap: () {
+                                  nowChapterPage = 0;
+                                  switchChapter1(currentSeqNo.value - 1);
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(10),
+                                  child: Text(
+                                    '上一章',
+                                    style: TextStyle(
+                                      fontFamily: settings.fontFamily,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              InkWell(
+                                onTap: () {
+                                  nowChapterPage = 0;
+                                  switchChapter1(currentSeqNo.value + 1);
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(10),
+                                  child: Text(
+                                    '下一章',
+                                    style: TextStyle(
+                                      fontFamily: settings.fontFamily,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            width: width,
+                            padding: const EdgeInsets.all(10),
                             child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment:
+                              MainAxisAlignment.spaceAround,
                               children: [
                                 InkWell(
                                   onTap: () {
-                                    Get.back();
+                                    showChapter.value =
+                                    !(showChapter.value);
+
+                                    showSettings.value = false;
+                                    showFont.value = false;
+                                    showBrightness.value = false;
+
+                                    if (showChapter.value ||
+                                        showSettings.value ||
+                                        showFont.value ||
+                                        showBrightness.value) {
+                                      showMask.value = true;
+                                    } else {
+                                      showMask.value = false;
+                                    }
                                   },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(10),
-                                    child: const Icon(Icons.arrow_back_ios),
+                                  child: Wrap(
+                                    direction: Axis.vertical,
+                                    children: [
+                                      showChapter.value
+                                          ? const Icon(Icons.book)
+                                          : const Icon(
+                                        Icons.book_outlined,
+                                      ),
+                                      Text(
+                                        '目录',
+                                        style: TextStyle(
+                                          fontFamily: settings.fontFamily,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
-                        )
-                      : const SizedBox.shrink();
-                },
-              ),
-              ValueListenableBuilder(
-                valueListenable: showOption,
-                builder: (context, value, child) {
-                  return value
-                      ? Positioned(
-                          left: 0,
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            height: 110,
-                            decoration: BoxDecoration(
-                              color: ColorUtils.returnDefaultColor(
-                                settings.backgroundColor,
-                              ),
-                            ),
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: [
-                                    InkWell(
-                                      onTap: () {
-                                        nowChapterPage = 0;
-                                        switchChapter1(currentSeqNo.value - 1);
-                                      },
-                                      child: Container(
-                                        padding: const EdgeInsets.all(10),
-                                        child: Text(
-                                          '上一章',
-                                          style: TextStyle(
-                                            fontFamily: settings.fontFamily,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    InkWell(
-                                      onTap: () {
-                                        nowChapterPage = 0;
-                                        switchChapter1(currentSeqNo.value + 1);
-                                      },
-                                      child: Container(
-                                        padding: const EdgeInsets.all(10),
-                                        child: Text(
-                                          '下一章',
-                                          style: TextStyle(
-                                            fontFamily: settings.fontFamily,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Container(
-                                  width: width,
-                                  padding: const EdgeInsets.all(10),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
+                                InkWell(
+                                  onTap: () {
+                                    showFont.value = !(showFont.value);
+
+                                    showChapter.value = false;
+                                    showSettings.value = false;
+                                    showBrightness.value = false;
+
+                                    if (showChapter.value ||
+                                        showSettings.value ||
+                                        showFont.value ||
+                                        showBrightness.value) {
+                                      showMask.value = true;
+                                    } else {
+                                      showMask.value = false;
+                                    }
+                                  },
+                                  child: Wrap(
+                                    direction: Axis.vertical,
                                     children: [
-                                      InkWell(
-                                        onTap: () {
-                                          showChapter.value =
-                                              !(showChapter.value);
-
-                                          showSettings.value = false;
-                                          showFont.value = false;
-                                          showBrightness.value = false;
-
-                                          if (showChapter.value ||
-                                              showSettings.value ||
-                                              showFont.value ||
-                                              showBrightness.value) {
-                                            showMask.value = true;
-                                          } else {
-                                            showMask.value = false;
-                                          }
-                                        },
-                                        child: Wrap(
-                                          direction: Axis.vertical,
-                                          children: [
-                                            showChapter.value
-                                                ? const Icon(Icons.book)
-                                                : const Icon(
-                                                    Icons.book_outlined,
-                                                  ),
-                                            Text(
-                                              '目录',
-                                              style: TextStyle(
-                                                fontFamily: settings.fontFamily,
-                                                fontSize: 10,
-                                              ),
-                                            ),
-                                          ],
+                                      const Icon(
+                                        Icons.font_download_outlined,
+                                      ),
+                                      Text(
+                                        '字体',
+                                        style: TextStyle(
+                                          fontFamily: settings.fontFamily,
+                                          fontSize: 10,
                                         ),
                                       ),
-                                      InkWell(
-                                        onTap: () {
-                                          showFont.value = !(showFont.value);
+                                    ],
+                                  ),
+                                ),
+                                InkWell(
+                                  onTap: () {
+                                    showChapter.value = false;
+                                    showSettings.value = false;
+                                    showBrightness.value =
+                                    !(showBrightness.value);
+                                    showFont.value = false;
 
-                                          showChapter.value = false;
-                                          showSettings.value = false;
-                                          showBrightness.value = false;
-
-                                          if (showChapter.value ||
-                                              showSettings.value ||
-                                              showFont.value ||
-                                              showBrightness.value) {
-                                            showMask.value = true;
-                                          } else {
-                                            showMask.value = false;
-                                          }
-                                        },
-                                        child: Wrap(
-                                          direction: Axis.vertical,
-                                          children: [
-                                            const Icon(
-                                              Icons.font_download_outlined,
-                                            ),
-                                            Text(
-                                              '字体',
-                                              style: TextStyle(
-                                                fontFamily: settings.fontFamily,
-                                                fontSize: 10,
-                                              ),
-                                            ),
-                                          ],
+                                    if (showChapter.value ||
+                                        showSettings.value ||
+                                        showFont.value ||
+                                        showBrightness.value) {
+                                      showMask.value = true;
+                                    } else {
+                                      showMask.value = false;
+                                    }
+                                  },
+                                  child: Wrap(
+                                    direction: Axis.vertical,
+                                    children: [
+                                      const Icon(Icons.lightbulb_outline),
+                                      Text(
+                                        '亮度',
+                                        style: TextStyle(
+                                          fontFamily: settings.fontFamily,
+                                          fontSize: 10,
                                         ),
                                       ),
-                                      InkWell(
-                                        onTap: () {
-                                          showChapter.value = false;
-                                          showSettings.value = false;
-                                          showBrightness.value =
-                                              !(showBrightness.value);
-                                          showFont.value = false;
-
-                                          if (showChapter.value ||
-                                              showSettings.value ||
-                                              showFont.value ||
-                                              showBrightness.value) {
-                                            showMask.value = true;
-                                          } else {
-                                            showMask.value = false;
-                                          }
-                                        },
-                                        child: Wrap(
-                                          direction: Axis.vertical,
-                                          children: [
-                                            const Icon(Icons.lightbulb_outline),
-                                            Text(
-                                              '亮度',
-                                              style: TextStyle(
-                                                fontFamily: settings.fontFamily,
-                                                fontSize: 10,
-                                              ),
-                                            ),
-                                          ],
+                                    ],
+                                  ),
+                                ),
+                                InkWell(
+                                  onTap: () {},
+                                  child: Wrap(
+                                    direction: Axis.vertical,
+                                    children: [
+                                      const Icon(
+                                        Icons.nights_stay_outlined,
+                                      ),
+                                      Text(
+                                        '夜间',
+                                        style: TextStyle(
+                                          fontFamily: settings.fontFamily,
+                                          fontSize: 10,
                                         ),
                                       ),
-                                      InkWell(
-                                        onTap: () {},
-                                        child: Wrap(
-                                          direction: Axis.vertical,
-                                          children: [
-                                            const Icon(
-                                              Icons.nights_stay_outlined,
-                                            ),
-                                            Text(
-                                              '夜间',
-                                              style: TextStyle(
-                                                fontFamily: settings.fontFamily,
-                                                fontSize: 10,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                    ],
+                                  ),
+                                ),
+                                InkWell(
+                                  onTap: () {
+                                    showSettings.value =
+                                    !(showSettings.value);
+
+                                    showChapter.value = false;
+                                    showFont.value = false;
+                                    showBrightness.value = false;
+
+                                    if (showChapter.value ||
+                                        showSettings.value ||
+                                        showFont.value ||
+                                        showBrightness.value) {
+                                      showMask.value = true;
+                                    } else {
+                                      showMask.value = false;
+                                    }
+                                  },
+                                  child: Wrap(
+                                    direction: Axis.vertical,
+                                    children: [
+                                      Icon(
+                                        showSettings.value
+                                            ? Icons.settings
+                                            : Icons.settings_outlined,
                                       ),
-                                      InkWell(
-                                        onTap: () {
-                                          showSettings.value =
-                                              !(showSettings.value);
-
-                                          showChapter.value = false;
-                                          showFont.value = false;
-                                          showBrightness.value = false;
-
-                                          if (showChapter.value ||
-                                              showSettings.value ||
-                                              showFont.value ||
-                                              showBrightness.value) {
-                                            showMask.value = true;
-                                          } else {
-                                            showMask.value = false;
-                                          }
-                                        },
-                                        child: Wrap(
-                                          direction: Axis.vertical,
-                                          children: [
-                                            Icon(
-                                              showSettings.value
-                                                  ? Icons.settings
-                                                  : Icons.settings_outlined,
-                                            ),
-                                            Text(
-                                              '设置',
-                                              style: TextStyle(
-                                                fontFamily: settings.fontFamily,
-                                                fontSize: 10,
-                                              ),
-                                            ),
-                                          ],
+                                      Text(
+                                        '设置',
+                                        style: TextStyle(
+                                          fontFamily: settings.fontFamily,
+                                          fontSize: 10,
                                         ),
                                       ),
                                     ],
@@ -1508,7 +1518,10 @@ class _ReadPageState extends State<ReadPage> {
                               ],
                             ),
                           ),
-                        )
+                        ],
+                      ),
+                    ),
+                  )
                       : const SizedBox.shrink();
                 },
               ),
@@ -1517,45 +1530,45 @@ class _ReadPageState extends State<ReadPage> {
                 builder: (context, value, child) {
                   return value
                       ? ReadSettings(
-                          chapterTitleExpController: _chapterTitleExpController,
-                          settings: settings,
-                          updateFunc: (Settings setting) {
-                            settings = setting;
-                            saveReadConfig();
-                            switchChapter1(currentSeqNo.value);
-                          },
-                          updateExpFunc: (String text) async {
-                            showSettings.value = false;
+                    chapterTitleExpController: _chapterTitleExpController,
+                    settings: settings,
+                    updateFunc: (Settings setting) {
+                      settings = setting;
+                      saveReadConfig();
+                      switchChapter1(currentSeqNo.value);
+                    },
+                    updateExpFunc: (String text) async {
+                      showSettings.value = false;
 
-                            await BookUtils.changeChapterTitleExp(
-                              book,
-                              _chapterTitleExpController.text,
-                            );
+                      await BookUtils.changeChapterTitleExp(
+                        book,
+                        _chapterTitleExpController.text,
+                      );
 
-                            nowChapterPage = 0;
-                            currentSeqNo.value = 0;
-                            _currentPage.value = 1;
+                      nowChapterPage = 0;
+                      currentSeqNo.value = 0;
+                      _currentPage.value = 1;
 
-                            switchChapter1(0);
+                      switchChapter1(0);
 
-                            chapterTitleExp = _chapterTitleExpController.text;
-                          },
-                          backgroundColorList: backgroundColorList,
-                          startSpeak: () {
-                            // 3 外国少女   45 中文女  46 中文播音女  47 中文播音伪少女  48 中文少女
-                            // tts.speak(tempList[i].trim(), 48);
-                            for (var i = _currentPage.value; i < pageTextList.length; i++) {
-                              var textList = pageTextList[i];
-                              if (textList == null) {
-                                return;
-                              }
-                              for (var text in textList) {
-                                tts.speak(text, settings.sid);
-                              }
-                            }
-                          },
-                          status: status,
-                        )
+                      chapterTitleExp = _chapterTitleExpController.text;
+                    },
+                    backgroundColorList: backgroundColorList,
+                    startSpeak: () {
+                      // 3 外国少女   45 中文女  46 中文播音女  47 中文播音伪少女  48 中文少女
+                      // tts.speak(tempList[i].trim(), 48);
+                      for (var i = _currentPage.value; i < pageTextList.length; i++) {
+                        var textList = pageTextList[i];
+                        if (textList == null) {
+                          return;
+                        }
+                        for (var text in textList) {
+                          tts.speak(text, settings.sid);
+                        }
+                      }
+                    },
+                    status: status,
+                  )
                       : const SizedBox.shrink();
                 },
               ),
@@ -1564,22 +1577,22 @@ class _ReadPageState extends State<ReadPage> {
                 builder: (context, value, child) {
                   return value
                       ? Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: 70,
-                          height: height * 0.7,
-                          child: ReadChapterList(
-                            chapterList: chapterList,
-                            book: book,
-                            currentSeqNo: currentSeqNo.value,
-                            clickFunc: (String chapterTitle, int seqNo) {
-                              nowChapterPage = 0;
-                              _nowChapter.value = chapterTitle;
-                              switchChapter1(seqNo);
-                            },
-                            settings: settings,
-                          ),
-                        )
+                    left: 0,
+                    right: 0,
+                    bottom: 70,
+                    height: height * 0.7,
+                    child: ReadChapterList(
+                      chapterList: chapterList,
+                      book: book,
+                      currentSeqNo: currentSeqNo.value,
+                      clickFunc: (String chapterTitle, int seqNo) {
+                        nowChapterPage = 0;
+                        _nowChapter.value = chapterTitle;
+                        switchChapter1(seqNo);
+                      },
+                      settings: settings,
+                    ),
+                  )
                       : const SizedBox.shrink();
                 },
               ),
@@ -1588,19 +1601,19 @@ class _ReadPageState extends State<ReadPage> {
                 builder: (context, value, child) {
                   return value
                       ? Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: 70,
-                          height: 300,
-                          child: ReadFontSetting(
-                            settings: settings,
-                            updateFunc: (Settings setting) {
-                              settings = setting;
-                              saveReadConfig();
-                              switchChapter1(currentSeqNo.value);
-                            },
-                          ),
-                        )
+                    left: 0,
+                    right: 0,
+                    bottom: 70,
+                    height: 300,
+                    child: ReadFontSetting(
+                      settings: settings,
+                      updateFunc: (Settings setting) {
+                        settings = setting;
+                        saveReadConfig();
+                        switchChapter1(currentSeqNo.value);
+                      },
+                    ),
+                  )
                       : const SizedBox.shrink();
                 },
               ),
@@ -1616,6 +1629,7 @@ class _ReadPageState extends State<ReadPage> {
           ),
         ),
       ),
+    )
     );
   }
 
@@ -1626,13 +1640,6 @@ class _ReadPageState extends State<ReadPage> {
     _dataTimer?.cancel();
     updateBook();
     saveReadConfig();
-    LogService.instance.log(
-      OperationLog.setOperationLog(
-        book,
-        book.id,
-        Constant.operationUpdateType,
-      ),
-    );
     if (openVolumeFlip) {
       volumeUtils.removeListener(needRestore: true);
     }

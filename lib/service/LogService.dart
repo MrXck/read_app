@@ -19,10 +19,8 @@ class LogService {
     _started = true;
     _controller.stream.listen((log) async {
       try {
-        Get.snackbar('提示', log.title);
         await DatabaseHelper.db.insertOperationLog(log);
       } catch (e) {
-        Get.snackbar('提示', e.toString());
         print('日志写入失败: $e');
       }
     });
