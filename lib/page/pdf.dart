@@ -51,6 +51,14 @@ class _PdfPageState extends State<PdfPage> {
     DatabaseHelper.db.updateById(book);
   }
 
+  Future<void> saveReadConfig() async {
+    var value = await SharedPreferences.getInstance();
+    value.setString(
+      Constant.readConfigKey,
+      const JsonEncoder().convert(settings.toMap()),
+    );
+  }
+
   @override
   void initState() {
     book = Get.arguments as Book;
@@ -181,13 +189,9 @@ class _PdfPageState extends State<PdfPage> {
                                       children: [
                                         InkWell(
                                           onTap: () {
-                                            settings.isVer = !settings.isVer;
-                                            SharedPreferences.getInstance().then((value) {
-                                              value.setString(Constant.readConfigKey,
-                                                  const JsonEncoder().convert(settings.toMap()));
-                                            });
                                             setState(() {
-
+                                              settings.isVer = !settings.isVer;
+                                              saveReadConfig();
                                             });
                                           },
                                           child: Container(
@@ -222,10 +226,7 @@ class _PdfPageState extends State<PdfPage> {
     OperationLog operationLog = OperationLog.setOperationLog(
         book, book.id, Constant.operationUpdateType);
     DatabaseHelper.db.insertOperationLog(operationLog);
-    SharedPreferences.getInstance().then((value) {
-      value.setString(Constant.readConfigKey,
-          const JsonEncoder().convert(settings.toMap()));
-    });
+    saveReadConfig();
     if (settingController.isOpenVolumeFlip.value) {
       volumeUtils.removeListener(needRestore: true);
     }

@@ -151,12 +151,14 @@ class _ReadPageState extends State<ReadPage> {
     book.chapterTitleExp = chapterTitleExp;
     book.currentChapter = currentSeqNo.value;
     DatabaseHelper.db.updateById(book);
-    SharedPreferences.getInstance().then((value) {
-      value.setString(
-        Constant.readConfigKey,
-        const JsonEncoder().convert(settings.toMap()),
-      );
-    });
+  }
+
+  Future<void> saveReadConfig() async {
+    var value = await SharedPreferences.getInstance();
+    value.setString(
+      Constant.readConfigKey,
+      const JsonEncoder().convert(settings.toMap()),
+    );
   }
 
   void previousPage() {
@@ -1517,10 +1519,9 @@ class _ReadPageState extends State<ReadPage> {
                           chapterTitleExpController: _chapterTitleExpController,
                           settings: settings,
                           updateFunc: (Settings setting) {
-                            setState(() {
-                              settings = setting;
-                              switchChapter1(currentSeqNo.value);
-                            });
+                            settings = setting;
+                            saveReadConfig();
+                            switchChapter1(currentSeqNo.value);
                           },
                           updateExpFunc: (String text) async {
                             showSettings.value = false;
@@ -1536,9 +1537,7 @@ class _ReadPageState extends State<ReadPage> {
 
                             switchChapter1(0);
 
-                            setState(() {
-                              chapterTitleExp = _chapterTitleExpController.text;
-                            });
+                            chapterTitleExp = _chapterTitleExpController.text;
                           },
                           backgroundColorList: backgroundColorList,
                           startSpeak: () {
@@ -1595,10 +1594,9 @@ class _ReadPageState extends State<ReadPage> {
                           child: ReadFontSetting(
                             settings: settings,
                             updateFunc: (Settings setting) {
-                              setState(() {
-                                settings = setting;
-                                switchChapter1(currentSeqNo.value);
-                              });
+                              settings = setting;
+                              saveReadConfig();
+                              switchChapter1(currentSeqNo.value);
                             },
                           ),
                         )
@@ -1626,6 +1624,7 @@ class _ReadPageState extends State<ReadPage> {
     _timeTimer?.cancel();
     _dataTimer?.cancel();
     updateBook();
+    saveReadConfig();
     OperationLog operationLog = OperationLog.setOperationLog(
       book,
       book.id,

@@ -876,12 +876,22 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
   Future<void> updateBook() async {
     book.page = nowChapterPage;
     book.percent =
-        (((currentSeqNo.value + 1) / chapterList.length) * 100).isInfinite
+    (((currentSeqNo.value + 1) / chapterList.length) * 100).isInfinite
         ? 0
         : ((currentSeqNo.value + 1) / chapterList.length) * 100;
     book.chapterTitleExp = chapterTitleExp;
     book.currentChapter = currentSeqNo.value;
-    DatabaseHelper.db.updateById(book);
+    if (book.id != '-1') {
+      DatabaseHelper.db.updateById(book);
+    }
+  }
+
+  Future<void> saveReadConfig() async {
+    var value = await SharedPreferences.getInstance();
+    value.setString(
+      Constant.readConfigKey,
+      const JsonEncoder().convert(settings.toMap()),
+    );
   }
 
   void previousPage() {
@@ -1609,10 +1619,9 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                           chapterTitleExpController: _chapterTitleExpController,
                           settings: settings,
                           updateFunc: (Settings setting) {
-                            setState(() {
-                              settings = setting;
-                              switchChapter1(currentSeqNo.value);
-                            });
+                            settings = setting;
+                            saveReadConfig();
+                            switchChapter1(currentSeqNo.value);
                           },
                           updateExpFunc: (String text) async {},
                           backgroundColorList: backgroundColorList,
@@ -1687,10 +1696,9 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                           child: ReadFontSetting(
                             settings: settings,
                             updateFunc: (Settings setting) {
-                              setState(() {
-                                settings = setting;
-                                switchChapter1(currentSeqNo.value);
-                              });
+                              settings = setting;
+                              saveReadConfig();
+                              switchChapter1(currentSeqNo.value);
                             },
                           ),
                         )
@@ -1718,22 +1726,7 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
     _timeTimer?.cancel();
     _dataTimer?.cancel();
     updateBook();
-    book.page = nowChapterPage;
-    book.percent =
-        (((currentSeqNo.value + 1) / chapterList.length) * 100).isInfinite
-        ? 0
-        : ((currentSeqNo.value + 1) / chapterList.length) * 100;
-    book.chapterTitleExp = chapterTitleExp;
-    book.currentChapter = currentSeqNo.value;
-    if (book.id != '-1') {
-      DatabaseHelper.db.updateById(book);
-    }
-    SharedPreferences.getInstance().then((value) {
-      value.setString(
-        Constant.readConfigKey,
-        const JsonEncoder().convert(settings.toMap()),
-      );
-    });
+    saveReadConfig();
     if (openVolumeFlip) {
       volumeUtils.removeListener(needRestore: true);
     }

@@ -54,6 +54,14 @@ class _ComicPageState extends State<ComicPage> {
     DatabaseHelper.db.updateById(book);
   }
 
+  Future<void> saveReadConfig() async {
+    var value = await SharedPreferences.getInstance();
+    value.setString(
+      Constant.readConfigKey,
+      const JsonEncoder().convert(settings.toMap()),
+    );
+  }
+
   Future<void> init(Book book) async {
     if (settingController.isOpenVolumeFlip.value) {
       volumeUtils.init((double beforeVolume, double nowVolume) {
@@ -229,6 +237,7 @@ class _ComicPageState extends State<ComicPage> {
                           onTap: () {
                             setState(() {
                               settings.isVer = !settings.isVer;
+                              saveReadConfig();
                             });
                           },
                           child: Container(
@@ -286,10 +295,7 @@ class _ComicPageState extends State<ComicPage> {
   void dispose() {
     _dataTimer?.cancel();
     updateBook();
-    SharedPreferences.getInstance().then((value) {
-      value.setString(Constant.readConfigKey,
-          const JsonEncoder().convert(settings.toMap()));
-    });
+    saveReadConfig();
     if (settingController.isOpenVolumeFlip.value) {
       volumeUtils.removeListener(needRestore: true);
     }
