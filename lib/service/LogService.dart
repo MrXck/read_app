@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:get/get.dart';
 import 'package:read_app/pojo/operation_log.dart';
 import 'package:read_app/utils/db.dart';
 
@@ -18,8 +19,10 @@ class LogService {
     _started = true;
     _controller.stream.listen((log) async {
       try {
+        Get.snackbar('提示', log.title);
         await DatabaseHelper.db.insertOperationLog(log);
       } catch (e) {
+        Get.snackbar('提示', e.toString());
         print('日志写入失败: $e');
       }
     });
