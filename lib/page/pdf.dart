@@ -93,7 +93,15 @@ class _PdfPageState extends State<PdfPage> {
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
-    return Scaffold(
+    return PopScope(
+        canPop: true,
+        onPopInvokedWithResult: (didPop, _) async {
+          LogService.instance.log(
+              OperationLog.setOperationLog(
+                  book, book.id, Constant.operationUpdateType)
+          );
+        },
+        child: Scaffold(
         appBar: null,
         body: FutureBuilder(
             future: init(book),
@@ -217,17 +225,14 @@ class _PdfPageState extends State<PdfPage> {
                     );
                   }
               }
-            }));
+            }))
+    );
   }
 
   @override
   void dispose() {
     _dataTimer?.cancel();
     updateBook();
-    LogService.instance.log(
-        OperationLog.setOperationLog(
-            book, book.id, Constant.operationUpdateType)
-    );
     saveReadConfig();
     if (settingController.isOpenVolumeFlip.value) {
       volumeUtils.removeListener(needRestore: true);
