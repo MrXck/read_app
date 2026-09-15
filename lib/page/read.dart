@@ -1143,9 +1143,8 @@ class _ReadPageState extends State<ReadPage> {
     height = conte.size.height - conte.padding.top - conte.padding.bottom;
     width = conte.size.width - conte.padding.left - conte.padding.right;
     return PopScope(
-        canPop: false,
+        canPop: true,
         onPopInvokedWithResult: (didPop, _) async {
-          if (didPop) return;
           LogService.instance.log(
             OperationLog.setOperationLog(
               book,
@@ -1153,7 +1152,6 @@ class _ReadPageState extends State<ReadPage> {
               Constant.operationUpdateType,
             ),
           );
-          Navigator.of(context).pop(); // ← 做完才真正退出
         },
         child: Scaffold(
       backgroundColor: PlatFormUtils.isDesktop()

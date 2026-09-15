@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:get/get.dart';
 import 'package:read_app/pojo/operation_log.dart';
 import 'package:read_app/utils/db.dart';
 
