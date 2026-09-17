@@ -147,12 +147,20 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
     _now.value =
         '${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')} ${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:${time.second.toString().padLeft(2, '0')}';
     _timeTimer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
       var time = DateTime.now();
       _now.value =
           '${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')} ${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:${time.second.toString().padLeft(2, '0')}';
     });
 
     _dataTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
       updateBook();
     });
 

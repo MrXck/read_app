@@ -51,7 +51,8 @@ class Constant {
     'webm',
     'aac',
     'mp3',
-    'ac3'
+    'ac3',
+    'ts'
   ];
   static List<String> allTextType = ['txt'];
   static List<String> allPdfType = ['pdf'];

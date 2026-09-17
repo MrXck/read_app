@@ -84,8 +84,9 @@ class _PdfPageState extends State<PdfPage> {
     book.assetDir = dataDir.path;
 
     var value = await SharedPreferences.getInstance();
-    var config = const JsonDecoder()
-        .convert(value.getString(Constant.readConfigKey) ?? '{}');
+    var config = const JsonDecoder().convert(
+      value.getString(Constant.readConfigKey) ?? '{}',
+    );
     settings = Settings.fromMap(config);
   }
 
@@ -94,138 +95,158 @@ class _PdfPageState extends State<PdfPage> {
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     return PopScope(
-        canPop: true,
-        onPopInvokedWithResult: (didPop, _) async {
-          LogService.instance.log(
-              OperationLog.setOperationLog(
-                  book, book.id, Constant.operationUpdateType)
-          );
-        },
-        child: Scaffold(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, _) {
+        LogService.instance.log(
+          OperationLog.setOperationLog(
+            book,
+            book.id,
+            Constant.operationUpdateType,
+          ),
+        );
+      },
+      child: Scaffold(
         appBar: null,
         body: FutureBuilder(
-            future: init(book),
-            builder: (BuildContext context, AsyncSnapshot snapshot) {
-              switch (snapshot.connectionState) {
-                case ConnectionState.none:
-                  return const Text("未连接");
-                case ConnectionState.waiting:
-                  return const Center(
-                    child: CircularProgressIndicator(),
+          future: init(book),
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.none:
+                return const Text("未连接");
+              case ConnectionState.waiting:
+                return const Center(child: CircularProgressIndicator());
+              case ConnectionState.active:
+                return const Text("");
+              case ConnectionState.done:
+                if (snapshot.hasError) {
+                  return Text(
+                    "请求失败 , 报错信息 : ${snapshot.error}",
+                    style: const TextStyle(color: Colors.red),
                   );
-                case ConnectionState.active:
-                  return const Text("");
-                case ConnectionState.done:
-                  if (snapshot.hasError) {
-                    return Text(
-                      "请求失败 , 报错信息 : ${snapshot.error}",
-                      style: const TextStyle(color: Colors.red),
-                    );
-                  } else {
-                    return Stack(
-                      children: [
-                        SizedBox(
-                          width: width,
-                          height: height,
-                          child: SfPdfViewer.file(
-                            File(join(book.assetDir, book.path)),
-                            controller: _pdfViewerController,
-                            pageLayoutMode: PdfPageLayoutMode.continuous,
-                            scrollDirection: settings.isVer
-                                ? PdfScrollDirection.vertical
-                                : PdfScrollDirection.horizontal,
-                            onDocumentLoaded:
-                                (PdfDocumentLoadedDetails details) {
-                              _pdfViewerController.jumpToPage(book.page);
-                              _dataTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
+                } else {
+                  return Stack(
+                    children: [
+                      SizedBox(
+                        width: width,
+                        height: height,
+                        child: SfPdfViewer.file(
+                          File(join(book.assetDir, book.path)),
+                          controller: _pdfViewerController,
+                          pageLayoutMode: PdfPageLayoutMode.continuous,
+                          scrollDirection: settings.isVer
+                              ? PdfScrollDirection.vertical
+                              : PdfScrollDirection.horizontal,
+                          onDocumentLoaded: (PdfDocumentLoadedDetails details) {
+                            _pdfViewerController.jumpToPage(book.page);
+                            _dataTimer = Timer.periodic(
+                              const Duration(seconds: 2),
+                              (Timer timer) {
+                                if (!mounted) {
+                                  timer.cancel();
+                                  return;
+                                }
                                 updateBook();
-                              });
-                            },
-                            onTap: (PdfGestureDetails details) {
-                              showOption.value = !showOption.value;
-                            },
-                          ),
+                              },
+                            );
+                          },
+                          onTap: (PdfGestureDetails details) {
+                            showOption.value = !showOption.value;
+                          },
                         ),
+                      ),
 
-                        ValueListenableBuilder(
-                            valueListenable: showOption,
-                            builder: (context, value, child) {
-                              if (!value) {
-                                return const SizedBox.shrink();
-                              }
-                              return Positioned(
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                child: Container(
-                                  height: 40,
-                                  decoration:
-                                  const BoxDecoration(color: Colors.white),
-                                  child: Row(
-                                    mainAxisAlignment:
+                      ValueListenableBuilder(
+                        valueListenable: showOption,
+                        builder: (context, value, child) {
+                          if (!value) {
+                            return const SizedBox.shrink();
+                          }
+                          return Positioned(
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            child: Container(
+                              height: 40,
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
+                                children: [
+                                  InkWell(
+                                    onTap: () {
+                                      Get.back();
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.all(10),
+                                      child: const Icon(Icons.arrow_back_ios),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      ValueListenableBuilder(
+                        valueListenable: showOption,
+                        builder: (context, value, child) {
+                          if (!value) {
+                            return const SizedBox.shrink();
+                          }
+                          return Positioned(
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            child: Container(
+                              height: 42,
+                              color: Colors.white,
+                              padding: const EdgeInsets.all(6),
+                              child: Column(
+                                children: [
+                                  Row(
                                     children: [
                                       InkWell(
                                         onTap: () {
-                                          Get.back();
+                                          setState(() {
+                                            settings.isVer = !settings.isVer;
+                                            saveReadConfig();
+                                          });
                                         },
                                         child: Container(
-                                          padding: const EdgeInsets.all(10),
-                                          child: const Icon(Icons.arrow_back_ios),
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFFEAEAEA),
+                                            borderRadius: BorderRadius.all(
+                                              Radius.circular(40),
+                                            ),
+                                          ),
+                                          padding: const EdgeInsets.fromLTRB(
+                                            10,
+                                            5,
+                                            10,
+                                            5,
+                                          ),
+                                          child: settings.isVer
+                                              ? const Text('上下翻页')
+                                              : const Text('左右翻页'),
                                         ),
-                                      )
+                                      ),
                                     ],
                                   ),
-                                ),
-                              );
-                            }),
-                        ValueListenableBuilder(
-                            valueListenable: showOption,
-                            builder: (context, value, child) {
-                              if (!value) {
-                                return const SizedBox.shrink();
-                              }
-                              return Positioned(
-                                bottom: 0,
-                                left: 0,
-                                right: 0,
-                                child: Container(
-                                  height: 42,
-                                  color: Colors.white,
-                                  padding: const EdgeInsets.all(6),
-                                  child: Column(children: [
-                                    Row(
-                                      children: [
-                                        InkWell(
-                                          onTap: () {
-                                            setState(() {
-                                              settings.isVer = !settings.isVer;
-                                              saveReadConfig();
-                                            });
-                                          },
-                                          child: Container(
-                                            decoration: const BoxDecoration(
-                                                color: Color(0xFFEAEAEA),
-                                                borderRadius: BorderRadius.all(
-                                                    Radius.circular(40))),
-                                            padding: const EdgeInsets.fromLTRB(
-                                                10, 5, 10, 5),
-                                            child: settings.isVer
-                                                ? const Text('上下翻页')
-                                                : const Text('左右翻页'),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ]),
-                                ),
-                              );
-                            })
-                      ],
-                    );
-                  }
-              }
-            }))
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  );
+                }
+            }
+          },
+        ),
+      ),
     );
   }
 

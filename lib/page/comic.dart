@@ -86,6 +86,10 @@ class _ComicPageState extends State<ComicPage> {
     _currentIndex.value = book.page + 1;
 
     _dataTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
       updateBook();
     });
 
