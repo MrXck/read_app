@@ -522,6 +522,9 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                     color: Color(settings.fontColor),
                     fontWeight: fontWeightList[settings.titleFontWeight],
                     letterSpacing: settings.letterSpacing,
+                    fontFamilyFallback: const [
+                      'pingfang'
+                    ]
                   ),
                 ),
               );
@@ -560,6 +563,9 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                             fontWeight:
                                 fontWeightList[settings.contentFontWeight],
                             letterSpacing: settings.letterSpacing,
+                            fontFamilyFallback: const [
+                              'pingfang'
+                            ]
                           ),
                         );
                       }).toList(),
@@ -596,6 +602,9 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                               fontWeight:
                                   fontWeightList[settings.contentFontWeight],
                               letterSpacing: settings.letterSpacing,
+                              fontFamilyFallback: const [
+                                'pingfang'
+                              ]
                             ),
                           ),
                           TextSpan(
@@ -609,6 +618,9 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                               fontWeight:
                                   fontWeightList[settings.contentFontWeight],
                               letterSpacing: settings.letterSpacing,
+                              fontFamilyFallback: const [
+                                'pingfang'
+                              ]
                             ),
                           ),
                         ],
@@ -648,6 +660,9 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                             fontWeight:
                                 fontWeightList[settings.contentFontWeight],
                             letterSpacing: settings.letterSpacing,
+                            fontFamilyFallback: const [
+                              'pingfang'
+                            ]
                           ),
                         );
                       }).toList(),
@@ -681,6 +696,9 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                         color: Color(settings.fontColor),
                         fontWeight: fontWeightList[settings.contentFontWeight],
                         letterSpacing: settings.letterSpacing,
+                        fontFamilyFallback: const [
+                          'pingfang'
+                        ]
                       ),
                     ),
                   );
@@ -751,6 +769,9 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
               color: Color(settings.fontColor),
               fontWeight: fontWeightList[settings.titleFontWeight],
               letterSpacing: settings.letterSpacing,
+              fontFamilyFallback: const [
+                'pingfang'
+              ]
             ),
             width,
           );
@@ -773,6 +794,9 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
               color: Color(settings.fontColor),
               fontWeight: fontWeightList[settings.contentFontWeight],
               letterSpacing: settings.letterSpacing,
+              fontFamilyFallback: const [
+                'pingfang'
+              ]
             ),
             width,
           );

@@ -533,7 +533,10 @@ class _ReadPageState extends State<ReadPage> {
                   fontFamily: settings.fontFamily,
                   color: Color(settings.fontColor),
                   fontWeight: fontWeightList[settings.titleFontWeight],
-                  letterSpacing: settings.letterSpacing
+                  letterSpacing: settings.letterSpacing,
+                  fontFamilyFallback: const [
+                    'pingfang'
+                  ]
                 ),
               ),
             );
@@ -566,7 +569,10 @@ class _ReadPageState extends State<ReadPage> {
                           fontFamily: settings.fontFamily,
                           color: Color(settings.fontColor),
                           fontWeight: fontWeightList[settings.contentFontWeight],
-                          letterSpacing: settings.letterSpacing
+                          letterSpacing: settings.letterSpacing,
+                          fontFamilyFallback: const [
+                            'pingfang'
+                          ]
                         ),
                       );
                     }).toList(),
@@ -598,7 +604,10 @@ class _ReadPageState extends State<ReadPage> {
                             color: Colors.transparent,
                             fontWeight:
                             fontWeightList[settings.contentFontWeight],
-                            letterSpacing: settings.letterSpacing
+                            letterSpacing: settings.letterSpacing,
+                            fontFamilyFallback: const [
+                              'pingfang'
+                            ]
                           ),
                         ),
                         TextSpan(
@@ -611,7 +620,10 @@ class _ReadPageState extends State<ReadPage> {
                             color: Color(settings.fontColor),
                             fontWeight:
                             fontWeightList[settings.contentFontWeight],
-                            letterSpacing: settings.letterSpacing
+                            letterSpacing: settings.letterSpacing,
+                            fontFamilyFallback: const [
+                              'pingfang'
+                            ]
                           ),
                         ),
                       ],
@@ -646,7 +658,10 @@ class _ReadPageState extends State<ReadPage> {
                           fontFamily: settings.fontFamily,
                           color: Color(settings.fontColor),
                           fontWeight: fontWeightList[settings.contentFontWeight],
-                            letterSpacing: settings.letterSpacing
+                          letterSpacing: settings.letterSpacing,
+                          fontFamilyFallback: const [
+                            'pingfang'
+                          ]
                         ),
                       );
                     }).toList(),
@@ -676,7 +691,10 @@ class _ReadPageState extends State<ReadPage> {
                       fontFamily: settings.fontFamily,
                       color: Color(settings.fontColor),
                       fontWeight: fontWeightList[settings.contentFontWeight],
-                      letterSpacing: settings.letterSpacing
+                      letterSpacing: settings.letterSpacing,
+                      fontFamilyFallback: const [
+                        'pingfang'
+                      ]
                     ),
                   ),
                 );
@@ -750,7 +768,10 @@ class _ReadPageState extends State<ReadPage> {
               fontFamily: settings.fontFamily,
               color: Color(settings.fontColor),
               fontWeight: fontWeightList[settings.titleFontWeight],
-              letterSpacing: settings.letterSpacing
+              letterSpacing: settings.letterSpacing,
+              fontFamilyFallback: const [
+                'pingfang'
+              ]
             ),
             width
           );
@@ -772,7 +793,10 @@ class _ReadPageState extends State<ReadPage> {
               fontFamily: settings.fontFamily,
               color: Color(settings.fontColor),
               fontWeight: fontWeightList[settings.contentFontWeight],
-              letterSpacing: settings.letterSpacing
+              letterSpacing: settings.letterSpacing,
+              fontFamilyFallback: const [
+                'pingfang'
+              ]
             ),
             width
           );
