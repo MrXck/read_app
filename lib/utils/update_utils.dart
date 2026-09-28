@@ -10,6 +10,7 @@ import 'package:read_app/request/request.dart';
 import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/package_utils.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:read_app/utils/permission_utils.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'file_utils.dart';
@@ -26,7 +27,7 @@ class UpdateUtils {
       return;
     }
 
-    var storageStatus = await Permission.storage.request();
+    var storageStatus = await PermissionUtils.getFilePermission();
 
     if (!storageStatus.isGranted) {
       return;
