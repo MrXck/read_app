@@ -13,13 +13,14 @@ class ReadChapterList extends StatelessWidget {
   final List<Chapter> chapterList;
   final Settings settings;
 
-  const ReadChapterList(
-      {super.key,
-      required this.book,
-      required this.currentSeqNo,
-      required this.chapterList,
-      required this.clickFunc,
-      required this.settings});
+  const ReadChapterList({
+    super.key,
+    required this.book,
+    required this.currentSeqNo,
+    required this.chapterList,
+    required this.clickFunc,
+    required this.settings,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -27,78 +28,101 @@ class ReadChapterList extends StatelessWidget {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       var offset = (currentSeqNo - 1) * 60.0;
-      scrollController.animateTo(offset,
-          duration: const Duration(milliseconds: 300), curve: Curves.ease);
+      scrollController.animateTo(
+        offset,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.ease,
+      );
     });
 
     return Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: ColorUtils.returnDefaultColor(settings.backgroundColor),
-          borderRadius: const BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: ColorUtils.returnDefaultColor(settings.backgroundColor),
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(10),
+          topRight: Radius.circular(10),
         ),
-        height: MediaQuery.of(context).size.height,
-        child: Stack(
-          children: [
-            Padding(
+      ),
+      height: MediaQuery.of(context).size.height,
+      child: Stack(
+        children: [
+          Positioned(
+            child: Container(
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
               child: Text(
-                book.title,
+                '${book.title}${book.title}${book.title}${book.title}${book.title}',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-            Positioned(
-                top: 60,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: ListView.builder(
-                    controller: scrollController,
-                    padding: EdgeInsets.zero,
-                    itemCount: chapterList.length,
-                    itemBuilder: (context, index) {
-                      var chapter = chapterList[index];
-                      var chapterTitle = chapter.title;
-                      return Container(
-                        width: double.infinity,
-                        height: 60,
-                        margin: const EdgeInsets.fromLTRB(14, 0, 14, 0),
-                        decoration: const BoxDecoration(
-                          border: Border(
-                              bottom: BorderSide(color: Color(0xD6C8C8C8))),
-                        ),
-                        child: GestureDetector(
-                          onTap: () {
-                            if (chapter.seqNo == currentSeqNo) {
-                              return;
-                            }
+          ),
+          Positioned(
+            top: 50,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+              child: Text(
+                '共 ${chapterList.length} 章',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 12),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 70,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: ListView.builder(
+              controller: scrollController,
+              padding: EdgeInsets.zero,
+              itemCount: chapterList.length,
+              itemBuilder: (context, index) {
+                var chapter = chapterList[index];
+                var chapterTitle = chapter.title;
+                return Container(
+                  width: double.infinity,
+                  height: 60,
+                  margin: const EdgeInsets.fromLTRB(14, 0, 14, 0),
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: Color(0xD6C8C8C8)),
+                    ),
+                  ),
+                  child: GestureDetector(
+                    onTap: () {
+                      if (chapter.seqNo == currentSeqNo) {
+                        return;
+                      }
 
-                            clickFunc(chapterTitle, chapter.seqNo);
-                          },
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              currentSeqNo == index
-                                  ? Text(
+                      clickFunc(chapterTitle, chapter.seqNo);
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        currentSeqNo == index
+                            ? Text(
                                 chapterTitle,
                                 maxLines: 2,
-                                style:
-                                const TextStyle(color: Colors.blue),
+                                style: const TextStyle(color: Colors.blue),
                               )
-                                  : Text(
-                                chapterTitle,
-                                maxLines: 2,
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }))
-          ],
-        ));
+                            : Text(chapterTitle, maxLines: 2),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
