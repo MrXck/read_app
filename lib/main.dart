@@ -237,6 +237,7 @@ class MyApp extends StatelessWidget {
                 );
               } else {
                 Widget app = GetMaterialApp(
+                  scrollBehavior: AllPlatformScrollBehavior(),
                   theme: ThemeData(
                     colorScheme: ColorScheme.fromSeed(
                       seedColor: Colors.white,
@@ -276,6 +277,7 @@ class MyApp extends StatelessWidget {
                               top: 0,
                               bottom: 0,
                               child: GetMaterialApp(
+                                scrollBehavior: AllPlatformScrollBehavior(),
                                 theme: ThemeData(
                                   colorScheme: ColorScheme.fromSeed(
                                     seedColor: Colors.white,
@@ -436,5 +438,17 @@ class MyApp extends StatelessWidget {
               }
           }
         });
+  }
+}
+
+class AllPlatformScrollBehavior extends MaterialScrollBehavior {
+  @override
+  Widget buildScrollbar(BuildContext context, Widget child, ScrollableDetails details) {
+    // 无论什么平台，都统一加 Scrollbar
+    return Scrollbar(
+      interactive: true,
+      controller: details.controller,
+      child: child,
+    );
   }
 }
