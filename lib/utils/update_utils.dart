@@ -16,6 +16,9 @@ import 'package:share_plus/share_plus.dart';
 import 'file_utils.dart';
 
 class UpdateUtils {
+
+  static DownloadSpeedTracker downloadSpeedTracker = DownloadSpeedTracker();
+
   static Future<void> updateApp() async {
     var updateData = await getNewVersion();
 
@@ -26,6 +29,8 @@ class UpdateUtils {
     if (nowVersion == newVersion) {
       return;
     }
+
+    downloadSpeedTracker.reset();
 
     var storageStatus = await PermissionUtils.getFilePermission();
 
@@ -63,7 +68,7 @@ class UpdateUtils {
   }
 
   static Future<void> showUpdateDialog(UpdateData updateData) async {
-    ValueNotifier<String> progress = ValueNotifier<String>('0%');
+    ValueNotifier<String> progress = ValueNotifier<String>('0%|0|0|0');
 
     Get.defaultDialog(
         title: "提示",
@@ -86,18 +91,39 @@ class UpdateUtils {
                   child: ValueListenableBuilder(
                       valueListenable: progress,
                       builder: (BuildContext context, value, Widget? child) {
-                        return Text('下载进度：$value');
+                        var list = value.split('|');
+                        return SizedBox(
+                          width: double.infinity,
+                          height: 60,
+                          child: Column(
+                            children: [
+                              Text('${list[2]} / ${list[1]}'),
+                              Text('下载速度：${list[3]}'),
+                              Text('下载进度：${list[0]}'),
+                            ],
+                          ),
+                        );
                       }))));
 
           switch (Platform.operatingSystem) {
             case 'android':
               downloadNewApk(updateData, (int count, int total) {
-                progress.value = '${(count / total * 10000).ceil() / 100}%';
+                final speed = downloadSpeedTracker.formatBytes(downloadSpeedTracker.onProgress(count).toInt());
+                var percent = '${(count / total * 10000).ceil() / 100}%';
+                var size = downloadSpeedTracker.formatBytes(total);
+                var downloadSize = downloadSpeedTracker.formatBytes(count);
+
+                progress.value = '$percent|$size|$downloadSize|$speed';
               });
               break;
             case 'windows':
               updateWindows(updateData, (int count, int total) {
-                progress.value = '${(count / total * 10000).ceil() / 100}%';
+                final speed = downloadSpeedTracker.formatBytes(downloadSpeedTracker.onProgress(count).toInt());
+                var percent = '${(count / total * 10000).ceil() / 100}%';
+                var size = downloadSpeedTracker.formatBytes(total);
+                var downloadSize = downloadSpeedTracker.formatBytes(count);
+
+                progress.value = '$percent|$size|$downloadSize|$speed';
               });
               break;
             default:
@@ -196,7 +222,7 @@ exit /b 1
   }
 
   static Future<void> showDownloadDialog(UpdateData updateData) async {
-    ValueNotifier<String> progress = ValueNotifier<String>('0%');
+    ValueNotifier<String> progress = ValueNotifier<String>('0%|0|0|0');
 
     Get.defaultDialog(
         title: "提示",
@@ -219,7 +245,18 @@ exit /b 1
                   child: ValueListenableBuilder(
                       valueListenable: progress,
                       builder: (BuildContext context, value, Widget? child) {
-                        return Text('下载进度：$value');
+                        var list = value.split('|');
+                        return SizedBox(
+                          width: double.infinity,
+                          height: 60,
+                          child: Column(
+                            children: [
+                              Text('${list[2]} / ${list[1]}'),
+                              Text('下载速度：${list[3]}'),
+                              Text('下载进度：${list[0]}'),
+                            ],
+                          ),
+                        );
                       }))));
 
           switch (Platform.operatingSystem) {
@@ -231,7 +268,12 @@ exit /b 1
 
               await Request.getInstance().dio.download(url, savePath,
                   onReceiveProgress: (int count, int total) {
-                    progress.value = '${(count / total * 10000).ceil() / 100}%';
+                    final speed = downloadSpeedTracker.formatBytes(downloadSpeedTracker.onProgress(count).toInt());
+                    var percent = '${(count / total * 10000).ceil() / 100}%';
+                    var size = downloadSpeedTracker.formatBytes(total);
+                    var downloadSize = downloadSpeedTracker.formatBytes(count);
+
+                    progress.value = '$percent|$size|$downloadSize|$speed';
                   });
 
               final file = File(savePath);
@@ -246,5 +288,52 @@ exit /b 1
               break;
           }
         });
+  }
+}
+
+class DownloadSpeedTracker {
+  int _lastCount = 0;
+  double _lastSpeed = 0;
+  final double _alpha;
+  final Stopwatch _stopwatch = Stopwatch()..start();
+
+  String formatBytes(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    return '${(bytes / 1024 / 1024).toStringAsFixed(2)} MB';
+  }
+
+  DownloadSpeedTracker({this._alpha = 0.3});
+
+  /// 返回平滑后的速度（bytes/s）
+  double onProgress(int count) {
+    final elapsed = _stopwatch.elapsedMicroseconds / 1e6; // 微秒精度
+
+    // 间隔太短，不值得计算，返回上次结果
+    if (elapsed < 0.05) return _lastSpeed;
+
+    final delta = count - _lastCount;
+    _lastCount = count;
+    _stopwatch.reset();
+    _stopwatch.start();
+
+    // count 回退（重试/续传重置），直接重新开始统计
+    if (delta < 0) return _lastSpeed = 0;
+
+    final instant = delta / elapsed; // bytes/s
+
+    // 指数移动平均（EMA）平滑，消除突发抖动
+    _lastSpeed = _lastSpeed == 0
+        ? instant
+        : _lastSpeed + (instant - _lastSpeed) * _alpha;
+
+    return _lastSpeed;
+  }
+
+  void reset() {
+    _stopwatch.reset();
+    _stopwatch.start();
+    _lastCount = 0;
+    _lastSpeed = 0;
   }
 }

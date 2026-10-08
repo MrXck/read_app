@@ -34,7 +34,8 @@ class ModelManager {
   }
 
   static Future<void> showDownloadDialog(String modelUrl) async {
-    ValueNotifier<String> progress = ValueNotifier<String>('0%');
+    DownloadSpeedTracker downloadSpeedTracker = DownloadSpeedTracker();
+    ValueNotifier<String> progress = ValueNotifier<String>('0%|0|0|0');
 
     Get.defaultDialog(
         title: "提示",
@@ -54,11 +55,27 @@ class ModelManager {
                   child: ValueListenableBuilder(
                       valueListenable: progress,
                       builder: (BuildContext context, value, Widget? child) {
-                        return Text('下载进度：$value');
+                        var list = value.split('|');
+                        return SizedBox(
+                          width: double.infinity,
+                          height: 60,
+                          child: Column(
+                            children: [
+                              Text('${list[2]} / ${list[1]}'),
+                              Text('下载速度：${list[3]}'),
+                              Text('下载进度：${list[0]}'),
+                            ],
+                          ),
+                        );
                       }))));
 
           await downloadModelZip(modelUrl, (int count, int total) {
-            progress.value = '${(count / total * 10000).ceil() / 100}%';
+            final speed = downloadSpeedTracker.formatBytes(downloadSpeedTracker.onProgress(count).toInt());
+            var percent = '${(count / total * 10000).ceil() / 100}%';
+            var size = downloadSpeedTracker.formatBytes(total);
+            var downloadSize = downloadSpeedTracker.formatBytes(count);
+
+            progress.value = '$percent|$size|$downloadSize|$speed';
           });
           Get.back();
         });
