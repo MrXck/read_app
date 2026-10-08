@@ -4,8 +4,9 @@ import 'package:get/get.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:read_app/request/request.dart';
+import 'package:read_app/utils/download_speed_tracker.dart';
 import 'package:read_app/utils/file_utils.dart';
-import 'package:read_app/utils/update_utils.dart';
+import 'package:read_app/utils/update_utils.dart' show UpdateUtils;
 
 class ModelManager {
 
