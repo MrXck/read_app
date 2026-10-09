@@ -43,12 +43,12 @@ class _PdfPageState extends State<PdfPage> {
   Future<void> updateBook() async {
     book.page = _pdfViewerController.pageNumber;
     book.percent =
-    (_pdfViewerController.pageNumber / _pdfViewerController.pageCount * 100)
-        .isInfinite
+        (_pdfViewerController.pageNumber / _pdfViewerController.pageCount * 100)
+            .isInfinite
         ? 0
         : _pdfViewerController.pageNumber /
-        _pdfViewerController.pageCount *
-        100;
+              _pdfViewerController.pageCount *
+              100;
     DatabaseHelper.db.updateById(book);
   }
 
@@ -180,6 +180,18 @@ class _PdfPageState extends State<PdfPage> {
                                     },
                                     child: Container(
                                       padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(
+                                              alpha: 0.3,
+                                            ),
+                                            blurRadius: 10, // 模糊半径，越大越柔和
+                                            spreadRadius: 2, // 扩散半径
+                                            offset: const Offset(2, 4), // 阴影偏移
+                                          ),
+                                        ],
+                                      ),
                                       child: const Icon(Icons.arrow_back_ios),
                                     ),
                                   ),
@@ -215,11 +227,25 @@ class _PdfPageState extends State<PdfPage> {
                                           });
                                         },
                                         child: Container(
-                                          decoration: const BoxDecoration(
-                                            color: Color(0xFFEAEAEA),
-                                            borderRadius: BorderRadius.all(
-                                              Radius.circular(40),
-                                            ),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFEAEAEA),
+                                            borderRadius:
+                                                const BorderRadius.all(
+                                                  Radius.circular(40),
+                                                ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withValues(
+                                                  alpha: 0.3,
+                                                ),
+                                                blurRadius: 10, // 模糊半径，越大越柔和
+                                                spreadRadius: 2, // 扩散半径
+                                                offset: const Offset(
+                                                  2,
+                                                  4,
+                                                ), // 阴影偏移
+                                              ),
+                                            ],
                                           ),
                                           padding: const EdgeInsets.fromLTRB(
                                             10,

@@ -43,14 +43,14 @@ class _ComicPageState extends State<ComicPage> {
   Future<void> updateBook() async {
     book.page = _currentIndex.value - 1 < 0 ? 0 : _currentIndex.value - 1;
     book.percent =
-    ((_currentIndex.value - 1 < 0 ? 0 : _currentIndex.value - 1) /
-        (imageList.length - 1) *
-        100)
-        .isInfinite
+        ((_currentIndex.value - 1 < 0 ? 0 : _currentIndex.value - 1) /
+                (imageList.length - 1) *
+                100)
+            .isInfinite
         ? 0
         : (_currentIndex.value - 1 < 0 ? 0 : _currentIndex.value - 1) /
-        (imageList.length - 1) *
-        100;
+              (imageList.length - 1) *
+              100;
     DatabaseHelper.db.updateById(book);
   }
 
@@ -67,12 +67,14 @@ class _ComicPageState extends State<ComicPage> {
       volumeUtils.init((double beforeVolume, double nowVolume) {
         if (beforeVolume < nowVolume) {
           _pageController.nextPage(
-              duration: const Duration(milliseconds: 100),
-              curve: Curves.easeOut);
+            duration: const Duration(milliseconds: 100),
+            curve: Curves.easeOut,
+          );
         } else if (beforeVolume > nowVolume) {
           _pageController.previousPage(
-              duration: const Duration(milliseconds: 100),
-              curve: Curves.easeIn);
+            duration: const Duration(milliseconds: 100),
+            curve: Curves.easeIn,
+          );
         }
         volumeUtils.setVolume(0.1);
       });
@@ -113,8 +115,9 @@ class _ComicPageState extends State<ComicPage> {
     }
 
     var value = await SharedPreferences.getInstance();
-    var config = const JsonDecoder()
-        .convert(value.getString(Constant.readConfigKey) ?? '{}');
+    var config = const JsonDecoder().convert(
+      value.getString(Constant.readConfigKey) ?? '{}',
+    );
     settings = Settings.fromMap(config);
   }
 
@@ -145,9 +148,10 @@ class _ComicPageState extends State<ComicPage> {
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
     return Scaffold(
-        appBar: null,
-        body: SafeArea(
-          child: Stack(children: [
+      appBar: null,
+      body: SafeArea(
+        child: Stack(
+          children: [
             GestureDetector(
               onTap: () {
                 setState(() {
@@ -155,8 +159,9 @@ class _ComicPageState extends State<ComicPage> {
                 });
               },
               child: PhotoViewGallery.builder(
-                scrollDirection:
-                    settings.isVer ? Axis.vertical : Axis.horizontal,
+                scrollDirection: settings.isVer
+                    ? Axis.vertical
+                    : Axis.horizontal,
                 itemCount: imageList.length,
                 builder: (context, index) {
                   return PhotoViewGalleryPageOptions(
@@ -166,14 +171,14 @@ class _ComicPageState extends State<ComicPage> {
                   );
                 },
                 scrollPhysics: const BouncingScrollPhysics(),
-                backgroundDecoration: const BoxDecoration(
-                  color: Colors.black,
-                ),
+                backgroundDecoration: const BoxDecoration(color: Colors.black),
                 pageController: _pageController,
                 onPageChanged: (index) {
-                  book.page =
-                      _currentIndex.value - 1 < 0 ? 0 : _currentIndex.value - 1;
-                  book.percent = (_currentIndex.value - 1 < 0
+                  book.page = _currentIndex.value - 1 < 0
+                      ? 0
+                      : _currentIndex.value - 1;
+                  book.percent =
+                      (_currentIndex.value - 1 < 0
                           ? 0
                           : _currentIndex.value - 1) /
                       (imageList.length - 1) *
@@ -189,13 +194,14 @@ class _ComicPageState extends State<ComicPage> {
               right: 0,
               child: Center(
                 child: ValueListenableBuilder(
-                    valueListenable: _currentIndex,
-                    builder: (context, value, child) {
-                      return Text(
-                        '$value / ${imageList.length}',
-                        style: const TextStyle(color: Colors.white),
-                      );
-                    }),
+                  valueListenable: _currentIndex,
+                  builder: (context, value, child) {
+                    return Text(
+                      '$value / ${imageList.length}',
+                      style: const TextStyle(color: Colors.white),
+                    );
+                  },
+                ),
               ),
             ),
             Visibility(
@@ -216,9 +222,19 @@ class _ComicPageState extends State<ComicPage> {
                         },
                         child: Container(
                           padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.3),
+                                blurRadius: 10, // 模糊半径，越大越柔和
+                                spreadRadius: 2, // 扩散半径
+                                offset: const Offset(2, 4), // 阴影偏移
+                              ),
+                            ],
+                          ),
                           child: const Icon(Icons.arrow_back_ios),
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ),
@@ -234,65 +250,80 @@ class _ComicPageState extends State<ComicPage> {
                   height: 100,
                   color: Colors.white,
                   padding: const EdgeInsets.all(6),
-                  child: Column(children: [
-                    Row(
-                      children: [
-                        InkWell(
-                          onTap: () {
-                            setState(() {
-                              settings.isVer = !settings.isVer;
-                              saveReadConfig();
-                            });
-                          },
-                          child: Container(
-                            decoration: const BoxDecoration(
-                                color: Color(0xFFEAEAEA),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(40))),
-                            padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                            child: settings.isVer
-                                ? const Text('上下翻页')
-                                : const Text('左右翻页'),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Text('书籍标题：'),
-                        SizedBox(
-                          width: width - 180,
-                          child: TextField(
-                            controller: _bookTitleController,
-                            decoration: const InputDecoration(
-                              hintText: "输入书籍标题名",
-                              hintStyle: TextStyle(color: Colors.black26),
-                              contentPadding: EdgeInsets.all(0),
-                              border: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              errorBorder: InputBorder.none,
-                              disabledBorder: InputBorder.none,
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              setState(() {
+                                settings.isVer = !settings.isVer;
+                                saveReadConfig();
+                              });
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEAEAEA),
+                                borderRadius: const BorderRadius.all(
+                                  Radius.circular(40),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.3),
+                                    blurRadius: 10, // 模糊半径，越大越柔和
+                                    spreadRadius: 2, // 扩散半径
+                                    offset: const Offset(2, 4), // 阴影偏移
+                                  ),
+                                ],
+                              ),
+                              padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                              child: settings.isVer
+                                  ? const Text('上下翻页')
+                                  : const Text('左右翻页'),
                             ),
                           ),
-                        ),
-                        TextButton(
+                        ],
+                      ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Text('书籍标题：'),
+                          SizedBox(
+                            width: width - 180,
+                            child: TextField(
+                              controller: _bookTitleController,
+                              decoration: const InputDecoration(
+                                hintText: "输入书籍标题名",
+                                hintStyle: TextStyle(color: Colors.black26),
+                                contentPadding: EdgeInsets.all(0),
+                                border: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                errorBorder: InputBorder.none,
+                                disabledBorder: InputBorder.none,
+                              ),
+                            ),
+                          ),
+                          TextButton(
                             onPressed: () {
                               setState(() {
                                 book.title = _bookTitleController.text;
                                 showOption = false;
                               });
                             },
-                            child: const Text('确定'))
-                      ],
-                    )
-                  ]),
+                            child: const Text('确定'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ]),
-        ));
+          ],
+        ),
+      ),
+    );
   }
 
   @override
