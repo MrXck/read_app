@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:intl/intl.dart' as intl;
 import 'package:read_app/pojo/status.dart';
 import 'package:read_app/service/LogService.dart';
 import 'package:read_app/utils/color_utils.dart';
@@ -102,6 +103,12 @@ class _ReadPageState extends State<ReadPage> {
   bool openVolumeFlip = false;
 
   Future<void> init(Book book) async {
+    var value = await SharedPreferences.getInstance();
+    var config = const JsonDecoder().convert(
+      value.getString(Constant.readConfigKey) ?? '{}',
+    );
+    settings = Settings.fromMap(config);
+
     if (settingController.isOpenVolumeFlip.value) {
       openVolumeFlip = true;
       volumeUtils.init((double beforeVolume, double nowVolume) {
@@ -122,16 +129,14 @@ class _ReadPageState extends State<ReadPage> {
     currentSeqNo.value = book.currentChapter;
 
     var time = DateTime.now();
-    _now.value =
-        '${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')} ${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:${time.second.toString().padLeft(2, '0')}';
+    _now.value = intl.DateFormat(settings.dateTimeFormatString).format(time);
     _timeTimer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
       if (!mounted) {
         timer.cancel();
         return;
       }
       var time = DateTime.now();
-      _now.value =
-          '${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')} ${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:${time.second.toString().padLeft(2, '0')}';
+      _now.value = intl.DateFormat(settings.dateTimeFormatString).format(time);
     });
 
     _dataTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
@@ -141,12 +146,6 @@ class _ReadPageState extends State<ReadPage> {
       }
       updateBook();
     });
-
-    var value = await SharedPreferences.getInstance();
-    var config = const JsonDecoder().convert(
-      value.getString(Constant.readConfigKey) ?? '{}',
-    );
-    settings = Settings.fromMap(config);
 
     switchChapter1(currentSeqNo.value);
   }

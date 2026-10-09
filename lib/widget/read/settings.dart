@@ -5,6 +5,7 @@ import 'package:read_app/pojo/regexp_history.dart';
 import 'package:read_app/pojo/settings.dart';
 import 'package:read_app/pojo/status.dart';
 import 'package:read_app/utils/color_utils.dart';
+import 'package:read_app/utils/constant.dart';
 import 'package:read_app/utils/db.dart';
 import 'package:read_app/utils/tts_service.dart';
 
@@ -487,6 +488,63 @@ class _ReadSettingsState extends State<ReadSettings> {
                               ),
                             ),
                           )),
+                    ],
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        '时间格式',
+                      ),
+                      InkWell(
+                          onTap: () {
+                            Get.bottomSheet(
+                              Container(
+                                height: 200,
+                                padding: const EdgeInsets.all(16),
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(16),
+                                  ),
+                                ),
+                                child: Material(
+                                  child: ListView(
+                                    children: Constant.dateTimeFormatStringList.map((item) {
+                                      return ListTile(
+                                        title: Text(
+                                          item['label']!,
+                                          style: TextStyle(
+                                            color: widget.settings.dateTimeFormatString == item['value']
+                                                ? Colors.blue
+                                                : Colors.black,
+                                          ),
+                                        ),
+                                        onTap: () async {
+                                          Get.back();
+                                          widget.settings.dateTimeFormatString = item['value']!;
+                                          widget.updateFunc(widget.settings);
+                                        },
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            child: Text(
+                              widget.settings.dateTimeFormatString,
+                              style: TextStyle(
+                                fontFamily: widget.settings.fontFamily,
+                                color: Colors.blueAccent
+                              ),
+                            ),
+                          ))
                     ],
                   ),
                 ),

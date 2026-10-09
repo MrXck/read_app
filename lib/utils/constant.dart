@@ -60,6 +60,28 @@ class Constant {
   static int defaultBackgroundColor = 0xFFE6DBC5;
   static double defaultWindowHeight = 300;
   static double defaultWindowWidth = 300;
+  static List<Map<String, String>> dateTimeFormatStringList = [
+    {
+      'label': '年-月-日 时:分:秒',
+      'value': 'yyyy-MM-dd HH:mm:ss'
+    },
+    {
+      'label': '年-月-日',
+      'value': 'yyyy-MM-dd'
+    },
+    {
+      'label': '年-月-日 时:分',
+      'value': 'yyyy-MM-dd HH:mm'
+    },
+    {
+      'label': '时:分',
+      'value': 'HH:mm'
+    },
+    {
+      'label': '时:分:秒',
+      'value': 'HH:mm:ss'
+    },
+  ];
 
   static const String readConfigKey = 'config';
   static const String appConfigKey = 'app_config';

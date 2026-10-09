@@ -29,6 +29,7 @@ class Settings {
   late bool isFlip = false;
   late int sid = 48;
   late double letterSpacing = 0;
+  late String dateTimeFormatString = 'HH:mm:ss';
 
   static Settings fromMap(Map<String, dynamic> config) {
     Settings settings = Settings();
@@ -70,6 +71,7 @@ class Settings {
     settings.isFlip = config['isFlip'] ?? false;
     settings.sid = config['sid'] ?? 48;
     settings.letterSpacing = config['letterSpacing'] ?? 0;
+    settings.dateTimeFormatString = config['dateTimeFormatString'] ?? 'HH:mm:ss';
     return settings;
   }
 
@@ -112,6 +114,7 @@ class Settings {
       'isFlip': isFlip,
       'sid': sid,
       'letterSpacing': letterSpacing,
+      'dateTimeFormatString': dateTimeFormatString,
     };
   }
 
