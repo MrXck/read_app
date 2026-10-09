@@ -1353,7 +1353,15 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                             decoration: BoxDecoration(
                                 color: ColorUtils.returnDefaultColor(
                                   settings.backgroundColor,
-                                )
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.3),
+                                    blurRadius: 10,        // 模糊半径，越大越柔和
+                                    spreadRadius: 2,       // 扩散半径
+                                    offset: const Offset(2, 4),  // 阴影偏移
+                                  ),
+                                ]
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1430,6 +1438,14 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                               color: ColorUtils.returnDefaultColor(
                                 settings.backgroundColor,
                               ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.3),
+                                  blurRadius: 10,        // 模糊半径，越大越柔和
+                                  spreadRadius: 2,       // 扩散半径
+                                  offset: const Offset(2, 4),  // 阴影偏移
+                                ),
+                              ]
                             ),
                             child: Column(
                               children: [
