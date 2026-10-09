@@ -167,8 +167,21 @@ class _PdfPageState extends State<PdfPage> {
                             right: 0,
                             child: Container(
                               height: 40,
-                              decoration: const BoxDecoration(
+                              decoration: BoxDecoration(
                                 color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(
+                                      alpha: 0.3,
+                                    ),
+                                    blurRadius: 10, // 模糊半径，越大越柔和
+                                    spreadRadius: 2, // 扩散半径
+                                    offset: const Offset(
+                                      2,
+                                      4,
+                                    ), // 阴影偏移
+                                  ),
+                                ],
                               ),
                               child: Row(
                                 mainAxisAlignment:
@@ -180,18 +193,6 @@ class _PdfPageState extends State<PdfPage> {
                                     },
                                     child: Container(
                                       padding: const EdgeInsets.all(10),
-                                      decoration: BoxDecoration(
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withValues(
-                                              alpha: 0.3,
-                                            ),
-                                            blurRadius: 10, // 模糊半径，越大越柔和
-                                            spreadRadius: 2, // 扩散半径
-                                            offset: const Offset(2, 4), // 阴影偏移
-                                          ),
-                                        ],
-                                      ),
                                       child: const Icon(Icons.arrow_back_ios),
                                     ),
                                   ),
@@ -213,7 +214,22 @@ class _PdfPageState extends State<PdfPage> {
                             right: 0,
                             child: Container(
                               height: 42,
-                              color: Colors.white,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(
+                                      alpha: 0.3,
+                                    ),
+                                    blurRadius: 10, // 模糊半径，越大越柔和
+                                    spreadRadius: 2, // 扩散半径
+                                    offset: const Offset(
+                                      2,
+                                      4,
+                                    ), // 阴影偏移
+                                  ),
+                                ],
+                              ),
                               padding: const EdgeInsets.all(6),
                               child: Column(
                                 children: [
@@ -227,25 +243,12 @@ class _PdfPageState extends State<PdfPage> {
                                           });
                                         },
                                         child: Container(
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFEAEAEA),
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFFEAEAEA),
                                             borderRadius:
-                                                const BorderRadius.all(
+                                                BorderRadius.all(
                                                   Radius.circular(40),
                                                 ),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.black.withValues(
-                                                  alpha: 0.3,
-                                                ),
-                                                blurRadius: 10, // 模糊半径，越大越柔和
-                                                spreadRadius: 2, // 扩散半径
-                                                offset: const Offset(
-                                                  2,
-                                                  4,
-                                                ), // 阴影偏移
-                                              ),
-                                            ],
                                           ),
                                           padding: const EdgeInsets.fromLTRB(
                                             10,
