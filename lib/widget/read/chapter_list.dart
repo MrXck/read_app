@@ -51,7 +51,7 @@ class ReadChapterList extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
               child: Text(
-                '${book.title}${book.title}${book.title}${book.title}${book.title}',
+                book.title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
