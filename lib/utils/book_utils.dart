@@ -81,7 +81,7 @@ class BookUtils {
 
     for (var value in chapterContentList) {
       if (value.isNotEmpty) {
-        var contentList = value.split('\n');
+        var contentList = value.split(RegExp(r'\r\n|\r|\n'));
 
         for (var i = 0; i < contentList.length; i++) {
           if (contentList[i].trim().isNotEmpty) {

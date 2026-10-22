@@ -282,21 +282,9 @@ class _ReadPageState extends State<ReadPage> {
       var chapterContent = await BookUtils.loadBook(
         join(dataDir.path, chapter.path),
       );
-      chapterContent = chapterContent.replaceAll('\r', '');
-
-      chapterContent = chapterContent.replaceAllMapped(
-        RegExp(RegExp.escape(chapter.title) + r'(\n){2,}', multiLine: true),
-        (Match match) {
-          return '${match.group(0)!.replaceAll(match.group(1)!, '')}\n';
-        },
-      );
-
-      chapterContent = chapterContent.replaceAllMapped(
-        RegExp(r'(\n){2,}', multiLine: true),
-        (Match match) {
-          return '\n';
-        },
-      );
+      chapterContent = chapterContent
+          .replaceAll(RegExp(r'\r\n?'), '\n')  // 统一 \r\n 和 \r 为 \n
+          .replaceAll(RegExp(r'\n{2,}'), '\n'); // 连续换行压缩为一个
 
       var beforeAddLength = nowContentPage;
 
