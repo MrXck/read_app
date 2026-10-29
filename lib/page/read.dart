@@ -222,7 +222,7 @@ class _ReadPageState extends State<ReadPage> {
     init(book);
   }
 
-  void switchChapter1(int seqNo) async {
+  Future<void> switchChapter1(int seqNo) async {
     isLoading = true;
     chapterTitlePageNumMap.clear();
     chapterPageNumTitleMap.clear();
@@ -1611,7 +1611,34 @@ class _ReadPageState extends State<ReadPage> {
                         _nowChapter.value = chapterTitle;
                         switchChapter1(seqNo);
                       },
+                      showSearch: true,
                       settings: settings,
+                      clickSearchResultFunc: (chapterInfo) async {
+                        await switchChapter1(chapterInfo.seqNo);
+
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          var flag = false;
+                          var page = -1;
+                          for (var i = defaultHasContentPage; i < pageTextList.length; i++) {
+                            var pageText = pageTextList[i];
+                            for (var text in pageText!) {
+                              if (text == chapterInfo.fullLine.trim()) {
+                                flag = true;
+                                page = i;
+                                break;
+                              }
+                            }
+                            if (flag) {
+                              break;
+                            }
+                          }
+                          if (flag) {
+                            showChapter.value = false;
+                            showMask.value = false;
+                            jumpToPage(page);
+                          }
+                        });
+                      },
                     ),
                   )
                       : const SizedBox.shrink();

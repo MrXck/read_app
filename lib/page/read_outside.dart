@@ -1702,6 +1702,7 @@ class _ReadOutSidePageState extends State<ReadOutSidePage> {
                               switchChapter1(seqNo);
                             },
                             settings: settings,
+                            clickSearchResultFunc: (ChapterInfo chapterInfo) {},
                           ),
                         )
                       : const SizedBox.shrink();
