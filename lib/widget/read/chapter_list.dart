@@ -159,6 +159,15 @@ class _ReadChapterListState extends State<ReadChapterList> {
     var size = MediaQuery.of(context).size;
     var chapterList = widget.chapterList;
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      var offset = (widget.currentSeqNo - 1) * 60.0;
+      scrollController.animateTo(
+        offset,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.ease,
+      );
+    });
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
